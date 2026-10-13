@@ -85,7 +85,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Global keys:** `1`–`5` and `[`/`]` switch tabs. `Tab` moves focus. `:` opens the command line, `/` filters, `Ctrl-P` opens the palette, `r` refreshes, `U` runs update, `?` shows help, and `q` quits (with a confirmation if a job is running).
 - **List keys:** `j/k`, `gg/G`, `Ctrl-d/u`, `space` to multi-select, `Enter` to focus the preview. `u` upgrade, `x` uninstall, `p` pin, `o` open homepage, `y` copy name. On Services: `s` start, `S` stop, `R` restart, `l` show log. On Outdated: `A` upgrades all.
 - **Home:** tiles (Installed, Outdated, Services with error count, Doctor, reclaimable cache = size of `brew --cache`, measured in the background) + recent jobs. `Enter` on a tile jumps to its tab.
-- **Installed:** filter `all/leaves/casks/deps`, default **leaves**. Columns: name, version, type, pin, outdated ↑, size. Preview: description, dependency tree, used-by, caveats, tap, install date.
+- **Installed:** a view bar above the list shows every view with its count, the active one highlighted: **Top-level** (default; nothing else needs these, so leaves plus apps), **All**, **Apps** (casks) and **Dependencies** (installed only because something needed them). A line under the bar says what the active view shows; `f`/`F` step forward and back. Narrow panes use short names (Top, All, Apps, Deps). Columns: name, version, type, pin, outdated ↑, size. Preview: description, dependency tree, used-by, caveats, tap, install date.
 - **Outdated:** current → latest, multi-select upgrade.
 - **Services:** name, status (colored), user, plist. The preview shows the end of the log.
 - **Taps:** name, formula and cask counts, remote, official or not.

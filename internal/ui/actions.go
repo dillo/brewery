@@ -202,7 +202,7 @@ func (a *App) serviceKey(k string) tea.Cmd {
 func (a *App) actionHints() string {
 	switch a.tab {
 	case tabInstalled:
-		return "u upgrade · x uninstall · p pin · f filter"
+		return "u upgrade · x uninstall · p pin · f/F view"
 	case tabOutdated:
 		return "u upgrade · A upgrade all"
 	case tabServices:

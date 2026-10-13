@@ -37,6 +37,7 @@ type Styles struct {
 	PaneTitle, PaneTitleFocused lipgloss.Style
 
 	Tab, TabActive, TabRule      lipgloss.Style
+	View, ViewActive             lipgloss.Style
 	ChipWarn, ChipErr, ChipStale lipgloss.Style
 	StatusBar                    lipgloss.Style
 
@@ -56,13 +57,15 @@ func New(p Palette) Styles {
 		PaneTitle:        fg(p.Subtext0),
 		PaneTitleFocused: fg(p.Mauve).Bold(true),
 
-		Tab:       lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0),
-		TabActive: lipgloss.NewStyle().Foreground(p.Crust).Background(p.Mauve).Bold(true),
-		TabRule:   fg(p.Surface1),
-		ChipWarn:  chip(p.Yellow, p.Crust),
-		ChipErr:   chip(p.Red, p.Crust),
-		ChipStale: chip(p.Peach, p.Crust),
-		StatusBar: lipgloss.NewStyle().Foreground(p.Subtext0).Background(p.Mantle),
+		Tab:        lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0),
+		TabActive:  lipgloss.NewStyle().Foreground(p.Crust).Background(p.Mauve).Bold(true),
+		TabRule:    fg(p.Surface1),
+		View:       fg(p.Subtext0).Padding(0, 1),
+		ViewActive: fg(p.Mauve).Background(p.Surface0).Bold(true).Padding(0, 1),
+		ChipWarn:   chip(p.Yellow, p.Crust),
+		ChipErr:    chip(p.Red, p.Crust),
+		ChipStale:  chip(p.Peach, p.Crust),
+		StatusBar:  lipgloss.NewStyle().Foreground(p.Subtext0).Background(p.Mantle),
 
 		TableHeader: fg(p.Subtext0).Bold(true).Padding(0, 1).
 			BorderStyle(lipgloss.NormalBorder()).BorderBottom(true).BorderForeground(p.Surface1),

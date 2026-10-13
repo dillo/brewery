@@ -8,6 +8,7 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/brew"
 	"brewery/internal/state"
@@ -17,13 +18,23 @@ import (
 type installedFilter int
 
 const (
-	filterLeaves installedFilter = iota
+	filterTop installedFilter = iota
 	filterAll
-	filterCasks
+	filterApps
 	filterDeps
 )
 
-var filterNames = [...]string{"leaves", "all", "casks", "deps"}
+// views are the Installed tab's views, in the order f steps through them,
+// with a short name for narrow panes and a line saying what each shows.
+var views = [...]struct{ name, short, about string }{
+	filterTop:  {"Top-level", "Top", "Things you installed that nothing else needs."},
+	filterAll:  {"All", "All", "Everything installed."},
+	filterApps: {"Apps", "Apps", "macOS apps (casks)."},
+	filterDeps: {"Dependencies", "Deps", "Installed because something else needed them."},
+}
+
+// viewBarHeight is the bar of views plus the line about the active one.
+const viewBarHeight = 2
 
 var installedCols = []col{{"NAME", 0}, {"VERSION", 16}, {"TYPE", 7}, {"STATUS", 10}}
 
@@ -48,21 +59,24 @@ func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
 	t.apply()
 }
 
+// shows reports whether view f lists p. Apps count as top-level: nothing
+// depends on a cask, so they are always things you chose to install.
+func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
+	switch f {
+	case filterTop:
+		return p.Kind == brew.KindCask || t.ix.IsLeaf(p)
+	case filterApps:
+		return p.Kind == brew.KindCask
+	case filterDeps:
+		return p.Kind == brew.KindFormula && !p.OnRequest
+	}
+	return true
+}
+
 func (t *installedTab) apply() {
 	t.rows = t.rows[:0]
 	for _, p := range t.all {
-		keep := false
-		switch t.filter {
-		case filterAll:
-			keep = true
-		case filterLeaves:
-			keep = t.ix.IsLeaf(p)
-		case filterCasks:
-			keep = p.Kind == brew.KindCask
-		case filterDeps:
-			keep = p.Kind == brew.KindFormula && !p.OnRequest
-		}
-		if keep {
+		if t.shows(t.filter, p) {
 			t.rows = append(t.rows, p)
 		}
 	}
@@ -103,9 +117,13 @@ func (t *installedTab) selected() (brew.Package, bool) {
 }
 
 func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	if msg.String() == "f" {
-		t.filter = (t.filter + 1) % installedFilter(len(filterNames))
-		t.apply() // keeps the selected package if the new filter shows it
+	if k := msg.String(); k == "f" || k == "F" {
+		step := installedFilter(1)
+		if k == "F" {
+			step = installedFilter(len(views) - 1)
+		}
+		t.filter = (t.filter + step) % installedFilter(len(views))
+		t.apply() // keeps the selected package if the new view shows it
 		return nil
 	}
 	var cmd tea.Cmd
@@ -118,7 +136,7 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 func (t *installedTab) resize(w, h int) {
 	t.w, t.h = w, h
 	iw, ih := paneInner(t.listWidth(), h)
-	sizeTable(&t.table, installedCols, iw, ih)
+	sizeTable(&t.table, installedCols, iw, max(ih-viewBarHeight, 0))
 }
 
 func (t *installedTab) listWidth() int { return t.w * 55 / 100 }
@@ -127,21 +145,21 @@ func (t *installedTab) listWidth() int { return t.w * 55 / 100 }
 // pane with a banner above it.
 func (t *installedTab) view(err error) string {
 	w, h, listW := t.w, t.h, t.listWidth()
-	title := fmt.Sprintf("Installed · %s · %d   f: filter", filterNames[t.filter], len(t.rows))
 	if err != nil && len(t.all) == 0 {
 		return pane(t.st, "Installed", errorBody(t.st, err), w, h, true)
 	}
 	iw, ih := paneInner(listW, h)
-	body := ""
+	body := t.viewBar(iw) + "\n"
+	ih -= viewBarHeight
 	if err != nil {
-		body = refreshBanner(t.st, err, iw) + "\n"
+		body += refreshBanner(t.st, err, iw) + "\n"
 		ih -= bannerHeight
 	}
-	t.table.SetHeight(ih)
-	list := pane(t.st, title, body+t.table.View(), listW, h, true)
+	t.table.SetHeight(max(ih, 0))
+	list := pane(t.st, "Installed", body+t.table.View(), listW, h, true)
 
 	p, ok := t.selected()
-	previewTitle, body := "Preview", t.st.Muted.Render("nothing matches this filter")
+	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
 	switch {
 	case ok:
 		previewTitle, body = p.Name, t.preview(p)
@@ -149,6 +167,45 @@ func (t *installedTab) view(err error) string {
 		body = t.st.Muted.Render("loading…")
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, false))
+}
+
+// viewBar lists every view with its count, the active one highlighted,
+// and under it a line saying what the active view shows. Narrow panes get
+// the short names.
+func (t *installedTab) viewBar(w int) string {
+	bar := func(short bool) string {
+		var segs []string
+		for f, v := range views {
+			n := 0
+			for _, p := range t.all {
+				if t.shows(installedFilter(f), p) {
+					n++
+				}
+			}
+			name, style := v.name, t.st.View
+			if short {
+				name = v.short
+			}
+			if installedFilter(f) == t.filter {
+				style = t.st.ViewActive
+			}
+			segs = append(segs, style.Render(fmt.Sprintf("%s %d", name, n)))
+		}
+		return strings.Join(segs, " ")
+	}
+	b := bar(false)
+	if lipgloss.Width(b) > w {
+		b = bar(true)
+	}
+	// The keys always show, shortened before the description is: on narrow
+	// terminals the status bar has no room for hints.
+	about, keys := views[t.filter].about, "f/F to switch"
+	if len(about)+2+len(keys) > w {
+		keys = "f/F"
+		about = ansi.Truncate(about, max(w-2-len(keys), 0), "…")
+	}
+	gap := max(w-ansi.StringWidth(about)-len(keys), 1)
+	return b + "\n" + t.st.Muted.Render(about+strings.Repeat(" ", gap)+keys)
 }
 
 func (t *installedTab) preview(p brew.Package) string {

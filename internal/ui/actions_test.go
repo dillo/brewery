@@ -29,11 +29,11 @@ func lastCall(fs *fakeStarter) []string {
 func TestUpgradeFromInstalled(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "u") // fd, up to date
+	keys(t, a, "2", "j", "u") // fd, up to date
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "fd is up to date") {
 		t.Errorf("u on an up-to-date package should just say so: %v %q", fs.calls, stripANSI(a.statusBar()))
 	}
-	keys(t, a, "j", "j", "u") // lua-language-server, outdated
+	keys(t, a, "j", "j", "j", "u") // lua-language-server, outdated
 	if want := []string{"upgrade", "lua-language-server"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -49,7 +49,7 @@ func TestUpgradeSkipsPinned(t *testing.T) {
 	}
 	a.snap.Outdated[0].Pinned = true
 	a.sync()
-	keys(t, a, "2", "j", "j", "u")
+	keys(t, a, "2", "j", "j", "j", "j", "u") // lua-language-server
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "lua-language-server is pinned · p unpins it") {
 		t.Errorf("u on a pinned package should say so: %v %q", fs.calls, stripANSI(a.statusBar()))
 	}
@@ -87,7 +87,7 @@ func TestUpgradeAllAsksFirst(t *testing.T) {
 func TestUninstallOffersOrphans(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "x") // git: leaves pcre2 and json-c behind
+	keys(t, a, "2", "j", "j", "j", "x") // git: leaves pcre2 and json-c behind
 	if a.confirm == nil || a.confirm.title != "Uninstall git 2.51.0?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
 	}
@@ -106,7 +106,7 @@ func TestUninstallOffersOrphans(t *testing.T) {
 func TestUninstallWithoutOrphans(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "x")
+	keys(t, a, "2", "j", "x") // fd
 	if len(a.confirm.choices) != 2 {
 		t.Errorf("fd has no orphans: offer only uninstall and cancel, got %+v", a.confirm.choices)
 	}
@@ -143,11 +143,11 @@ func TestUninstallRefusesWhatOthersNeed(t *testing.T) {
 func TestPinToggles(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "p")
+	keys(t, a, "2", "j", "p") // fd
 	if want := []string{"pin", "fd"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
-	keys(t, a, "j", "p")
+	keys(t, a, "j", "j", "p") // git
 	if want := []string{"unpin", "git"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -208,7 +208,7 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.Update(tea.WindowSizeMsg{Width: 160, Height: 40})
 	for _, tt := range []struct{ key, want string }{
-		{"2", "u upgrade · x uninstall · p pin · f filter"},
+		{"2", "u upgrade · x uninstall · p pin · f/F view"},
 		{"3", "u upgrade · A upgrade all"},
 		{"4", "s start · S stop · R restart"},
 		{"5", "U update"},

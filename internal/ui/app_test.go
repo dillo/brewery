@@ -270,7 +270,7 @@ func TestKeysReachActiveTab(t *testing.T) {
 	}
 	a.Update(press("2"))
 	a.Update(press("j"))
-	if out := stripANSI(a.render()); !strings.Contains(out, "Installed › git") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "Installed › fd") {
 		t.Errorf("status bar should name the selected package:\n%s", out)
 	}
 }
