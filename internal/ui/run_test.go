@@ -409,6 +409,9 @@ func TestStopDialogOnlyStopsTheJobItNamed(t *testing.T) {
 	if a.confirm != nil {
 		t.Error("y closes the dialog")
 	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "upgrade fd already finished") {
+		t.Errorf("y on a finished job should say so: %q", bar)
+	}
 	if second.interrupted || a.canceled {
 		t.Error("y must not stop a job the dialog did not name")
 	}
@@ -489,4 +492,81 @@ func TestKeyBytes(t *testing.T) {
 			t.Errorf("keyBytes(%s) = %q, want %q", k, got, want)
 		}
 	}
+}
+
+func TestPasteGoesToBrewInInsertOnly(t *testing.T) {
+	p := newFakeProc(0, "Password:")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "upgrade docker-desktop", args: []string{"upgrade", "--cask", "docker-desktop"}}))
+	if a.mode != modeInsert {
+		t.Fatalf("a password prompt should switch to insert mode, got %v", a.mode)
+	}
+	a.Update(tea.PasteMsg{Content: "hun ter2"})
+	if got := p.input(); got != "hun ter2" {
+		t.Errorf("pasted text should reach brew raw, got %q", got)
+	}
+	a.Update(press("esc"))
+	a.Update(tea.PasteMsg{Content: "more"})
+	if got := p.input(); got != "hun ter2" {
+		t.Errorf("a paste in normal mode must write nothing, got %q", got)
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
+func TestFailureFlashOmitsOutputHintWhenNextJobStarts(t *testing.T) {
+	first, second := newFakeProc(1, "boom"), newFakeProc(0, "next")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{first, second}})
+	waiting := settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	waiting = append(waiting, settle(t, a, a.run(action{title: "pin git", args: []string{"pin", "git"}}))...)
+	first.exit()
+	waiting = resume(t, a, waiting)
+	bar := stripANSI(a.statusBar())
+	if !strings.Contains(bar, "✗ upgrade fd failed (exit 1)") || strings.Contains(bar, "o shows output") {
+		t.Errorf("the next job replaces the output, so the flash must not point at it: %q", bar)
+	}
+	second.exit()
+	resume(t, a, waiting)
+}
+
+func TestInsertCtrlCCountsAsStop(t *testing.T) {
+	p := newFakeProc(0, "Proceed? [y/N] ")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	if a.mode != modeInsert {
+		t.Fatalf("the prompt should switch to insert mode, got %v", a.mode)
+	}
+	a.Update(press("ctrl+c"))
+	if got := p.input(); got != "\x03" {
+		t.Fatalf("ctrl+c should reach brew as 0x03, got %q", got)
+	}
+	p.Interrupt() // brew dies of the 0x03, exit 130
+	resume(t, a, waiting)
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "stopped upgrade fd") {
+		t.Errorf("ctrl+c in insert should count as a stop: %q", bar)
+	}
+}
+
+func TestStaleAttemptMessagesAreIgnored(t *testing.T) {
+	locked := newFakeProc(1, "Error: A `brew update` process has already locked /opt/homebrew/var/homebrew/locks/update.\r\n")
+	locked.exit()
+	retry := newFakeProc(0, "retrying\r\n")
+	fs := &fakeStarter{procs: []*fakeProc{locked, retry}}
+	a := newJobApp(t, fs)
+	waiting := settle(t, a, a.run(action{title: "upgrade", args: []string{"upgrade"}}))
+	j := a.queue.Current()
+	if j == nil || j.Attempts != 2 {
+		t.Fatalf("the job should be on its second attempt: %+v", j)
+	}
+	before := a.drawer.output()
+	deliver(t, a, jobOutputMsg{id: j.ID, attempt: 1, data: []byte("stale output\r\n")})
+	deliver(t, a, jobExitMsg{id: j.ID, attempt: 1, code: 1})
+	if got := a.drawer.output(); got != before {
+		t.Errorf("stale output reached the drawer: %q -> %q", before, got)
+	}
+	if a.queue.Current() != j || j.State != jobs.Running || a.proc == nil {
+		t.Errorf("a stale exit must not end the current attempt: %+v", j)
+	}
+	retry.exit()
+	resume(t, a, waiting)
 }

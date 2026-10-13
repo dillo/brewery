@@ -142,17 +142,21 @@ func (a *App) togglePin() tea.Cmd {
 
 // askUpgradeAll confirms upgrading every outdated package.
 func (a *App) askUpgradeAll() tea.Cmd {
-	n := len(a.snap.Outdated)
-	if n == 0 {
+	if len(a.snap.Outdated) == 0 {
 		return a.note("everything is up to date")
 	}
-	names := make([]string, 0, n)
+	var names []string
 	pinned := 0
 	for _, o := range a.snap.Outdated {
-		names = append(names, o.Name)
 		if o.Pinned {
-			pinned++
+			pinned++ // brew skips these
+			continue
 		}
+		names = append(names, o.Name)
+	}
+	n := len(names)
+	if n == 0 {
+		return a.note("everything outdated is pinned")
 	}
 	body := []string{strings.Join(names, ", ")}
 	if pinned > 0 {

@@ -217,6 +217,10 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.saveErr = msg.err
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
+	case tea.PasteMsg:
+		if a.mode == modeInsert && a.proc != nil {
+			a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
+		}
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
 	}
@@ -306,6 +310,9 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		if k == "esc" {
 			a.mode = modeNormal
 		} else if a.proc != nil {
+			if k == "ctrl+c" {
+				a.canceled = true // brew's death by 0x03 is a stop, not a failure
+			}
 			a.proc.Write(keyBytes(msg))
 		}
 		return nil

@@ -219,3 +219,15 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 		}
 	}
 }
+
+func TestUpgradeAllCountsOnlyUnpinned(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.snap.Outdated[0].Pinned = true
+	keys(t, a, "3", "A")
+	if a.confirm == nil || a.confirm.title != "Upgrade all 1 outdated?" {
+		t.Fatalf("pinned rows must not be counted: %+v", a.confirm)
+	}
+	if want := []string{"docker-desktop", "1 pinned will be skipped."}; !reflect.DeepEqual(a.confirm.body, want) {
+		t.Errorf("body %q, want %q", a.confirm.body, want)
+	}
+}

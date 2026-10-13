@@ -173,7 +173,11 @@ func (a *App) afterJob(j *jobs.Job) tea.Cmd {
 	case jobs.Canceled:
 		a.flash = a.st.Warn.Render("stopped " + j.Title)
 	default:
-		a.flash = a.st.Err.Render(fmt.Sprintf("✗ %s failed (exit %d) · o shows output", j.Title, j.ExitCode))
+		msg := fmt.Sprintf("✗ %s failed (exit %d)", j.Title, j.ExitCode)
+		if a.queue.Queued() == 0 {
+			msg += " · o shows output" // else the next job is about to take the drawer
+		}
+		a.flash = a.st.Err.Render(msg)
 	}
 	act := a.acts[j.ID]
 	if act.full {
@@ -211,7 +215,7 @@ func (a *App) askStop() tea.Cmd {
 		choices: []choice{
 			{"y", "stop it", func() tea.Cmd {
 				if a.queue.Current() != j {
-					return nil // it finished meanwhile
+					return a.note(j.Title + " already finished") // it finished meanwhile
 				}
 				return a.stopJob()
 			}},
