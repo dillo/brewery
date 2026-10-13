@@ -344,6 +344,9 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	case "r":
 		return a.refresh()
 	}
+	if cmd, ok := a.actionKey(k); ok {
+		return cmd
+	}
 
 	switch a.tab {
 	case tabHome:
@@ -488,7 +491,7 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := "1-5 tabs · r refresh · q quit"
+	hints := a.actionHints() + " · q quit"
 	if a.drawer.job != nil && !a.drawer.open {
 		hints = "o output · " + hints
 	}
