@@ -1,0 +1,9 @@
+==> Downloading Homebrew API data
+{
+  "formulae": [
+    {"name": "lua-language-server", "installed_versions": ["3.19.0", "3.19.1"], "current_version": "3.19.2", "pinned": false, "pinned_version": null}
+  ],
+  "casks": [
+    {"name": "docker-desktop", "installed_versions": ["4.39.0,184744"], "current_version": "4.95.0,242831", "pinned": false, "pinned_version": null}
+  ]
+}

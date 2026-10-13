@@ -1,0 +1,12 @@
+Please note that these warnings are just used to help the Homebrew maintainers
+with debugging if you file an issue. If everything you use Homebrew for is
+working fine: please don't worry or file an issue; just ignore this. Thanks!
+
+Warning: The following taps are not trusted:
+  oven-sh/bun
+
+Untap them with:
+  brew untap oven-sh/bun
+
+Warning: Some installed casks are deprecated or disabled.
+  fontbase

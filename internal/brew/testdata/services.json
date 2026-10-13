@@ -1,0 +1,4 @@
+[
+  {"name": "postgresql@16", "status": "error", "user": "locutus", "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.postgresql@16.plist", "exit_code": 1},
+  {"name": "redis", "status": "none", "user": "locutus", "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.redis.plist", "exit_code": null}
+]

@@ -1,0 +1,67 @@
+{
+  "formulae": [
+    {
+      "name": "fd", "full_name": "fd", "tap": "homebrew/core",
+      "desc": "Simple, fast and user-friendly alternative to find",
+      "homepage": "https://github.com/sharkdp/fd",
+      "versions": {"stable": "10.5.0", "head": "HEAD", "bottle": true},
+      "installed": [{"version": "10.5.0", "time": 1788714516, "installed_on_request": true, "runtime_dependencies": []}],
+      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+    },
+    {
+      "name": "git", "full_name": "git", "tap": "homebrew/core",
+      "desc": "Distributed revision control system",
+      "homepage": "https://git-scm.com",
+      "versions": {"stable": "2.51.0"},
+      "installed": [{"version": "2.51.0", "time": 1788000000, "installed_on_request": true, "runtime_dependencies": [
+        {"full_name": "pcre2", "version": "10.49", "declared_directly": true},
+        {"full_name": "json-c", "version": "0.19", "declared_directly": false}
+      ]}],
+      "pinned": true, "outdated": false, "deprecated": false, "caveats": "  Bash completion has been installed.\n"
+    },
+    {
+      "name": "pcre2", "full_name": "pcre2", "tap": "homebrew/core",
+      "desc": "Perl compatible regular expressions library",
+      "homepage": "https://www.pcre.org/",
+      "versions": {"stable": "10.49"},
+      "installed": [{"version": "10.49", "time": 1787000000, "installed_on_request": false, "runtime_dependencies": [
+        {"full_name": "json-c", "version": "0.19", "declared_directly": true}
+      ]}],
+      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+    },
+    {
+      "name": "json-c", "full_name": "json-c", "tap": "homebrew/core",
+      "desc": null, "homepage": "https://github.com/json-c/json-c/wiki",
+      "versions": {"stable": "0.19"},
+      "installed": [{"version": "0.19", "time": 1787000000, "installed_on_request": false, "runtime_dependencies": []}],
+      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+    },
+    {
+      "name": "lua-language-server", "full_name": "lua-language-server", "tap": "homebrew/core",
+      "desc": "Language Server for the Lua language",
+      "homepage": "https://github.com/LuaLS/lua-language-server",
+      "versions": {"stable": "3.19.2"},
+      "installed": [
+        {"version": "3.19.0", "time": 1780000000, "installed_on_request": true, "runtime_dependencies": []},
+        {"version": "3.19.1", "time": 1785000000, "installed_on_request": true, "runtime_dependencies": []}
+      ],
+      "pinned": false, "outdated": true, "deprecated": false, "caveats": null
+    }
+  ],
+  "casks": [
+    {
+      "token": "docker-desktop", "full_token": "docker-desktop", "tap": "homebrew/cask",
+      "name": ["Docker Desktop", "Docker Community Edition"],
+      "desc": "App to build and share containerised applications and microservices",
+      "homepage": "https://www.docker.com/products/docker-desktop",
+      "version": "4.95.0,242831", "installed": "4.39.0,184744", "installed_time": 1743035743,
+      "pinned": false, "outdated": true, "deprecated": false, "caveats": null
+    },
+    {
+      "token": "fontbase", "full_token": "fontbase", "tap": "homebrew/cask",
+      "name": ["FontBase"], "desc": null, "homepage": "https://fontba.se/",
+      "version": "2.22.0", "installed": "2.22.0", "installed_time": null,
+      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+    }
+  ]
+}
