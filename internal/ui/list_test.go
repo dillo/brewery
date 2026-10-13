@@ -29,6 +29,10 @@ func TestListTabRendersRows(t *testing.T) {
 func TestListTabEmptyAndError(t *testing.T) {
 	lt := newListTab(testStyles, "Outdated", outdatedCols, "✓ everything is up to date")
 	lt.resize(80, 8)
+	if out := stripANSI(lt.view(nil)); !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
+		t.Errorf("before its first result the tab should say it is loading:\n%s", out)
+	}
+	lt.loaded = true
 	if out := stripANSI(lt.view(nil)); !strings.Contains(out, "everything is up to date") {
 		t.Errorf("empty message missing:\n%s", out)
 	}
@@ -139,5 +143,27 @@ func TestPaneClipsLongBodyAboveTheBorder(t *testing.T) {
 	}
 	if !strings.Contains(stripANSI(out), "… 44 more") || !strings.Contains(stripANSI(out), "line 5 ") {
 		t.Errorf("want 6 body lines then a count of the rest:\n%s", stripANSI(out))
+	}
+}
+
+func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
+	lt := newListTab(testStyles, "Outdated", outdatedCols, "all good")
+	lt.resize(120, 10)
+	lt.setRows(outdatedRows(fixtureSnapshot(t).Outdated))
+	view := lt.view(errors.New("brew outdated --json=v2: exit status 1\nError: second line"))
+	out := stripANSI(view)
+	for _, want := range []string{"refresh failed · r to retry", "exit status 1", "lua-language-server", "docker-desktop"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "second line") || strings.Contains(out, "couldn't load") {
+		t.Errorf("banner should be one line of error above the rows:\n%s", out)
+	}
+	if h := lipgloss.Height(view); h != 10 {
+		t.Errorf("height = %d, want 10", h)
+	}
+	if rows := strings.Split(out, "\n"); !strings.HasPrefix(rows[len(rows)-1], "╰") {
+		t.Errorf("bottom border missing:\n%s", out)
 	}
 }

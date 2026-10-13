@@ -34,6 +34,7 @@ type installedTab struct {
 	all    []brew.Package
 	ix     *state.Index
 	rows   []brew.Package // the filtered rows, in table order
+	loaded bool
 	table  table.Model
 	w, h   int
 }
@@ -114,18 +115,30 @@ func (t *installedTab) resize(w, h int) {
 
 func (t *installedTab) listWidth() int { return t.w * 55 / 100 }
 
+// view sizes the table each time because a failed refresh shares the list
+// pane with a banner above it.
 func (t *installedTab) view(err error) string {
 	w, h, listW := t.w, t.h, t.listWidth()
 	title := fmt.Sprintf("Installed · %s · %d   f: filter", filterNames[t.filter], len(t.rows))
 	if err != nil && len(t.all) == 0 {
 		return pane(t.st, "Installed", errorBody(t.st, err), w, h, true)
 	}
-	list := pane(t.st, title, t.table.View(), listW, h, true)
+	iw, ih := paneInner(listW, h)
+	body := ""
+	if err != nil {
+		body = refreshBanner(t.st, err, iw) + "\n"
+		ih -= bannerHeight
+	}
+	t.table.SetHeight(ih)
+	list := pane(t.st, title, body+t.table.View(), listW, h, true)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing matches this filter")
-	if ok {
+	switch {
+	case ok:
 		previewTitle, body = p.Name, t.preview(p)
+	case !t.loaded && err == nil:
+		body = t.st.Muted.Render("loading…")
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, false))
 }

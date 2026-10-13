@@ -23,6 +23,11 @@ const (
 
 var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps"}
 
+// tabQueries is the query each tab's data comes from. Home shows doctor.
+var tabQueries = map[int]query{
+	tabHome: qDoctor, tabInstalled: qInstalled, tabOutdated: qOutdated, tabServices: qServices, tabTaps: qTaps,
+}
+
 // App is the root Bubble Tea model.
 type App struct {
 	src       Source
@@ -30,9 +35,10 @@ type App struct {
 	st        theme.Styles
 	now       func() time.Time
 
-	snap state.Snapshot
-	ix   *state.Index
-	errs map[query]error
+	snap   state.Snapshot
+	ix     *state.Index
+	errs   map[query]error
+	loaded map[query]bool // true once a query has succeeded, here or in the cache
 
 	pending      int  // queries in flight
 	doctorQueued bool // doctor already started in this refresh
@@ -54,13 +60,19 @@ func New(src Source, snap state.Snapshot, cachePath string) *App {
 	st := theme.New(theme.Macchiato)
 	a := &App{
 		src: src, cachePath: cachePath, st: st, now: time.Now,
-		snap: snap, errs: map[query]error{}, tab: tabHome,
-		home:      homeTab{st: st},
+		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		installed: newInstalledTab(st),
 		outdated:  newListTab(st, "Outdated", outdatedCols, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, "no services registered"),
 		taps:      newListTab(st, "Taps", tapCols, "no taps installed"),
 	}
+	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
+	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
+		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
+			a.loaded[q] = true
+		}
+	}
+	a.loaded[qDoctor] = snap.DoctorRan
 	a.sync()
 	return a
 }
@@ -77,8 +89,12 @@ func (a *App) refresh() tea.Cmd {
 	return tea.Batch(fetch(a.src, qInstalled), fetch(a.src, qOutdated), fetch(a.src, qServices), fetch(a.src, qTaps))
 }
 
-// sync pushes the snapshot into every tab.
+// sync pushes the snapshot and loaded state into every tab.
 func (a *App) sync() {
+	a.installed.loaded = a.loaded[qInstalled]
+	a.outdated.loaded = a.loaded[qOutdated]
+	a.services.loaded = a.loaded[qServices]
+	a.taps.loaded = a.loaded[qTaps]
 	a.ix = state.NewIndex(a.snap.Packages)
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.snap.Outdated))
@@ -92,6 +108,7 @@ func (a *App) apply(m resultMsg) {
 	if m.err != nil {
 		return // keep showing the last good data
 	}
+	a.loaded[m.q] = true
 	switch m.q {
 	case qInstalled:
 		a.snap.Packages = m.packages
@@ -222,6 +239,11 @@ func (a *App) tabBar() string {
 			break
 		}
 	}
+	for tab, q := range tabQueries {
+		if a.errs[q] != nil {
+			badges[tab] = badge{"✗", st.Err} // a failure outranks any count
+		}
+	}
 	parts := make([]string, len(tabNames))
 	for i, name := range tabNames {
 		label := fmt.Sprintf("%d %s", i+1, name)
@@ -250,21 +272,17 @@ func (a *App) statusBar() string {
 	}
 
 	var right []string
-	failed := 0
-	for _, err := range a.errs {
-		if err != nil {
-			failed++
+	var failed []string
+	for q, name := range queryNames {
+		if a.errs[query(q)] != nil {
+			failed = append(failed, name)
 		}
 	}
 	switch {
 	case a.pending > 0:
 		right = append(right, st.Info.Render("refreshing…"))
-	case failed > 0:
-		msg := fmt.Sprintf("✗ %d queries failed", failed)
-		if failed == 1 {
-			msg = "✗ 1 query failed"
-		}
-		right = append(right, st.Err.Render(msg))
+	case len(failed) > 0:
+		right = append(right, st.Err.Render("✗ "+strings.Join(failed, ", ")+" failed"))
 	case !a.snap.FetchedAt.IsZero():
 		right = append(right, "updated "+a.snap.FetchedAt.Format("15:04"))
 	}

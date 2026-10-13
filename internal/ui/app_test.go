@@ -171,8 +171,8 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	if !strings.Contains(out, "couldn't load this view") || !strings.Contains(out, "exit status 1") {
 		t.Errorf("services tab should show the error:\n%s", out)
 	}
-	if !strings.Contains(out, "1 query failed") {
-		t.Error("status bar should count the failure")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ services failed") {
+		t.Errorf("status bar should name the failed query: %q", bar)
 	}
 	a.Update(press("5"))
 	if out := stripANSI(a.render()); !strings.Contains(out, "anomalyco/tap") {
@@ -193,8 +193,8 @@ func TestDoctorFailureShowsOnHome(t *testing.T) {
 	if !strings.Contains(out, "brew doctor failed") || strings.Contains(out, "brew doctor is running") {
 		t.Errorf("home should report the doctor failure:\n%s", out)
 	}
-	if !strings.Contains(out, "1 query failed") {
-		t.Error("status bar should count the failure")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ doctor failed") {
+		t.Errorf("status bar should name the failed query: %q", bar)
 	}
 
 	src.doctorErr = nil
@@ -325,5 +325,72 @@ func TestTabBarFitsWidth(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 40, Height: 24})
 	if w := lipgloss.Width(a.tabBar()); w > 40 {
 		t.Errorf("tab bar is %d columns at width 40", w)
+	}
+}
+
+func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
+	src := newFakeSource(t)
+	src.servicesErr = errors.New("brew services list --json: exit status 1\nError: launchctl failed")
+	a := New(src, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
+	drain(t, a, a.Init())
+
+	if bar := stripANSI(a.tabBar()); !strings.Contains(bar, "4 Services ✗") {
+		t.Errorf("tab bar should mark Services as failed: %q", bar)
+	}
+	a.Update(press("4"))
+	out := stripANSI(a.render())
+	for _, want := range []string{"postgresql@16", "refresh failed · r to retry", "exit status 1"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "launchctl failed") {
+		t.Error("the banner should show only the first line of the error")
+	}
+	if bar := stripANSI(a.tabBar()); !strings.Contains(bar, "4 Services ✗") {
+		t.Errorf("the active tab should keep its ✗ badge: %q", bar)
+	}
+	if h := lipgloss.Height(a.render()); h != 40 {
+		t.Errorf("render is %d lines, want 40", h)
+	}
+}
+
+func TestStatusBarNamesEveryFailedQuery(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	a.errs[qServices] = errors.New("boom")
+	a.errs[qOutdated] = errors.New("boom")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ outdated, services failed") {
+		t.Errorf("status bar = %q", bar)
+	}
+}
+
+func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t)) // no cache, no results yet
+	out := stripANSI(a.render())
+	if strings.Contains(out, "up to date") || strings.Contains(out, "registered") {
+		t.Errorf("home should not report health before any query returns:\n%s", out)
+	}
+	a.Update(press("3"))
+	out = stripANSI(a.render())
+	if !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
+		t.Errorf("outdated tab before its first result:\n%s", out)
+	}
+	a.apply(resultMsg{q: qOutdated}) // brew outdated succeeded with nothing to report
+	if out := stripANSI(a.render()); !strings.Contains(out, "everything is up to date") {
+		t.Errorf("outdated tab after an empty result:\n%s", out)
+	}
+}
+
+func TestCachedSnapshotCountsAsLoaded(t *testing.T) {
+	a := New(newFakeSource(t), fixtureSnapshot(t), "")
+	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor} {
+		if !a.loaded[q] {
+			t.Errorf("%s not loaded from a non-empty cache", queryNames[q])
+		}
+	}
+	if a := New(newFakeSource(t), state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor]) {
+		t.Error("an empty cache should load nothing")
 	}
 }

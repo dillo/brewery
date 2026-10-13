@@ -27,6 +27,8 @@ type homeTab struct {
 	st        theme.Styles
 	sel       int
 	doctorErr error // last doctor failure; nil once a run succeeds
+	errs      map[query]error
+	loaded    map[query]bool
 }
 
 func (h *homeTab) tiles(snap state.Snapshot) []tile {
@@ -66,6 +68,10 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 		services.value, services.style, services.detail = plural(len(failed), "error"), st.Err, strings.Join(failed, ", ")
 	}
 
+	h.markUnknown(&installed, qInstalled)
+	h.markUnknown(&outdated, qOutdated)
+	h.markUnknown(&services, qServices)
+
 	doctor := tile{"Doctor", "…", st.Muted, "checking", -1}
 	switch {
 	case h.doctorErr != nil:
@@ -77,6 +83,17 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 		}
 	}
 	return []tile{installed, outdated, services, doctor}
+}
+
+// markUnknown replaces a tile's numbers when its query has failed or has
+// not returned yet, so zeros are never shown as a healthy result.
+func (h *homeTab) markUnknown(t *tile, q query) {
+	switch {
+	case h.errs[q] != nil:
+		t.value, t.style, t.detail = "✗ failed", h.st.Err, "see tab"
+	case !h.loaded[q]:
+		t.value, t.style, t.detail = "…", h.st.Muted, "loading"
+	}
 }
 
 func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) (openTab int) {

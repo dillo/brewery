@@ -11,8 +11,14 @@ import (
 	"brewery/internal/state"
 )
 
+// loadedHome is a Home tab whose queries have all succeeded.
+func loadedHome() homeTab {
+	return homeTab{st: testStyles, errs: map[query]error{},
+		loaded: map[query]bool{qInstalled: true, qOutdated: true, qServices: true, qTaps: true, qDoctor: true}}
+}
+
 func TestHomeTiles(t *testing.T) {
-	h := homeTab{st: testStyles}
+	h := loadedHome()
 	tiles := h.tiles(fixtureSnapshot(t))
 	got := []string{}
 	for _, tl := range tiles {
@@ -30,7 +36,7 @@ func TestHomeTiles(t *testing.T) {
 }
 
 func TestHomeTilesHealthy(t *testing.T) {
-	h := homeTab{st: testStyles}
+	h := loadedHome()
 	snap := state.Snapshot{
 		Services:  []brew.Service{{Name: "redis", Status: "started"}},
 		DoctorRan: true,
@@ -44,6 +50,31 @@ func TestHomeTilesHealthy(t *testing.T) {
 	}
 	if got := h.tiles(state.Snapshot{}); got[3].value != "…" {
 		t.Errorf("doctor tile before doctor runs = %q", got[3].value)
+	}
+}
+
+func TestHomeTilesLoading(t *testing.T) {
+	h := homeTab{st: testStyles}
+	for _, tl := range h.tiles(state.Snapshot{})[:3] {
+		if tl.value != "…" || tl.detail != "loading" {
+			t.Errorf("%s tile before any result = %q (%s)", tl.title, tl.value, tl.detail)
+		}
+	}
+}
+
+func TestHomeTilesFailed(t *testing.T) {
+	h := loadedHome()
+	h.errs[qOutdated] = errors.New("brew outdated: exit status 1")
+	tiles := h.tiles(fixtureSnapshot(t))
+	if got := tiles[1]; got.value != "✗ failed" || got.detail != "see tab" || got.tab != tabOutdated {
+		t.Errorf("outdated tile = %q (%s) -> %d", got.value, got.detail, got.tab)
+	}
+	if tiles[0].value != "7" || tiles[2].value != "1 error" {
+		t.Errorf("other tiles should be unaffected: %q %q", tiles[0].value, tiles[2].value)
+	}
+	h = homeTab{st: testStyles, errs: map[query]error{qServices: errors.New("boom")}} // failed before ever loading
+	if got := h.tiles(state.Snapshot{})[2]; got.value != "✗ failed" {
+		t.Errorf("services tile = %q", got.value)
 	}
 }
 
@@ -70,7 +101,7 @@ func TestHomeNavigation(t *testing.T) {
 }
 
 func TestHomeView(t *testing.T) {
-	h := homeTab{st: testStyles}
+	h := loadedHome()
 	view := h.view(fixtureSnapshot(t), 140, 30)
 	out := stripANSI(view)
 	for _, want := range []string{"Installed", "5 formulae · 2 casks", "lua-language-server, docker-", "1 error",

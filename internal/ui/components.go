@@ -158,3 +158,13 @@ func errorBody(st theme.Styles, err error) string {
 		st.Muted.Render(err.Error()) + "\n\n" +
 		st.Muted.Render("press r to retry")
 }
+
+// bannerHeight is the number of lines refreshBanner takes.
+const bannerHeight = 2
+
+// refreshBanner tops a pane that still shows earlier data after its latest
+// refresh failed: the failure, then the error's first line cut to width w.
+func refreshBanner(st theme.Styles, err error, w int) string {
+	first, _, _ := strings.Cut(err.Error(), "\n")
+	return st.Err.Render("✗ refresh failed · r to retry") + "\n" + st.Muted.Render(ansi.Truncate(first, w, "…"))
+}

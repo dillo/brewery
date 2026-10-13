@@ -32,6 +32,9 @@ const (
 	qDoctor
 )
 
+// queryNames name each query in the status bar.
+var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor"}
+
 // resultMsg carries one query's result back to the App.
 type resultMsg struct {
 	q        query

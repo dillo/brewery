@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -93,6 +94,10 @@ func TestInstalledEmptyFilter(t *testing.T) {
 	it := newInstalledTab(testStyles)
 	it.resize(100, 12)
 	it.setData(nil, state.NewIndex(nil))
+	if out := stripANSI(it.view(nil)); !strings.Contains(out, "loading…") || strings.Contains(out, "nothing matches") {
+		t.Errorf("before its first result the preview should say it is loading:\n%s", out)
+	}
+	it.loaded = true
 	if _, ok := it.selected(); ok {
 		t.Error("nothing should be selected in an empty list")
 	}
@@ -125,5 +130,22 @@ func TestInstalledPreviewKeepsBorderWithManyDeps(t *testing.T) {
 	last := []rune(rows[len(rows)-1])
 	if preview := string(last[it.listWidth():]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
 		t.Errorf("preview pane lost its bottom border: %q", preview)
+	}
+}
+
+func TestInstalledErrorWithRowsShowsBanner(t *testing.T) {
+	it := newFixtureInstalled(t)
+	view := it.view(errors.New("brew info --json=v2 --installed: exit status 1\nError: second line"))
+	out := stripANSI(view)
+	for _, want := range []string{"refresh failed · r to retry", "exit status 1", "lua-language-server", "fd 10.5.0"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "second line") || strings.Contains(out, "couldn't load") {
+		t.Errorf("banner should be one line of error above the rows:\n%s", out)
+	}
+	if h := lipgloss.Height(view); h != 30 {
+		t.Errorf("height = %d, want 30", h)
 	}
 }
