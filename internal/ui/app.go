@@ -220,46 +220,44 @@ func (a *App) render() string {
 	return lipgloss.JoinVertical(lipgloss.Left, a.tabBar(), body, a.statusBar())
 }
 
-// bodyHeight is the space between the tab bar and the status bar.
-func (a *App) bodyHeight() int { return max(a.height-2, 3) }
+// bodyHeight is the space between the tab bar (tabs + rule) and the status bar.
+func (a *App) bodyHeight() int { return max(a.height-3, 3) }
 
+// tabBar renders the tabs as solid blocks over a full-width rule. Badges
+// are chips: ↑N updates available, ✗N services in error, ⚠ refresh failed.
 func (a *App) tabBar() string {
 	st := a.st
-	type badge struct {
-		text  string
-		style lipgloss.Style
-	}
-	badges := map[int]badge{}
+	chips := map[int]string{}
 	if n := len(a.snap.Outdated); n > 0 {
-		badges[tabOutdated] = badge{fmt.Sprint(n), st.Warn}
+		chips[tabOutdated] = st.ChipWarn.Render(fmt.Sprintf("↑%d", n))
 	}
+	failing := 0
 	for _, s := range a.snap.Services {
 		if s.Status == "error" {
-			badges[tabServices] = badge{"!", st.Err}
-			break
+			failing++
 		}
+	}
+	if failing > 0 {
+		chips[tabServices] = st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
 	}
 	for tab, q := range tabQueries {
 		if a.errs[q] != nil {
-			badges[tab] = badge{"✗", st.Err} // a failure outranks any count
+			chips[tab] = st.ChipStale.Render("⚠") // stale data outranks any count
 		}
 	}
 	parts := make([]string, len(tabNames))
 	for i, name := range tabNames {
-		label := fmt.Sprintf("%d %s", i+1, name)
-		b, hasBadge := badges[i]
-		switch {
-		case i == a.tab && hasBadge:
-			parts[i] = st.TabActive.Render(label + " " + b.text) // badge color would clash with the active background
-		case i == a.tab:
-			parts[i] = st.TabActive.Render(label)
-		case hasBadge:
-			parts[i] = st.Tab.Render(label) + b.style.Render(b.text)
-		default:
-			parts[i] = st.Tab.Render(label)
+		block := st.Tab
+		if i == a.tab {
+			block = st.TabActive
+		}
+		parts[i] = block.Render(fmt.Sprintf(" %d %s ", i+1, name))
+		if c, ok := chips[i]; ok {
+			parts[i] += c + block.Render(" ")
 		}
 	}
-	return ansi.Truncate(strings.Join(parts, " "), a.width, "…")
+	tabs := ansi.Truncate(strings.Join(parts, " "), a.width, "…")
+	return tabs + "\n" + st.TabRule.Render(strings.Repeat("─", a.width))
 }
 
 func (a *App) statusBar() string {

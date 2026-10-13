@@ -229,12 +229,31 @@ func TestStatusBar(t *testing.T) {
 	}
 }
 
+// squash collapses runs of spaces so tests don't depend on chip padding.
+func squash(s string) string { return strings.Join(strings.Fields(s), " ") }
+
 func TestTabBarBadges(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	out := stripANSI(a.tabBar())
-	if !strings.Contains(out, "3 Outdated 2") || !strings.Contains(out, "4 Services !") {
-		t.Errorf("tab bar badges missing: %q", out)
+	lines := strings.Split(stripANSI(a.tabBar()), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("tab bar should be the tabs plus a rule, got %d lines", len(lines))
+	}
+	if got := squash(lines[0]); !strings.Contains(got, "3 Outdated ↑2") || !strings.Contains(got, "4 Services ✗1") {
+		t.Errorf("tab bar badges missing: %q", got)
+	}
+	if rule := strings.TrimRight(lines[1], " "); rule != strings.Repeat("─", 140) {
+		t.Errorf("second line should be a full-width rule: %q", rule)
+	}
+}
+
+func TestTabBarCountsEveryFailingService(t *testing.T) {
+	src := newFakeSource(t)
+	src.snap.Services = append(src.snap.Services, brew.Service{Name: "mysql", Status: "error"})
+	a := newTestApp(t, src)
+	drain(t, a, a.Init())
+	if got := squash(stripANSI(a.tabBar())); !strings.Contains(got, "4 Services ✗2") {
+		t.Errorf("want ✗2 for two failing services: %q", got)
 	}
 }
 
@@ -336,8 +355,8 @@ func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	drain(t, a, a.Init())
 
-	if bar := stripANSI(a.tabBar()); !strings.Contains(bar, "4 Services ✗") {
-		t.Errorf("tab bar should mark Services as failed: %q", bar)
+	if bar := squash(stripANSI(a.tabBar())); !strings.Contains(bar, "4 Services ⚠") {
+		t.Errorf("tab bar should mark Services as stale: %q", bar)
 	}
 	a.Update(press("4"))
 	out := stripANSI(a.render())
@@ -349,8 +368,8 @@ func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	if strings.Contains(out, "launchctl failed") {
 		t.Error("the banner should show only the first line of the error")
 	}
-	if bar := stripANSI(a.tabBar()); !strings.Contains(bar, "4 Services ✗") {
-		t.Errorf("the active tab should keep its ✗ badge: %q", bar)
+	if bar := squash(stripANSI(a.tabBar())); !strings.Contains(bar, "4 Services ⚠") {
+		t.Errorf("the active tab should keep its ⚠ badge: %q", bar)
 	}
 	if h := lipgloss.Height(a.render()); h != 40 {
 		t.Errorf("render is %d lines, want 40", h)

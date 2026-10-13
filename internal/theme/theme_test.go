@@ -2,6 +2,7 @@ package theme
 
 import (
 	"fmt"
+	"image/color"
 	"testing"
 )
 
@@ -23,5 +24,19 @@ func TestUnknownModeFallsBackToNormal(t *testing.T) {
 	st := New(Macchiato)
 	if st.Mode("WHATEVER").GetBackground() != st.Mode("NORMAL").GetBackground() {
 		t.Error("unknown modes should look like NORMAL")
+	}
+}
+
+func TestTabChipsAreDistinct(t *testing.T) {
+	st := New(Macchiato)
+	chips := map[string]any{"warn": st.ChipWarn, "err": st.ChipErr, "stale": st.ChipStale}
+	seen := map[string]string{}
+	for name, c := range chips {
+		r, g, b, _ := c.(interface{ GetBackground() color.Color }).GetBackground().RGBA()
+		key := fmt.Sprint(r, g, b)
+		if other, dup := seen[key]; dup {
+			t.Errorf("%s and %s chips share a color", name, other)
+		}
+		seen[key] = name
 	}
 }

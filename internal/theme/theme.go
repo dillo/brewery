@@ -36,8 +36,9 @@ type Styles struct {
 	Pane, PaneFocused           lipgloss.Style
 	PaneTitle, PaneTitleFocused lipgloss.Style
 
-	Tab, TabActive lipgloss.Style
-	StatusBar      lipgloss.Style
+	Tab, TabActive, TabRule      lipgloss.Style
+	ChipWarn, ChipErr, ChipStale lipgloss.Style
+	StatusBar                    lipgloss.Style
 
 	TableHeader, TableCell, TableSelected lipgloss.Style
 }
@@ -55,8 +56,12 @@ func New(p Palette) Styles {
 		PaneTitle:        fg(p.Subtext0),
 		PaneTitleFocused: fg(p.Mauve).Bold(true),
 
-		Tab:       fg(p.Subtext0).Padding(0, 1),
-		TabActive: lipgloss.NewStyle().Foreground(p.Crust).Background(p.Mauve).Bold(true).Padding(0, 1),
+		Tab:       lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0),
+		TabActive: lipgloss.NewStyle().Foreground(p.Crust).Background(p.Mauve).Bold(true),
+		TabRule:   fg(p.Surface1),
+		ChipWarn:  chip(p.Yellow, p.Crust),
+		ChipErr:   chip(p.Red, p.Crust),
+		ChipStale: chip(p.Peach, p.Crust),
 		StatusBar: lipgloss.NewStyle().Foreground(p.Subtext0).Background(p.Mantle),
 
 		TableHeader: fg(p.Subtext0).Bold(true).Padding(0, 1).
@@ -64,6 +69,11 @@ func New(p Palette) Styles {
 		TableCell:     fg(p.Text).Padding(0, 1),
 		TableSelected: lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0).Bold(true),
 	}
+}
+
+// chip is a small solid badge, such as the ↑2 on a tab.
+func chip(bg, fg color.Color) lipgloss.Style {
+	return lipgloss.NewStyle().Foreground(fg).Background(bg).Bold(true).Padding(0, 1)
 }
 
 // Mode returns the status-bar badge style for an editor-style mode name.
