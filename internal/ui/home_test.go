@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -84,6 +85,29 @@ func TestHomeView(t *testing.T) {
 	clean := stripANSI(h.view(state.Snapshot{DoctorRan: true}, 140, 30))
 	if !strings.Contains(clean, "Your system is ready to brew.") {
 		t.Error("clean doctor message missing")
+	}
+}
+
+func TestHomeDoctorFailed(t *testing.T) {
+	h := homeTab{st: testStyles, doctorErr: errors.New("brew doctor: timed out after 30s")}
+	if got := h.tiles(state.Snapshot{})[3]; got.value != "✗ failed" || got.detail != "see below" || got.tab != -1 {
+		t.Errorf("doctor tile = %+v", got)
+	}
+	out := stripANSI(h.view(state.Snapshot{}, 140, 30))
+	for _, want := range []string{"brew doctor failed", "timed out after 30s", "press r to retry"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q", want)
+		}
+	}
+	if strings.Contains(out, "brew doctor is running") {
+		t.Error("failed doctor should not claim to be running")
+	}
+
+	out = stripANSI(h.view(fixtureSnapshot(t), 140, 30))
+	for _, want := range []string{"Warnings from the last successful check:", "The following taps are not trusted"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q with earlier warnings", want)
+		}
 	}
 }
 

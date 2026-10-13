@@ -20,6 +20,8 @@ type Source interface {
 	Doctor(ctx context.Context) ([]brew.DoctorWarning, error)
 }
 
+var _ Source = (*brew.Client)(nil)
+
 type query int
 
 const (

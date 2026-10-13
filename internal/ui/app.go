@@ -87,6 +87,7 @@ func (a *App) sync() {
 
 func (a *App) apply(m resultMsg) {
 	a.errs[m.q] = m.err
+	a.home.doctorErr = a.errs[qDoctor]
 	if m.err != nil {
 		return // keep showing the last good data
 	}
@@ -258,7 +259,11 @@ func (a *App) statusBar() string {
 	case a.pending > 0:
 		right = append(right, st.Info.Render("refreshing…"))
 	case failed > 0:
-		right = append(right, st.Err.Render(fmt.Sprintf("✗ %d queries failed", failed)))
+		msg := fmt.Sprintf("✗ %d queries failed", failed)
+		if failed == 1 {
+			msg = "✗ 1 query failed"
+		}
+		right = append(right, st.Err.Render(msg))
 	case !a.snap.FetchedAt.IsZero():
 		right = append(right, "updated "+a.snap.FetchedAt.Format("15:04"))
 	}

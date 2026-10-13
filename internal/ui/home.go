@@ -24,8 +24,9 @@ type tile struct {
 
 // homeTab shows health tiles and doctor's warnings.
 type homeTab struct {
-	st  theme.Styles
-	sel int
+	st        theme.Styles
+	sel       int
+	doctorErr error // last doctor failure; nil once a run succeeds
 }
 
 func (h *homeTab) tiles(snap state.Snapshot) []tile {
@@ -66,7 +67,10 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 	}
 
 	doctor := tile{"Doctor", "…", st.Muted, "checking", -1}
-	if snap.DoctorRan {
+	switch {
+	case h.doctorErr != nil:
+		doctor.value, doctor.style, doctor.detail = "✗ failed", st.Err, "see below"
+	case snap.DoctorRan:
 		doctor.value, doctor.style, doctor.detail = "✓ clean", st.OK, "no warnings"
 		if n := len(snap.Doctor); n > 0 {
 			doctor.value, doctor.style, doctor.detail = plural(n, "warning"), st.Warn, "see below"
@@ -107,21 +111,35 @@ func (h *homeTab) view(snap state.Snapshot, w, height int) string {
 
 	var b strings.Builder
 	switch {
+	case h.doctorErr != nil:
+		b.WriteString(st.Err.Render("✗ brew doctor failed") + "\n\n")
+		b.WriteString(st.Muted.Render(h.doctorErr.Error()) + "\n\n")
+		b.WriteString(st.Muted.Render("press r to retry") + "\n")
+		if snap.DoctorRan && len(snap.Doctor) > 0 {
+			b.WriteString("\n" + st.Muted.Render("Warnings from the last successful check:") + "\n\n")
+			h.writeWarnings(&b, snap.Doctor)
+		}
 	case !snap.DoctorRan:
 		b.WriteString(st.Muted.Render("brew doctor is running…"))
 	case len(snap.Doctor) == 0:
 		b.WriteString(st.OK.Render("✓ Your system is ready to brew."))
 	default:
-		for _, d := range snap.Doctor {
-			b.WriteString(st.Warn.Render("⚠ "+d.Title) + "\n")
-			if d.Body != "" {
-				b.WriteString(st.Muted.Render(indent(d.Body, "  ")) + "\n")
-			}
-			b.WriteString("\n")
-		}
+		h.writeWarnings(&b, snap.Doctor)
 	}
 	doctor := pane(st, "Doctor", b.String(), w, max(height-tileH, 3), false)
 	return lipgloss.JoinVertical(lipgloss.Left, row, doctor)
+}
+
+// writeWarnings renders each doctor warning as a title and indented body.
+func (h *homeTab) writeWarnings(b *strings.Builder, warnings []brew.DoctorWarning) {
+	st := h.st
+	for _, d := range warnings {
+		b.WriteString(st.Warn.Render("⚠ "+d.Title) + "\n")
+		if d.Body != "" {
+			b.WriteString(st.Muted.Render(indent(d.Body, "  ")) + "\n")
+		}
+		b.WriteString("\n")
+	}
 }
 
 // plural formats a count with its noun: "1 warning", "2 warnings".

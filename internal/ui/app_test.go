@@ -15,10 +15,12 @@ import (
 	"brewery/internal/state"
 )
 
-// fakeSource serves the fixture snapshot. servicesErr makes one query fail.
+// fakeSource serves the fixture snapshot. servicesErr and doctorErr make
+// one query fail.
 type fakeSource struct {
 	snap        state.Snapshot
 	servicesErr error
+	doctorErr   error
 }
 
 func newFakeSource(t *testing.T) *fakeSource { return &fakeSource{snap: fixtureSnapshot(t)} }
@@ -27,6 +29,9 @@ func (f *fakeSource) Installed(context.Context) ([]brew.Package, error) { return
 func (f *fakeSource) Outdated(context.Context) ([]brew.Outdated, error) { return f.snap.Outdated, nil }
 func (f *fakeSource) Taps(context.Context) ([]brew.Tap, error)          { return f.snap.Taps, nil }
 func (f *fakeSource) Doctor(context.Context) ([]brew.DoctorWarning, error) {
+	if f.doctorErr != nil {
+		return nil, f.doctorErr
+	}
 	return f.snap.Doctor, nil
 }
 func (f *fakeSource) Services(context.Context) ([]brew.Service, error) {
@@ -166,12 +171,37 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	if !strings.Contains(out, "couldn't load this view") || !strings.Contains(out, "exit status 1") {
 		t.Errorf("services tab should show the error:\n%s", out)
 	}
-	if !strings.Contains(out, "1 queries failed") {
+	if !strings.Contains(out, "1 query failed") {
 		t.Error("status bar should count the failure")
 	}
 	a.Update(press("5"))
 	if out := stripANSI(a.render()); !strings.Contains(out, "anomalyco/tap") {
 		t.Error("taps tab should still work")
+	}
+}
+
+func TestDoctorFailureShowsOnHome(t *testing.T) {
+	src := newFakeSource(t)
+	src.doctorErr = errors.New("brew doctor: timed out after 30s")
+	a := newTestApp(t, src)
+	drain(t, a, a.Init())
+
+	if a.pending != 0 {
+		t.Fatalf("pending = %d after refresh", a.pending)
+	}
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "brew doctor failed") || strings.Contains(out, "brew doctor is running") {
+		t.Errorf("home should report the doctor failure:\n%s", out)
+	}
+	if !strings.Contains(out, "1 query failed") {
+		t.Error("status bar should count the failure")
+	}
+
+	src.doctorErr = nil
+	drain(t, a, a.refresh())
+	out = stripANSI(a.render())
+	if strings.Contains(out, "brew doctor failed") || !strings.Contains(out, "2 warnings") {
+		t.Errorf("a successful doctor run should clear the failure:\n%s", out)
 	}
 }
 
