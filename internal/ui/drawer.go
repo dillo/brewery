@@ -49,8 +49,9 @@ func newDrawer(st theme.Styles) drawer {
 	return d
 }
 
-// replyTo forwards terminal replies to the running process, or drops them
-// when no process is running.
+// replyTo forwards terminal replies to the running process. Replies are
+// dropped when no process is running, or when the process can't take them
+// (it has exited): the drain must never stop, or the emulator blocks.
 type replyTo struct {
 	mu sync.Mutex
 	w  io.Writer
@@ -59,10 +60,10 @@ type replyTo struct {
 func (r *replyTo) Write(b []byte) (int, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if r.w == nil {
-		return len(b), nil
+	if r.w != nil {
+		r.w.Write(b) // a write error only means the reply is lost
 	}
-	return r.w.Write(b)
+	return len(b), nil
 }
 
 func (r *replyTo) set(w io.Writer) {

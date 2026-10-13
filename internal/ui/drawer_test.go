@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -177,5 +178,43 @@ func TestDrawerHeight(t *testing.T) {
 func TestElapsed(t *testing.T) {
 	if elapsed(65*time.Second) != "1:05" || elapsed(0) != "0:00" {
 		t.Error("elapsed format wrong")
+	}
+}
+
+// failingWriter is a process that can no longer take input, like a PTY
+// whose child has exited. It reports each write attempt on called.
+type failingWriter struct{ called chan struct{} }
+
+func (w failingWriter) Write(b []byte) (int, error) {
+	select {
+	case w.called <- struct{}{}:
+	default:
+	}
+	return 0, syscall.EIO
+}
+
+func TestDrawerKeepsDrainingAfterAFailedReply(t *testing.T) {
+	d := newTestDrawer(t, runningJob())
+	called := make(chan struct{}, 1)
+	d.start(runningJob(), failingWriter{called: called})
+	d.write([]byte("\x1b[6n")) // the reply goes to the failing writer
+	select {
+	case <-called:
+	case <-time.After(2 * time.Second):
+		t.Fatal("the reply never reached the process")
+	}
+
+	// A later query must not block the emulator, even though that reply
+	// could not be delivered.
+	d.start(runningJob(), io.Discard)
+	done := make(chan struct{})
+	go func() {
+		d.write([]byte("\x1b[6n"))
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("write blocked: the reply drain stopped after a failed reply")
 	}
 }
