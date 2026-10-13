@@ -388,6 +388,37 @@ func TestCtrlCAsksThenStopsTheJob(t *testing.T) {
 	}
 }
 
+func TestStopDialogOnlyStopsTheJobItNamed(t *testing.T) {
+	first, second := newFakeProc(0, "a"), newFakeProc(0, "b")
+	fs := &fakeStarter{procs: []*fakeProc{first, second}}
+	a := newJobApp(t, fs)
+	waiting := settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	waiting = append(waiting, settle(t, a, a.run(action{title: "pin git", args: []string{"pin", "git"}}))...)
+
+	a.Update(press("ctrl+c"))
+	if a.confirm == nil || !strings.Contains(a.confirm.title, "Stop upgrade fd?") {
+		t.Fatalf("ctrl+c should ask about the running job: %+v", a.confirm)
+	}
+	first.exit() // finishes while the dialog is open, so the queued job starts
+	waiting = resume(t, a, waiting)
+	if len(fs.calls) != 2 || fs.calls[1][0] != "pin" {
+		t.Fatalf("the queued job should have started: %v", fs.calls)
+	}
+	_, cmd := a.Update(press("y"))
+	waiting = append(waiting, settle(t, a, cmd)...)
+	if a.confirm != nil {
+		t.Error("y closes the dialog")
+	}
+	if second.interrupted || a.canceled {
+		t.Error("y must not stop a job the dialog did not name")
+	}
+	if j := a.queue.Current(); j == nil || j.Title != "pin git" {
+		t.Errorf("the queued job should still be running: %+v", j)
+	}
+	second.exit()
+	resume(t, a, waiting)
+}
+
 func TestStoppingAJobWaitingForTheLock(t *testing.T) {
 	locked := newFakeProc(1, "A `brew update` process has already locked /x.\r\n")
 	locked.exit()

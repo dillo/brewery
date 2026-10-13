@@ -198,7 +198,8 @@ func (a *App) stopJob() tea.Cmd {
 	return tea.Batch(a.afterJob(j), a.runNext())
 }
 
-// askStop confirms before stopping the current job.
+// askStop confirms before stopping the current job. Output and exits keep
+// arriving while the dialog is open, so "y" only stops the job it named.
 func (a *App) askStop() tea.Cmd {
 	j := a.queue.Current()
 	if j == nil {
@@ -208,7 +209,12 @@ func (a *App) askStop() tea.Cmd {
 		title: "Stop " + j.Title + "?",
 		body:  []string{"brew gets ctrl+c and may leave this half done."},
 		choices: []choice{
-			{"y", "stop it", a.stopJob},
+			{"y", "stop it", func() tea.Cmd {
+				if a.queue.Current() != j {
+					return nil // it finished meanwhile
+				}
+				return a.stopJob()
+			}},
 			{"n", "keep running", nil},
 		},
 	}
