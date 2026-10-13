@@ -3313,6 +3313,13 @@ git commit -m "feat: add brewery command"
 - UI: output drawer, RUNNING and INSERT modes (masked, unlogged input), the `:` command line with completion (`brew commands --quiet`, flags cached per brew version, package names), `ExecProcess` takeover for `edit`/`sh`/`irb`/`bundle edit`/`:!`, and `:jobs`.
 - Actions: `u` upgrade, `x` uninstall (confirmation lists dependents and orphans; this adds `Index.Orphans`), `p` pin, `A` upgrade all, `s`/`S`/`R` for services, `l` service log, `U` update, cleanup with a `--dry-run` preview, untap. Each finished job triggers a targeted refresh.
 - Home: a recent-jobs pane.
+- Carried over from Plan 1's final review:
+  - **refresh bookkeeping:** start Plan 2 by tracking which queries are in flight, with sequence numbers, so a targeted refresh after a job is never dropped and a late result can't overwrite newer data
+  - **shutdown:** a root context that cancels running queries on quit
+  - **key routing:** check the mode before the global keys, so typing in the `:` line can't trigger `q`
+  - **selection:** keep the selected package by FullName and Kind across refreshes, and sort stably
+  - **index safety:** `UsedBy` returns a copy
+  - **tests:** fixture tests for Pinned
 
 **Plan 3, "Polish and ship"** (the rest of sections 2, 4 and 5):
 - `/` filter mode, the `Ctrl-P` palette, `?` help, `o` open homepage, `y` copy name, `space` multi-select, `gg`, and Tab focus with a scrollable preview.
@@ -3320,3 +3327,11 @@ git commit -m "feat: add brewery command"
 - Responsive layout (preview stacks below the list under 100 columns and hides under 60), Nerd Font icons with an ASCII fallback (`--no-icons`), and colored service status.
 - A crash log at `~/.local/state/brewery/crash.log`, `teatest` snapshot tests, golangci-lint, and GitHub Actions on macOS.
 - goreleaser, the tap formula, and renaming the module path (needs the GitHub username).
+- Carried over from Plan 1's final review:
+  - skeleton rows on the very first run with no cache
+  - column-shrink priority, so VERSION shrinks before NAME and TYPE at 80 columns
+  - a "…" marker when the status bar is truncated at very narrow widths
+  - a minimum height for the Home tab
+  - a test of the refresh banner at small sizes
+  - cache nits: the temp file leaks if rename fails, and an unknown home directory gives a relative path
+  - `jsonPayload` should find the first line that starts with `{` or `[`, not the first bracket anywhere
