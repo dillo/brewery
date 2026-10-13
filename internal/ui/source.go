@@ -46,9 +46,14 @@ type resultMsg struct {
 	err      error
 }
 
-func fetch(src Source, q query) tea.Cmd {
+// jsonQueries are the queries a full refresh runs in parallel; doctor
+// follows once they have all returned.
+var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
+
+// fetch runs one query. ctx is the App's root context, so quitting stops
+// any brew process still running.
+func fetch(ctx context.Context, src Source, q query) tea.Cmd {
 	return func() tea.Msg {
-		ctx := context.Background()
 		m := resultMsg{q: q}
 		switch q {
 		case qInstalled:

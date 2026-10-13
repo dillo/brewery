@@ -3,7 +3,9 @@ package ui
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -42,25 +44,25 @@ func (f *fakeSource) Services(context.Context) ([]brew.Service, error) {
 }
 
 // drain runs cmd and every command it produces, feeding the messages back
-// into the app the way the Bubble Tea runtime would.
+// into the app the way the Bubble Tea runtime would. A tea.Sequence (an
+// unexported slice of commands) runs in order, each to completion.
 func drain(t *testing.T, a *App, cmd tea.Cmd) {
 	t.Helper()
-	queue := []tea.Cmd{cmd}
-	for len(queue) > 0 {
-		c := queue[0]
-		queue = queue[1:]
-		if c == nil {
-			continue
-		}
-		switch msg := c().(type) {
-		case tea.BatchMsg:
-			queue = append(queue, msg...)
-		case nil:
-		default:
-			_, next := a.Update(msg)
-			queue = append(queue, next)
-		}
+	if cmd == nil {
+		return
 	}
+	msg := cmd()
+	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeOf(tea.Cmd(nil)) {
+		for i := range v.Len() {
+			drain(t, a, v.Index(i).Interface().(tea.Cmd))
+		}
+		return
+	}
+	if msg == nil {
+		return
+	}
+	_, next := a.Update(msg)
+	drain(t, a, next)
 }
 
 var testNow = time.Date(2026, 10, 13, 9, 30, 0, 0, time.UTC)
@@ -77,8 +79,8 @@ func TestRefreshLoadsEverythingThenDoctorThenSaves(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
 
-	if a.pending != 0 {
-		t.Fatalf("pending = %d after refresh", a.pending)
+	if a.busy() {
+		t.Fatalf("queries still in flight after refresh: %v", a.inflight)
 	}
 	if len(a.snap.Packages) != 7 || len(a.snap.Outdated) != 2 || len(a.snap.Services) != 2 || len(a.snap.Taps) != 2 {
 		t.Errorf("snapshot incomplete: %d pkgs, %d outdated, %d services, %d taps",
@@ -96,13 +98,126 @@ func TestRefreshLoadsEverythingThenDoctorThenSaves(t *testing.T) {
 	}
 }
 
-func TestRefreshIgnoredWhileRunning(t *testing.T) {
-	a := newTestApp(t, newFakeSource(t))
-	if a.Init() == nil {
-		t.Fatal("first refresh should start queries")
+// countingSource wraps fakeSource, counting calls per query. onDoctor runs
+// at the start of each doctor call; block makes Installed wait for ctx.
+type countingSource struct {
+	*fakeSource
+	calls    map[string]int
+	onDoctor func()
+	block    bool
+}
+
+func newCountingSource(t *testing.T) *countingSource {
+	return &countingSource{fakeSource: newFakeSource(t), calls: map[string]int{}}
+}
+
+func (c *countingSource) Installed(ctx context.Context) ([]brew.Package, error) {
+	c.calls["installed"]++
+	if c.block {
+		<-ctx.Done()
+		return nil, ctx.Err()
 	}
-	if _, cmd := a.Update(press("r")); cmd != nil {
-		t.Error("r during a refresh should do nothing")
+	return c.fakeSource.Installed(ctx)
+}
+func (c *countingSource) Outdated(ctx context.Context) ([]brew.Outdated, error) {
+	c.calls["outdated"]++
+	return c.fakeSource.Outdated(ctx)
+}
+func (c *countingSource) Services(ctx context.Context) ([]brew.Service, error) {
+	c.calls["services"]++
+	return c.fakeSource.Services(ctx)
+}
+func (c *countingSource) Taps(ctx context.Context) ([]brew.Tap, error) {
+	c.calls["taps"]++
+	return c.fakeSource.Taps(ctx)
+}
+func (c *countingSource) Doctor(ctx context.Context) ([]brew.DoctorWarning, error) {
+	c.calls["doctor"]++
+	if c.onDoctor != nil {
+		c.onDoctor()
+	}
+	return c.fakeSource.Doctor(ctx)
+}
+
+func TestRefreshDuringRefreshRunsAgain(t *testing.T) {
+	src := newCountingSource(t)
+	a := newTestApp(t, src)
+	first := a.Init()
+	a.Update(press("r")) // every query is still in flight
+	drain(t, a, first)
+	for _, q := range []string{"installed", "outdated", "services", "taps"} {
+		if src.calls[q] != 2 {
+			t.Errorf("%s ran %d times, want 2 (the second r must not be dropped)", q, src.calls[q])
+		}
+	}
+	if a.busy() {
+		t.Errorf("still busy: %v", a.inflight)
+	}
+}
+
+func TestTargetedRequestSkipsDoctorAndSaves(t *testing.T) {
+	src := newCountingSource(t)
+	a := newTestApp(t, src)
+	drain(t, a, a.Init())
+	src.calls = map[string]int{}
+	os.Remove(a.cachePath)
+
+	drain(t, a, a.request(qServices))
+	if src.calls["services"] != 1 || src.calls["doctor"] != 0 || src.calls["installed"] != 0 {
+		t.Errorf("a targeted request ran %v", src.calls)
+	}
+	if _, err := state.Load(a.cachePath); err != nil {
+		t.Errorf("a successful targeted request should save the cache: %v", err)
+	}
+}
+
+func TestCacheSavedBeforeDoctorRuns(t *testing.T) {
+	src := newCountingSource(t)
+	a := newTestApp(t, src)
+	savedFirst := false
+	src.onDoctor = func() {
+		_, err := state.Load(a.cachePath)
+		savedFirst = err == nil
+	}
+	drain(t, a, a.Init())
+	if !savedFirst {
+		t.Error("the JSON results should be saved before doctor starts")
+	}
+}
+
+func TestAllFailedRefreshKeepsFetchedAt(t *testing.T) {
+	src := newFakeSource(t)
+	src.servicesErr = errors.New("boom")
+	src.doctorErr = errors.New("boom")
+	cached := fixtureSnapshot(t)
+	cached.FetchedAt = testNow.Add(-time.Hour)
+	a := New(src, cached, filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	drain(t, a, a.request(qServices))
+	if !a.snap.FetchedAt.Equal(testNow.Add(-time.Hour)) {
+		t.Errorf("a failed query must not advance FetchedAt, got %v", a.snap.FetchedAt)
+	}
+}
+
+func TestQuitCancelsRunningQueries(t *testing.T) {
+	src := newCountingSource(t)
+	src.block = true
+	a := newTestApp(t, src)
+	done := make(chan tea.Msg)
+	go func() { done <- fetch(a.ctx, src, qInstalled)() }()
+
+	_, cmd := a.Update(press("q"))
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatal("q should quit")
+	}
+	select {
+	case msg := <-done:
+		a.Update(msg)
+		if a.errs[qInstalled] != nil {
+			t.Errorf("a query cancelled by quitting is not a failure: %v", a.errs[qInstalled])
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("quitting did not cancel the running query")
 	}
 }
 
@@ -186,8 +301,8 @@ func TestDoctorFailureShowsOnHome(t *testing.T) {
 	a := newTestApp(t, src)
 	drain(t, a, a.Init())
 
-	if a.pending != 0 {
-		t.Fatalf("pending = %d after refresh", a.pending)
+	if a.busy() {
+		t.Fatalf("queries still in flight after refresh: %v", a.inflight)
 	}
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "brew doctor failed") || strings.Contains(out, "brew doctor is running") {

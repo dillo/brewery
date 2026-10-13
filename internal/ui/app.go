@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -34,15 +35,19 @@ type App struct {
 	cachePath string
 	st        theme.Styles
 	now       func() time.Time
+	ctx       context.Context // cancelled on quit, stopping running queries
+	cancel    context.CancelFunc
 
 	snap   state.Snapshot
 	ix     *state.Index
 	errs   map[query]error
 	loaded map[query]bool // true once a query has succeeded, here or in the cache
 
-	pending      int  // queries in flight
-	doctorQueued bool // doctor already started in this refresh
-	saveErr      error
+	inflight    map[query]bool // queries running now
+	again       map[query]bool // requested while running: run once more when done
+	doctorAfter bool           // run doctor when the JSON queries are done
+	dirty       bool           // a query succeeded since the last cache save
+	saveErr     error
 
 	tab           int
 	width, height int
@@ -58,9 +63,11 @@ type App struct {
 // first frame can show data before any query returns.
 func New(src Source, snap state.Snapshot, cachePath string) *App {
 	st := theme.New(theme.Macchiato)
+	ctx, cancel := context.WithCancel(context.Background())
 	a := &App{
-		src: src, cachePath: cachePath, st: st, now: time.Now,
+		src: src, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
+		inflight: map[query]bool{}, again: map[query]bool{},
 		installed: newInstalledTab(st),
 		outdated:  newListTab(st, "Outdated", outdatedCols, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, "no services registered"),
@@ -79,14 +86,52 @@ func New(src Source, snap state.Snapshot, cachePath string) *App {
 
 func (a *App) Init() tea.Cmd { return a.refresh() }
 
-// refresh starts the four JSON queries in parallel. Doctor follows once
-// they have all returned.
+// refresh re-runs every query: the JSON ones in parallel, then doctor.
 func (a *App) refresh() tea.Cmd {
-	if a.pending > 0 {
-		return nil
+	a.doctorAfter = true
+	return a.request(jsonQueries...)
+}
+
+// request starts the given queries. A query that is already running is not
+// started twice; it runs once more when the current run returns, so a
+// refresh asked for after a change is never lost.
+func (a *App) request(qs ...query) tea.Cmd {
+	var cmds []tea.Cmd
+	for _, q := range qs {
+		if a.inflight[q] {
+			a.again[q] = true
+			continue
+		}
+		a.inflight[q] = true
+		cmds = append(cmds, fetch(a.ctx, a.src, q))
 	}
-	a.pending, a.doctorQueued = 4, false
-	return tea.Batch(fetch(a.src, qInstalled), fetch(a.src, qOutdated), fetch(a.src, qServices), fetch(a.src, qTaps))
+	return tea.Batch(cmds...)
+}
+
+// busy reports whether any query is running.
+func (a *App) busy() bool {
+	for _, running := range a.inflight {
+		if running {
+			return true
+		}
+	}
+	return false
+}
+
+// jsonBusy reports whether any of the four JSON queries is running.
+func (a *App) jsonBusy() bool {
+	for _, q := range jsonQueries {
+		if a.inflight[q] {
+			return true
+		}
+	}
+	return false
+}
+
+// quit stops running queries and exits.
+func (a *App) quit() tea.Cmd {
+	a.cancel()
+	return tea.Quit
 }
 
 // sync pushes the snapshot and loaded state into every tab.
@@ -108,7 +153,7 @@ func (a *App) apply(m resultMsg) {
 	if m.err != nil {
 		return // keep showing the last good data
 	}
-	a.loaded[m.q] = true
+	a.loaded[m.q], a.dirty = true, true
 	switch m.q {
 	case qInstalled:
 		a.snap.Packages = m.packages
@@ -136,17 +181,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case resultMsg:
-		a.apply(msg)
-		a.pending--
-		if a.pending > 0 {
-			return a, nil
-		}
-		if !a.doctorQueued {
-			a.doctorQueued, a.pending = true, 1
-			return a, fetch(a.src, qDoctor)
-		}
-		a.snap.FetchedAt = a.now()
-		return a, save(a.cachePath, a.snap)
+		return a, a.handleResult(msg)
 
 	case savedMsg:
 		a.saveErr = msg.err
@@ -158,10 +193,38 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
+// handleResult applies one query result and decides what runs next: a
+// repeat of the same query, doctor after a full refresh, and a cache save
+// once the JSON queries are all back.
+func (a *App) handleResult(m resultMsg) tea.Cmd {
+	a.inflight[m.q] = false
+	if m.err != nil && a.ctx.Err() != nil {
+		return nil // quitting: the query was cancelled, not broken
+	}
+	a.apply(m)
+	var again, saving, doctor tea.Cmd
+	if a.again[m.q] {
+		a.again[m.q] = false
+		again = a.request(m.q)
+	}
+	if a.dirty && !a.jsonBusy() {
+		a.dirty = false
+		a.snap.FetchedAt = a.now()
+		saving = save(a.cachePath, a.snap)
+	}
+	if a.doctorAfter && !a.jsonBusy() {
+		a.doctorAfter = false
+		doctor = a.request(qDoctor)
+	}
+	// Save before doctor starts: doctor can take 30s, and quitting
+	// meanwhile must not lose the JSON results.
+	return tea.Batch(again, tea.Sequence(saving, doctor))
+}
+
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	switch k := msg.String(); k {
 	case "q", "ctrl+c":
-		return tea.Quit
+		return a.quit()
 	case "1", "2", "3", "4", "5":
 		a.tab = int(k[0] - '1')
 		return nil
@@ -277,7 +340,7 @@ func (a *App) statusBar() string {
 		}
 	}
 	switch {
-	case a.pending > 0:
+	case a.busy():
 		right = append(right, st.Info.Render("refreshing…"))
 	case len(failed) > 0:
 		right = append(right, st.Err.Render("✗ "+strings.Join(failed, ", ")+" failed"))
