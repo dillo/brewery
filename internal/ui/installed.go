@@ -1,0 +1,182 @@
+package ui
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+
+	"brewery/internal/brew"
+	"brewery/internal/state"
+	"brewery/internal/theme"
+)
+
+type installedFilter int
+
+const (
+	filterLeaves installedFilter = iota
+	filterAll
+	filterCasks
+	filterDeps
+)
+
+var filterNames = [...]string{"leaves", "all", "casks", "deps"}
+
+var installedCols = []col{{"NAME", 0}, {"VERSION", 16}, {"TYPE", 7}, {"STATUS", 10}}
+
+// installedTab lists installed packages with a details preview.
+type installedTab struct {
+	st     theme.Styles
+	filter installedFilter
+	all    []brew.Package
+	ix     *state.Index
+	rows   []brew.Package // the filtered rows, in table order
+	table  table.Model
+	w, h   int
+}
+
+func newInstalledTab(st theme.Styles) installedTab {
+	return installedTab{st: st, table: newTable(st, installedCols), ix: state.NewIndex(nil)}
+}
+
+func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
+	t.all, t.ix = pkgs, ix
+	t.apply()
+}
+
+func (t *installedTab) apply() {
+	t.rows = t.rows[:0]
+	for _, p := range t.all {
+		keep := false
+		switch t.filter {
+		case filterAll:
+			keep = true
+		case filterLeaves:
+			keep = t.ix.IsLeaf(p)
+		case filterCasks:
+			keep = p.Kind == brew.KindCask
+		case filterDeps:
+			keep = p.Kind == brew.KindFormula && !p.OnRequest
+		}
+		if keep {
+			t.rows = append(t.rows, p)
+		}
+	}
+	sort.Slice(t.rows, func(i, j int) bool { return t.rows[i].Name < t.rows[j].Name })
+	rows := make([]table.Row, len(t.rows))
+	for i, p := range t.rows {
+		rows[i] = table.Row{p.Name, p.Version, p.Kind.String(), status(p)}
+	}
+	setRows(&t.table, rows)
+}
+
+func status(p brew.Package) string {
+	var s []string
+	if p.Pinned {
+		s = append(s, "pinned")
+	}
+	if p.Outdated {
+		s = append(s, "↑")
+	}
+	return strings.Join(s, " ")
+}
+
+func (t *installedTab) selected() (brew.Package, bool) {
+	c := t.table.Cursor()
+	if c < 0 || c >= len(t.rows) {
+		return brew.Package{}, false
+	}
+	return t.rows[c], true
+}
+
+func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
+	if msg.String() == "f" {
+		t.filter = (t.filter + 1) % installedFilter(len(filterNames))
+		t.table.SetCursor(0)
+		t.apply()
+		return nil
+	}
+	var cmd tea.Cmd
+	t.table, cmd = t.table.Update(msg)
+	return cmd
+}
+
+// resize must run before key handling: the table ignores navigation
+// until it has been sized.
+func (t *installedTab) resize(w, h int) {
+	t.w, t.h = w, h
+	iw, ih := paneInner(t.listWidth(), h)
+	sizeTable(&t.table, installedCols, iw, ih)
+}
+
+func (t *installedTab) listWidth() int { return t.w * 55 / 100 }
+
+func (t *installedTab) view(err error) string {
+	w, h, listW := t.w, t.h, t.listWidth()
+	title := fmt.Sprintf("Installed · %s · %d   f: filter", filterNames[t.filter], len(t.rows))
+	if err != nil && len(t.all) == 0 {
+		return pane(t.st, "Installed", errorBody(t.st, err), w, h, true)
+	}
+	list := pane(t.st, title, t.table.View(), listW, h, true)
+
+	p, ok := t.selected()
+	previewTitle, body := "Preview", t.st.Muted.Render("nothing matches this filter")
+	if ok {
+		previewTitle, body = p.Name, t.preview(p)
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, false))
+}
+
+func (t *installedTab) preview(p brew.Package) string {
+	st := t.st
+	var b strings.Builder
+	b.WriteString(st.Title.Render(p.Name+" "+p.Version) + "\n")
+	if p.Desc != "" {
+		b.WriteString(st.Muted.Render(p.Desc) + "\n")
+	}
+	b.WriteString("\n")
+
+	how := "as a dependency"
+	if p.OnRequest {
+		how = "on request"
+	}
+	if !p.InstalledAt.IsZero() {
+		how += " · " + p.InstalledAt.Format("2006-01-02")
+	}
+	latest := p.Latest
+	if p.Outdated {
+		latest = st.Warn.Render(p.Latest + " ↑")
+	}
+	pinned := ""
+	if p.Pinned {
+		pinned = "yes"
+	}
+	deprecated := ""
+	if p.Deprecated {
+		deprecated = st.Warn.Render("yes")
+	}
+	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "installed", how,
+		"latest", latest, "pinned", pinned, "deprecated", deprecated, "homepage", p.Homepage))
+
+	if p.Kind == brew.KindFormula {
+		b.WriteString("\n" + st.Accent.Render("Dependencies") + "\n")
+		if len(p.DirectDeps) == 0 {
+			b.WriteString(st.Muted.Render("none") + "\n")
+		} else {
+			b.WriteString(strings.Join(t.ix.Tree(p.FullName), "\n") + "\n")
+		}
+		b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
+		if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
+			b.WriteString(st.Muted.Render("nothing installed depends on this") + "\n")
+		} else {
+			b.WriteString(strings.Join(used, ", ") + "\n")
+		}
+	}
+	if p.Caveats != "" {
+		b.WriteString("\n" + st.Accent.Render("Caveats") + "\n" + p.Caveats + "\n")
+	}
+	return b.String()
+}
