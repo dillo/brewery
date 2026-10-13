@@ -1,23 +1,35 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/theme"
 )
 
 // pane draws a rounded box of exactly w×h cells with a title on its first
-// line. Content beyond the box is cut off, not wrapped into the next pane.
+// line. The body is clipped to the box before the border goes on, so long
+// content never wraps or pushes the bottom border out of view.
 func pane(st theme.Styles, title, body string, w, h int, focused bool) string {
 	box, ts := st.Pane, st.PaneTitle
 	if focused {
 		box, ts = st.PaneFocused, st.PaneTitleFocused
 	}
-	inner := ts.Render(title) + "\n" + body
+	iw, ih := paneInner(w, h)
+	lines := strings.Split(strings.TrimRight(body, "\n"), "\n")
+	if len(lines) > ih {
+		keep := max(ih-1, 0)
+		lines = append(lines[:keep], st.Muted.Render(fmt.Sprintf("… %d more", len(lines)-keep)))
+	}
+	for i, l := range lines {
+		lines[i] = ansi.Truncate(l, iw, "…")
+	}
+	inner := ts.Render(ansi.Truncate(title, iw, "…")) + "\n" + strings.Join(lines, "\n")
 	return box.Width(w).Height(h).MaxWidth(w).MaxHeight(h).Render(inner)
 }
 
@@ -63,20 +75,52 @@ func newTable(st theme.Styles, cols []col) table.Model {
 	)
 }
 
-// sizeTable fits t into a w×h area, giving flexible columns the leftover width.
+// minFlex is the narrowest a flexible column may get.
+const minFlex = 8
+
+// sizeTable fits t into a w×h area, giving flexible columns the leftover
+// width. When the columns don't fit, fixed columns shrink from the last one
+// down to their title width, then trailing columns are hidden. A hidden
+// column keeps its slot with width 0, which the table skips: the table
+// indexes columns by row cell, so removing columns would make it panic on
+// rows that still carry every cell.
 func sizeTable(t *table.Model, cols []col, w, h int) {
-	fixed, flex := 0, 0
-	for _, c := range cols {
-		fixed += c.width + 2 // cell padding
-		if c.width == 0 {
-			flex++
+	widths := make([]int, len(cols))
+	for i, c := range cols {
+		widths[i] = c.width
+	}
+	shown := len(cols)
+	// used is the width of the shown columns with padding, and how many
+	// of them are flexible.
+	used := func() (fixed, flex int) {
+		for i := range shown {
+			fixed += widths[i] + 2 // cell padding
+			if cols[i].width == 0 {
+				flex++
+			}
+		}
+		return fixed, flex
+	}
+	over := func() int { f, n := used(); return f + n*minFlex - w }
+
+	for i := len(cols) - 1; i >= 0 && over() > 0; i-- {
+		if cols[i].width > 0 {
+			widths[i] = max(widths[i]-over(), len(cols[i].title))
 		}
 	}
+	for shown > 1 && over() > 0 {
+		shown--
+	}
+
+	fixed, flex := used()
 	tc := make([]table.Column, len(cols))
 	for i, c := range cols {
-		width := c.width
-		if width == 0 {
-			width = max((w-fixed)/max(flex, 1), 8)
+		width := widths[i]
+		switch {
+		case i >= shown:
+			width = 0
+		case c.width == 0:
+			width = max((w-fixed)/max(flex, 1), minFlex)
 		}
 		tc[i] = table.Column{Title: c.title, Width: width}
 	}

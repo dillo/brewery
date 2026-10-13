@@ -2,6 +2,7 @@ package ui
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -70,5 +71,73 @@ func TestSizeTableSplitsFlexWidth(t *testing.T) {
 	// fixed: 18+18+7+6 = 49, plus 2 padding per column (10) = 59; flex gets 100-59.
 	if got := tbl.Columns()[0].Width; got != 41 {
 		t.Errorf("flex column width = %d, want 41", got)
+	}
+}
+
+// tableWidth is the rendered width of t's columns: each width plus 2 padding.
+func tableWidth(tbl table.Model) int {
+	n := 0
+	for _, c := range tbl.Columns() {
+		if c.Width > 0 {
+			n += c.Width + 2
+		}
+	}
+	return n
+}
+
+func TestSizeTableShrinksFixedColumnsFromTheEnd(t *testing.T) {
+	tbl := newTable(testStyles, installedCols)
+	sizeTable(&tbl, installedCols, 40, 10)
+	// fixed 16+7+10 plus NAME's minimum 8, plus 8 padding = 49: 9 too many.
+	// STATUS shrinks to its title (6), TYPE to its title (4), VERSION by 2.
+	got := []int{}
+	for _, c := range tbl.Columns() {
+		got = append(got, c.Width)
+	}
+	if want := []int{8, 14, 4, 6}; fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Errorf("widths = %v, want %v", got, want)
+	}
+	if w := tableWidth(tbl); w > 40 {
+		t.Errorf("table is %d wide, want <= 40", w)
+	}
+}
+
+func TestSizeTableDropsTrailingColumns(t *testing.T) {
+	tbl := newTable(testStyles, outdatedCols)
+	sizeTable(&tbl, outdatedCols, 30, 10)
+	// NAME 8 + INSTALLED 9 + LATEST 6 + padding 6 = 29; TYPE and PINNED don't fit.
+	if w := tableWidth(tbl); w > 30 {
+		t.Errorf("table is %d wide, want <= 30", w)
+	}
+	if tbl.Columns()[0].Width < 8 {
+		t.Errorf("NAME width = %d, want >= 8", tbl.Columns()[0].Width)
+	}
+	setRows(&tbl, outdatedRows(fixtureSnapshot(t).Outdated)) // rows still carry every cell
+	out := stripANSI(tbl.View())
+	if !strings.Contains(out, "lua-lan") || strings.Contains(out, "PINNED") || strings.Contains(out, "TYPE") {
+		t.Errorf("dropped columns should not render, rows should:\n%s", out)
+	}
+	for _, line := range strings.Split(tbl.View(), "\n") {
+		if lipgloss.Width(line) > 30 {
+			t.Errorf("line is %d wide: %q", lipgloss.Width(line), stripANSI(line))
+		}
+	}
+}
+
+func TestPaneClipsLongBodyAboveTheBorder(t *testing.T) {
+	lines := make([]string, 50)
+	for i := range lines {
+		lines[i] = fmt.Sprintf("line %d with a tail far too wide for this pane to hold", i)
+	}
+	out := pane(testStyles, "Title", strings.Join(lines, "\n"), 40, 10, false)
+	rows := strings.Split(stripANSI(out), "\n")
+	if lipgloss.Height(out) != 10 || lipgloss.Width(out) != 40 {
+		t.Errorf("pane is %dx%d, want 40x10", lipgloss.Width(out), lipgloss.Height(out))
+	}
+	if last := rows[len(rows)-1]; !strings.HasPrefix(last, "╰") {
+		t.Errorf("bottom border missing, last line %q", last)
+	}
+	if !strings.Contains(stripANSI(out), "… 44 more") || !strings.Contains(stripANSI(out), "line 5 ") {
+		t.Errorf("want 6 body lines then a count of the rest:\n%s", stripANSI(out))
 	}
 }

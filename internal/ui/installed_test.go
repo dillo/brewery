@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"charm.land/lipgloss/v2"
 
+	"brewery/internal/brew"
 	"brewery/internal/state"
 )
 
@@ -96,5 +98,32 @@ func TestInstalledEmptyFilter(t *testing.T) {
 	}
 	if out := stripANSI(it.view(nil)); !strings.Contains(out, "nothing matches this filter") {
 		t.Errorf("empty preview missing:\n%s", out)
+	}
+}
+
+func TestInstalledPreviewKeepsBorderWithManyDeps(t *testing.T) {
+	big := brew.Package{Name: "big", FullName: "big", Kind: brew.KindFormula, Version: "1.0", OnRequest: true}
+	pkgs := []brew.Package{}
+	for i := range 40 {
+		dep := fmt.Sprintf("dep%02d", i)
+		big.DirectDeps = append(big.DirectDeps, dep)
+		big.Deps = append(big.Deps, dep)
+		pkgs = append(pkgs, brew.Package{Name: dep, FullName: dep, Kind: brew.KindFormula, Version: "1.0"})
+	}
+	pkgs = append(pkgs, big)
+	it := newInstalledTab(testStyles)
+	it.resize(140, 30)
+	it.setData(pkgs, state.NewIndex(pkgs))
+	if p, ok := it.selected(); !ok || p.Name != "big" {
+		t.Fatalf("selected %q, want big", p.Name)
+	}
+	out := it.view(nil)
+	if h := lipgloss.Height(out); h != 30 {
+		t.Errorf("height = %d, want 30", h)
+	}
+	rows := strings.Split(stripANSI(out), "\n")
+	last := []rune(rows[len(rows)-1])
+	if preview := string(last[it.listWidth():]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
+		t.Errorf("preview pane lost its bottom border: %q", preview)
 	}
 }

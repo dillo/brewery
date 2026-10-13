@@ -7,6 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/state"
 	"brewery/internal/theme"
@@ -236,7 +237,7 @@ func (a *App) tabBar() string {
 			parts[i] = st.Tab.Render(label)
 		}
 	}
-	return strings.Join(parts, " ")
+	return ansi.Truncate(strings.Join(parts, " "), a.width, "…")
 }
 
 func (a *App) statusBar() string {
@@ -270,9 +271,21 @@ func (a *App) statusBar() string {
 	if a.saveErr != nil {
 		right = append(right, st.Warn.Render("cache not saved"))
 	}
-	right = append(right, st.Muted.Render("1-5 tabs · r refresh · q quit"))
 	r := strings.Join(right, "  ")
 
-	gap := max(a.width-lipgloss.Width(left)-lipgloss.Width(r)-2, 1)
-	return st.StatusBar.Width(a.width).Render(left + strings.Repeat(" ", gap) + r + " ")
+	// Keep to one line: drop the key hints first, then shorten the left side.
+	room := a.width - 1 // trailing space
+	hints := st.Muted.Render("1-5 tabs · r refresh · q quit")
+	if r != "" {
+		hints = r + "  " + hints
+	}
+	if lipgloss.Width(left)+1+lipgloss.Width(hints) <= room {
+		r = hints
+	}
+	if lipgloss.Width(left)+1+lipgloss.Width(r) > room {
+		left = ansi.Truncate(left, max(room-1-lipgloss.Width(r), 0), "…")
+	}
+	gap := max(room-lipgloss.Width(left)-lipgloss.Width(r), 1)
+	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "")
+	return st.StatusBar.Width(a.width).Render(line)
 }

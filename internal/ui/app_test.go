@@ -255,3 +255,75 @@ func TestViewFitsTerminal(t *testing.T) {
 		t.Error("brewery should use the alternate screen")
 	}
 }
+
+// selectInstalled opens the Installed tab with the "all" filter and moves
+// the cursor to name.
+func selectInstalled(t *testing.T, a *App, name string) {
+	t.Helper()
+	a.Update(press("2"))
+	a.Update(press("f")) // all
+	a.Update(press("g"))
+	for range len(a.installed.rows) {
+		if p, ok := a.installed.selected(); ok && p.Name == name {
+			return
+		}
+		a.Update(press("j"))
+	}
+	t.Fatalf("%s not found on the Installed tab", name)
+}
+
+func TestViewFitsSmallTerminals(t *testing.T) {
+	sizes := []struct{ w, h int }{{80, 24}, {100, 30}, {60, 20}}
+	for _, size := range sizes {
+		for _, failing := range []bool{false, true} {
+			src := newFakeSource(t)
+			if failing {
+				src.servicesErr = errors.New("brew services list --json: exit status 1\nError: launchctl bootstrap failed for a very long and descriptive reason that will not fit")
+			}
+			a := newTestApp(t, src)
+			a.Update(tea.WindowSizeMsg{Width: size.w, Height: size.h})
+			drain(t, a, a.Init())
+			selectInstalled(t, a, "lua-language-server")
+			for tab := range tabNames {
+				a.tab = tab
+				out := a.render()
+				if h := lipgloss.Height(out); h != size.h {
+					t.Errorf("%dx%d failing=%v: tab %s renders %d lines, want %d\n%s", size.w, size.h, failing, tabNames[tab], h, size.h, stripANSI(out))
+				}
+				if w := lipgloss.Width(out); w > size.w {
+					t.Errorf("%dx%d failing=%v: tab %s renders %d columns, want <= %d", size.w, size.h, failing, tabNames[tab], w, size.w)
+				}
+			}
+		}
+	}
+}
+
+func TestStatusBarIsOneLine(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	drain(t, a, a.Init())
+	selectInstalled(t, a, "lua-language-server")
+	for _, w := range []int{140, 80, 50, 30} {
+		a.Update(tea.WindowSizeMsg{Width: w, Height: 24})
+		bar := a.statusBar()
+		if lipgloss.Height(bar) != 1 || lipgloss.Width(bar) > w {
+			t.Errorf("width %d: status bar is %dx%d:\n%s", w, lipgloss.Width(bar), lipgloss.Height(bar), stripANSI(bar))
+		}
+	}
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
+	if out := stripANSI(a.statusBar()); strings.Contains(out, "q quit") || !strings.Contains(out, "updated 09:30") {
+		t.Errorf("a narrow status bar should drop the key hints first: %q", out)
+	}
+	a.Update(tea.WindowSizeMsg{Width: 30, Height: 24})
+	if out := stripANSI(a.statusBar()); !strings.Contains(out, "…") {
+		t.Errorf("a very narrow status bar should truncate the left side: %q", out)
+	}
+}
+
+func TestTabBarFitsWidth(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	drain(t, a, a.Init())
+	a.Update(tea.WindowSizeMsg{Width: 40, Height: 24})
+	if w := lipgloss.Width(a.tabBar()); w > 40 {
+		t.Errorf("tab bar is %d columns at width 40", w)
+	}
+}
