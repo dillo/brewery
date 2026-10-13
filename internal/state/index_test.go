@@ -1,0 +1,64 @@
+package state
+
+import (
+	"reflect"
+	"testing"
+
+	"brewery/internal/brew"
+)
+
+// git -> pcre2 -> json-c, git also depends on json-c indirectly; fd has no deps.
+var testPkgs = []brew.Package{
+	{Name: "git", FullName: "git", Kind: brew.KindFormula, OnRequest: true, Deps: []string{"pcre2", "json-c"}, DirectDeps: []string{"pcre2"}},
+	{Name: "pcre2", FullName: "pcre2", Kind: brew.KindFormula, Deps: []string{"json-c"}, DirectDeps: []string{"json-c"}},
+	{Name: "json-c", FullName: "json-c", Kind: brew.KindFormula},
+	{Name: "fd", FullName: "fd", Kind: brew.KindFormula, OnRequest: true},
+	{Name: "docker-desktop", FullName: "docker-desktop", Kind: brew.KindCask, OnRequest: true},
+}
+
+func TestUsedBy(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	tests := map[string][]string{
+		"json-c": {"git", "pcre2"},
+		"pcre2":  {"git"},
+		"fd":     nil,
+	}
+	for name, want := range tests {
+		if got := ix.UsedBy(name); !reflect.DeepEqual(got, want) {
+			t.Errorf("UsedBy(%s) = %v, want %v", name, got, want)
+		}
+	}
+}
+
+func TestIsLeaf(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	want := map[string]bool{"git": true, "pcre2": false, "json-c": false, "fd": true, "docker-desktop": false}
+	for _, p := range testPkgs {
+		if got := ix.IsLeaf(p); got != want[p.Name] {
+			t.Errorf("IsLeaf(%s) = %v, want %v", p.Name, got, want[p.Name])
+		}
+	}
+}
+
+func TestTree(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	want := []string{"git", "└─ pcre2", "   └─ json-c"}
+	if got := ix.Tree("git"); !reflect.DeepEqual(got, want) {
+		t.Errorf("Tree(git) = %q, want %q", got, want)
+	}
+	if got := ix.Tree("fd"); !reflect.DeepEqual(got, []string{"fd"}) {
+		t.Errorf("Tree(fd) = %q", got)
+	}
+}
+
+func TestTreeMarksRepeats(t *testing.T) {
+	pkgs := []brew.Package{
+		{FullName: "a", DirectDeps: []string{"b", "c"}},
+		{FullName: "b", DirectDeps: []string{"c"}},
+		{FullName: "c"},
+	}
+	want := []string{"a", "├─ b", "│  └─ c", "└─ c …"}
+	if got := NewIndex(pkgs).Tree("a"); !reflect.DeepEqual(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
