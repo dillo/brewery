@@ -135,12 +135,3 @@ func plural(n int, noun string) string {
 func indent(s, prefix string) string {
 	return prefix + strings.ReplaceAll(s, "\n", "\n"+prefix)
 }
-
-// Temporary: moved to app.go in Task 9.
-const (
-	tabHome = iota
-	tabInstalled
-	tabOutdated
-	tabServices
-	tabTaps
-)
