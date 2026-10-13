@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -52,9 +53,15 @@ type ExecRunner struct {
 	Env []string // appended to os.Environ()
 }
 
+// Run starts brew in its own process group so that cancelling ctx kills
+// brew and everything it spawned. WaitDelay bounds the wait for a child that
+// escaped the kill but still holds the output pipes.
 func (r ExecRunner) Run(ctx context.Context, args ...string) ([]byte, []byte, error) {
 	cmd := exec.CommandContext(ctx, r.Bin, args...)
 	cmd.Env = append(os.Environ(), r.Env...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Cancel = func() error { return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) }
+	cmd.WaitDelay = 5 * time.Second
 	var out, errb bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errb
 	err := cmd.Run()
