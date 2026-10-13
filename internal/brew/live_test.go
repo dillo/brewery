@@ -4,6 +4,8 @@ package brew
 
 import (
 	"context"
+	"io"
+	"strings"
 	"testing"
 )
 
@@ -40,5 +42,22 @@ func TestLiveQueries(t *testing.T) {
 	}
 	if _, err := c.Doctor(ctx); err != nil {
 		t.Error(err)
+	}
+}
+
+// Runs a read-only brew command through the pseudo-terminal runner.
+func TestLivePTY(t *testing.T) {
+	bin, err := Locate()
+	if err != nil {
+		t.Skip("brew not installed")
+	}
+	p, err := StartPTY(bin, []string{"--version"}, JobEnv, 80, 24)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, _ := io.ReadAll(p)
+	code, err := p.Wait()
+	if err != nil || code != 0 || !strings.Contains(string(out), "Homebrew") {
+		t.Errorf("brew --version via PTY: code %d, err %v, output %q", code, err, out)
 	}
 }
