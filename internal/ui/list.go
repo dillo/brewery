@@ -19,18 +19,34 @@ type listTab struct {
 	empty  string // shown when there are no rows
 	loaded bool   // a result has arrived, so an empty table means "nothing"
 	n      int
+	key    func(table.Row) string // identifies a row across refreshes
 	table  table.Model
 	w, h   int
 }
 
-func newListTab(st theme.Styles, name string, cols []col, empty string) listTab {
-	return listTab{st: st, name: name, cols: cols, empty: empty, table: newTable(st, cols)}
+func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) string, empty string) listTab {
+	return listTab{st: st, name: name, cols: cols, key: key, empty: empty, table: newTable(st, cols)}
 }
 
 func (t *listTab) setRows(rows []table.Row) {
 	t.n = len(rows)
-	setRows(&t.table, rows)
+	setRowsKeeping(&t.table, rows, t.key)
 }
+
+// cursor is the selected row's index into the slice the rows were built
+// from, or -1 when the table is empty.
+func (t *listTab) cursor() int {
+	if t.n == 0 {
+		return -1
+	}
+	return t.table.Cursor()
+}
+
+// firstCell identifies a row by its first column (service and tap names).
+func firstCell(r table.Row) string { return r[0] }
+
+// outdatedKey identifies an Outdated row by name and type.
+func outdatedKey(r table.Row) string { return r[0] + "\x00" + r[3] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd

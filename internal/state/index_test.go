@@ -2,6 +2,7 @@ package state
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 
 	"brewery/internal/brew"
@@ -60,5 +61,42 @@ func TestTreeMarksRepeats(t *testing.T) {
 	want := []string{"a", "├─ b", "│  └─ c", "└─ c …"}
 	if got := NewIndex(pkgs).Tree("a"); !reflect.DeepEqual(got, want) {
 		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestOrphans(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	if got := ix.Orphans("git"); !reflect.DeepEqual(got, []string{"json-c", "pcre2"}) {
+		t.Errorf("Orphans(git) = %v", got)
+	}
+	if got := ix.Orphans("fd"); len(got) != 0 {
+		t.Errorf("fd has no deps, got %v", got)
+	}
+	if got := ix.Orphans("nope"); got != nil {
+		t.Errorf("unknown package: %v", got)
+	}
+}
+
+func TestOrphansKeepsWhatOthersNeed(t *testing.T) {
+	pkgs := append(slices.Clone(testPkgs),
+		brew.Package{Name: "jq", FullName: "jq", Kind: brew.KindFormula, OnRequest: true, Deps: []string{"json-c"}, DirectDeps: []string{"json-c"}})
+	if got := NewIndex(pkgs).Orphans("git"); !reflect.DeepEqual(got, []string{"pcre2"}) {
+		t.Errorf("json-c is still used by jq; got %v", got)
+	}
+}
+
+func TestOrphansSkipsPackagesInstalledOnRequest(t *testing.T) {
+	pkgs := slices.Clone(testPkgs)
+	pkgs[1].OnRequest = true // pcre2 was installed by hand
+	if got := NewIndex(pkgs).Orphans("git"); len(got) != 0 {
+		t.Errorf("pcre2 was installed on request, and json-c is still used by it; got %v", got)
+	}
+}
+
+func TestUsedByReturnsACopy(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	ix.UsedBy("json-c")[0] = "mangled"
+	if got := ix.UsedBy("json-c"); got[0] != "git" {
+		t.Errorf("changing the result changed the index: %v", got)
 	}
 }

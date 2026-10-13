@@ -66,13 +66,22 @@ func (t *installedTab) apply() {
 			t.rows = append(t.rows, p)
 		}
 	}
-	sort.Slice(t.rows, func(i, j int) bool { return t.rows[i].Name < t.rows[j].Name })
+	sort.SliceStable(t.rows, func(i, j int) bool {
+		if t.rows[i].Name != t.rows[j].Name {
+			return t.rows[i].Name < t.rows[j].Name
+		}
+		return t.rows[i].Kind < t.rows[j].Kind
+	})
 	rows := make([]table.Row, len(t.rows))
 	for i, p := range t.rows {
 		rows[i] = table.Row{p.Name, p.Version, p.Kind.String(), status(p)}
 	}
-	setRows(&t.table, rows)
+	setRowsKeeping(&t.table, rows, installedKey)
 }
+
+// installedKey identifies an Installed row by name and type: a formula
+// and a cask can share a name.
+func installedKey(r table.Row) string { return r[0] + "\x00" + r[2] }
 
 func status(p brew.Package) string {
 	var s []string
@@ -96,8 +105,7 @@ func (t *installedTab) selected() (brew.Package, bool) {
 func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	if msg.String() == "f" {
 		t.filter = (t.filter + 1) % installedFilter(len(filterNames))
-		t.table.SetCursor(0)
-		t.apply()
+		t.apply() // keeps the selected package if the new filter shows it
 		return nil
 	}
 	var cmd tea.Cmd

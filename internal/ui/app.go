@@ -69,9 +69,9 @@ func New(src Source, snap state.Snapshot, cachePath string) *App {
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
 		installed: newInstalledTab(st),
-		outdated:  newListTab(st, "Outdated", outdatedCols, "✓ everything is up to date"),
-		services:  newListTab(st, "Services", serviceCols, "no services registered"),
-		taps:      newListTab(st, "Taps", tapCols, "no taps installed"),
+		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
+		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
+		taps:      newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
 	}
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {

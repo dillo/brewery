@@ -3,6 +3,8 @@
 package state
 
 import (
+	"maps"
+	"slices"
 	"sort"
 
 	"brewery/internal/brew"
@@ -37,8 +39,39 @@ func (ix *Index) Get(fullName string) (brew.Package, bool) {
 }
 
 // UsedBy lists installed packages that depend on fullName, directly or not.
+// The slice is a copy the caller may keep or change.
 func (ix *Index) UsedBy(fullName string) []string {
-	return ix.usedBy[fullName]
+	return slices.Clone(ix.usedBy[fullName])
+}
+
+// Orphans lists the dependencies that removing fullName would leave
+// unneeded: packages installed as dependencies (not on request) that are
+// used only by fullName or by other such orphans. Sorted.
+func (ix *Index) Orphans(fullName string) []string {
+	p, ok := ix.byFull[fullName]
+	if !ok {
+		return nil
+	}
+	cand := map[string]bool{}
+	for _, d := range p.Deps {
+		if dp, ok := ix.byFull[d]; ok && !dp.OnRequest {
+			cand[d] = true
+		}
+	}
+	// Drop any candidate something else still needs, until nothing changes.
+	for changed := true; changed; {
+		changed = false
+		for c := range cand {
+			for _, u := range ix.usedBy[c] {
+				if u != fullName && !cand[u] {
+					delete(cand, c)
+					changed = true
+					break
+				}
+			}
+		}
+	}
+	return slices.Sorted(maps.Keys(cand))
 }
 
 // IsLeaf reports whether p is a formula that no other installed package

@@ -138,6 +138,26 @@ func setRows(t *table.Model, rows []table.Row) {
 	}
 }
 
+// setRowsKeeping replaces the rows and keeps the cursor on the same item,
+// as identified by key, so a refresh never moves the selection to a
+// different package. If the item is gone, the cursor stays in range.
+func setRowsKeeping(t *table.Model, rows []table.Row, key func(table.Row) string) {
+	var want string
+	if old := t.SelectedRow(); old != nil {
+		want = key(old)
+	}
+	setRows(t, rows)
+	if want == "" {
+		return
+	}
+	for i, r := range rows {
+		if key(r) == want {
+			t.SetCursor(i)
+			return
+		}
+	}
+}
+
 // kv renders aligned "label  value" lines for preview panes.
 func kv(st theme.Styles, pairs ...string) string {
 	var b strings.Builder

@@ -74,9 +74,9 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 
 func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 	it := newFixtureInstalled(t)
-	it.update(press("f")) // all
-	for range 4 {
-		it.update(press("j")) // docker-desktop fd fontbase git json-c
+	it.update(press("f")) // all: fd stays selected
+	for range 3 {
+		it.update(press("j")) // docker-desktop [fd] fontbase git json-c
 	}
 	out := stripANSI(it.view(nil))
 	if !strings.Contains(out, "as a dependency") || !strings.Contains(out, "git, pcre2") {
@@ -147,5 +147,43 @@ func TestInstalledErrorWithRowsShowsBanner(t *testing.T) {
 	}
 	if h := lipgloss.Height(view); h != 30 {
 		t.Errorf("height = %d, want 30", h)
+	}
+}
+
+func TestInstalledKeepsSelectionAcrossRefresh(t *testing.T) {
+	it := newFixtureInstalled(t)
+	it.update(press("j")) // fd -> git
+	snap := fixtureSnapshot(t)
+	more := append([]brew.Package{{Name: "act", FullName: "act", Kind: brew.KindFormula, OnRequest: true}}, snap.Packages...)
+	it.setData(more, state.NewIndex(more))
+	if p, _ := it.selected(); p.Name != "git" {
+		t.Errorf("selection moved to %q when a package was added above it", p.Name)
+	}
+}
+
+func TestInstalledSortsSameNameFormulaBeforeCask(t *testing.T) {
+	it := newInstalledTab(testStyles)
+	it.resize(140, 30)
+	it.filter = filterAll
+	pkgs := []brew.Package{
+		{Name: "docker", FullName: "docker", Kind: brew.KindCask},
+		{Name: "docker", FullName: "docker", Kind: brew.KindFormula, OnRequest: true},
+	}
+	it.setData(pkgs, state.NewIndex(pkgs))
+	if it.rows[0].Kind != brew.KindFormula || it.rows[1].Kind != brew.KindCask {
+		t.Errorf("same-name rows should sort formula first: %+v", it.rows)
+	}
+}
+
+func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
+	it := newFixtureInstalled(t)
+	it.update(press("j")) // git
+	it.update(press("f")) // all
+	if p, _ := it.selected(); p.Name != "git" {
+		t.Errorf("switching to all should keep git selected, got %q", p.Name)
+	}
+	it.update(press("f")) // casks: git isn't shown
+	if p, ok := it.selected(); !ok || p.Kind != brew.KindCask {
+		t.Errorf("a filter that hides the selection should still select a row, got %+v", p)
 	}
 }

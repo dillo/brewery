@@ -12,7 +12,7 @@ import (
 
 func TestListTabRendersRows(t *testing.T) {
 	snap := fixtureSnapshot(t)
-	lt := newListTab(testStyles, "Outdated", outdatedCols, "all good")
+	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
 	lt.resize(120, 10)
 	lt.setRows(outdatedRows(snap.Outdated))
 	out := stripANSI(lt.view(nil))
@@ -27,7 +27,7 @@ func TestListTabRendersRows(t *testing.T) {
 }
 
 func TestListTabEmptyAndError(t *testing.T) {
-	lt := newListTab(testStyles, "Outdated", outdatedCols, "✓ everything is up to date")
+	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date")
 	lt.resize(80, 8)
 	if out := stripANSI(lt.view(nil)); !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
 		t.Errorf("before its first result the tab should say it is loading:\n%s", out)
@@ -147,7 +147,7 @@ func TestPaneClipsLongBodyAboveTheBorder(t *testing.T) {
 }
 
 func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
-	lt := newListTab(testStyles, "Outdated", outdatedCols, "all good")
+	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
 	lt.resize(120, 10)
 	lt.setRows(outdatedRows(fixtureSnapshot(t).Outdated))
 	view := lt.view(errors.New("brew outdated --json=v2: exit status 1\nError: second line"))
@@ -165,5 +165,28 @@ func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
 	}
 	if rows := strings.Split(out, "\n"); !strings.HasPrefix(rows[len(rows)-1], "╰") {
 		t.Errorf("bottom border missing:\n%s", out)
+	}
+}
+
+func TestListTabKeepsSelectionAcrossRefresh(t *testing.T) {
+	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
+	lt.resize(120, 10)
+	lt.setRows([]table.Row{{"mysql", "", "", ""}, {"postgresql@16", "", "", ""}, {"redis", "", "", ""}})
+	lt.update(press("j"))
+	lt.update(press("j")) // redis
+	lt.setRows([]table.Row{{"nginx", "", "", ""}, {"postgresql@16", "", "", ""}, {"redis", "", "", ""}, {"valkey", "", "", ""}})
+	if got := lt.table.SelectedRow()[0]; got != "redis" {
+		t.Errorf("selection moved to %q after refresh, want redis", got)
+	}
+	if lt.cursor() != 2 {
+		t.Errorf("cursor() = %d, want 2", lt.cursor())
+	}
+	lt.setRows([]table.Row{{"nginx", "", "", ""}})
+	if lt.cursor() != 0 {
+		t.Errorf("when the item is gone the cursor stays in range, got %d", lt.cursor())
+	}
+	lt.setRows(nil)
+	if lt.cursor() != -1 {
+		t.Errorf("cursor() on an empty table = %d, want -1", lt.cursor())
 	}
 }
