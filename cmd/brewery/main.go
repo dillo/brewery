@@ -47,8 +47,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	cachePath := state.DefaultCachePath()
 	snap, _ := state.Load(cachePath) // no cache yet is fine: the first refresh fills it
 	client := brew.NewClient(brew.ExecRunner{Bin: bin, Env: brew.QueryEnv})
+	start := func(args, env []string, cols, rows int) (ui.Proc, error) {
+		return brew.StartPTY(bin, args, env, cols, rows)
+	}
 
-	if _, err := tea.NewProgram(ui.New(client, snap, cachePath)).Run(); err != nil {
+	if _, err := tea.NewProgram(ui.New(client, start, snap, cachePath)).Run(); err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)
 		return 1
 	}

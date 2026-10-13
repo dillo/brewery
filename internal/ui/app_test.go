@@ -69,7 +69,7 @@ var testNow = time.Date(2026, 10, 13, 9, 30, 0, 0, time.UTC)
 
 func newTestApp(t *testing.T, src Source) *App {
 	t.Helper()
-	a := New(src, state.Snapshot{}, filepath.Join(t.TempDir(), "snapshot.json"))
+	a := New(src, nil, state.Snapshot{}, filepath.Join(t.TempDir(), "snapshot.json"))
 	a.now = func() time.Time { return testNow }
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	return a
@@ -191,7 +191,7 @@ func TestAllFailedRefreshKeepsFetchedAt(t *testing.T) {
 	src.doctorErr = errors.New("boom")
 	cached := fixtureSnapshot(t)
 	cached.FetchedAt = testNow.Add(-time.Hour)
-	a := New(src, cached, filepath.Join(t.TempDir(), "s.json"))
+	a := New(src, nil, cached, filepath.Join(t.TempDir(), "s.json"))
 	a.now = func() time.Time { return testNow }
 	drain(t, a, a.request(qServices))
 	if !a.snap.FetchedAt.Equal(testNow.Add(-time.Hour)) {
@@ -223,7 +223,7 @@ func TestQuitCancelsRunningQueries(t *testing.T) {
 
 func TestCachedSnapshotShowsBeforeRefresh(t *testing.T) {
 	cached := state.Snapshot{Packages: []brew.Package{{Name: "neovim", FullName: "neovim", Kind: brew.KindFormula, Version: "0.11.4", OnRequest: true}}}
-	a := New(newFakeSource(t), cached, filepath.Join(t.TempDir(), "s.json"))
+	a := New(newFakeSource(t), nil, cached, filepath.Join(t.TempDir(), "s.json"))
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	a.Update(press("2"))
 	if !strings.Contains(stripANSI(a.render()), "neovim") {
@@ -465,7 +465,7 @@ func TestTabBarFitsWidth(t *testing.T) {
 func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	src := newFakeSource(t)
 	src.servicesErr = errors.New("brew services list --json: exit status 1\nError: launchctl failed")
-	a := New(src, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
+	a := New(src, nil, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
 	a.now = func() time.Time { return testNow }
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	drain(t, a, a.Init())
@@ -518,13 +518,13 @@ func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
 }
 
 func TestCachedSnapshotCountsAsLoaded(t *testing.T) {
-	a := New(newFakeSource(t), fixtureSnapshot(t), "")
+	a := New(newFakeSource(t), nil, fixtureSnapshot(t), "")
 	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor} {
 		if !a.loaded[q] {
 			t.Errorf("%s not loaded from a non-empty cache", queryNames[q])
 		}
 	}
-	if a := New(newFakeSource(t), state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor]) {
+	if a := New(newFakeSource(t), nil, state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor]) {
 		t.Error("an empty cache should load nothing")
 	}
 }

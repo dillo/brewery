@@ -10,6 +10,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"brewery/internal/jobs"
 	"brewery/internal/state"
 	"brewery/internal/theme"
 )
@@ -29,9 +30,18 @@ var tabQueries = map[int]query{
 	tabHome: qDoctor, tabInstalled: qInstalled, tabOutdated: qOutdated, tabServices: qServices, tabTaps: qTaps,
 }
 
+// mode is how key presses are routed.
+type mode int
+
+const (
+	modeNormal mode = iota // keys drive brewery
+	modeInsert             // keys go to the running brew command
+)
+
 // App is the root Bubble Tea model.
 type App struct {
 	src       Source
+	start     Starter
 	cachePath string
 	st        theme.Styles
 	now       func() time.Time
@@ -49,9 +59,25 @@ type App struct {
 	dirty       bool           // a query succeeded since the last cache save
 	saveErr     error
 
+	queue     jobs.Queue
+	acts      map[int]action // what each job was asked to do, by job ID
+	proc      Proc           // the current job's process, or nil
+	canceled  bool           // the user stopped the current run
+	backoff   func(attempt int) time.Duration
+	tickEvery time.Duration // spinner speed; 0 turns the spinner off
+	ticking   bool
+	frame     int
+
+	mode    mode
+	confirm *confirmBox // open confirmation, or nil
+	flash   string      // one-off status message, cleared by the next key
+
 	tab           int
 	width, height int
+	tabH          int    // height left for the tab when the drawer is shown
+	laidOut       [3]int // width, height and drawer state of the last layout
 
+	drawer    drawer
 	home      homeTab
 	installed installedTab
 	outdated  listTab
@@ -59,15 +85,18 @@ type App struct {
 	taps      listTab
 }
 
-// New builds the App. snap is the cached snapshot (possibly empty) so the
-// first frame can show data before any query returns.
-func New(src Source, snap state.Snapshot, cachePath string) *App {
+// New builds the App. src answers queries and start runs brew commands.
+// snap is the cached snapshot (possibly empty) so the first frame can show
+// data before any query returns.
+func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App {
 	st := theme.New(theme.Macchiato)
 	ctx, cancel := context.WithCancel(context.Background())
 	a := &App{
-		src: src, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
+		src: src, start: start, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
+		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond,
+		drawer:    newDrawer(st),
 		installed: newInstalledTab(st),
 		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
@@ -128,9 +157,12 @@ func (a *App) jsonBusy() bool {
 	return false
 }
 
-// quit stops running queries and exits.
+// quit stops running queries and any running job, then exits.
 func (a *App) quit() tea.Cmd {
 	a.cancel()
+	if a.proc != nil {
+		a.proc.Kill()
+	}
 	return tea.Quit
 }
 
@@ -170,27 +202,59 @@ func (a *App) apply(m resultMsg) {
 }
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	cmd := a.update(msg)
+	a.layout()
+	return a, cmd
+}
+
+func (a *App) update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		a.width, a.height = msg.Width, msg.Height
-		bodyH := a.bodyHeight()
-		a.installed.resize(a.width, bodyH)
-		for _, t := range []*listTab{&a.outdated, &a.services, &a.taps} {
-			t.resize(a.width, bodyH)
-		}
-		return a, nil
-
 	case resultMsg:
-		return a, a.handleResult(msg)
-
+		return a.handleResult(msg)
 	case savedMsg:
 		a.saveErr = msg.err
-		return a, nil
-
 	case tea.KeyPressMsg:
-		return a, a.handleKey(msg)
+		return a.handleKey(msg)
+	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
+		return a.handleJob(msg)
 	}
-	return a, nil
+	return nil
+}
+
+// drawerShown reports whether the drawer takes space under the tab.
+func (a *App) drawerShown() bool {
+	return a.drawer.open && a.drawer.job != nil && drawerHeight(a.bodyHeight()) > 0
+}
+
+// layout sizes the tabs and the drawer's terminal for the current window
+// and drawer state. It does nothing if neither has changed.
+func (a *App) layout() {
+	shown := 0
+	if a.drawerShown() {
+		shown = 1
+	}
+	if a.laidOut == [3]int{a.width, a.height, shown} {
+		return
+	}
+	a.laidOut = [3]int{a.width, a.height, shown}
+	bodyH := a.bodyHeight()
+	dh := drawerHeight(bodyH)
+	// The drawer's terminal is always sized for when it is shown, so a job
+	// starts at the right size even while the drawer is hidden.
+	a.drawer.resize(a.width-4, dh-4)
+	if a.proc != nil {
+		a.proc.Resize(a.drawer.cols, a.drawer.rows)
+	}
+	a.tabH = bodyH
+	if shown == 1 {
+		a.tabH -= dh
+	}
+	a.installed.resize(a.width, a.tabH)
+	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps} {
+		t.resize(a.width, a.tabH)
+	}
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -221,10 +285,53 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	return tea.Batch(again, tea.Sequence(saving, doctor))
 }
 
+// handleKey routes a key press by mode first: an open confirmation gets
+// every key, and in insert mode keys go to brew, so typing an answer can
+// never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
-	switch k := msg.String(); k {
-	case "q", "ctrl+c":
+	k := msg.String()
+	a.flash = ""
+	if a.confirm != nil {
+		ch, ok := a.confirm.answer(k)
+		if !ok {
+			return nil
+		}
+		a.confirm = nil
+		if ch.run == nil {
+			return nil
+		}
+		return ch.run()
+	}
+	if a.mode == modeInsert {
+		if k == "esc" {
+			a.mode = modeNormal
+		} else if a.proc != nil {
+			a.proc.Write(keyBytes(msg))
+		}
+		return nil
+	}
+
+	switch k {
+	case "q":
+		return a.askQuit()
+	case "ctrl+c":
+		if a.queue.Current() != nil {
+			return a.askStop()
+		}
 		return a.quit()
+	case "esc":
+		a.drawer.open = false
+		return nil
+	case "o":
+		if a.drawer.job != nil {
+			a.drawer.open = !a.drawer.open
+		}
+		return nil
+	case "i":
+		if a.proc != nil {
+			a.mode, a.drawer.open = modeInsert, true
+		}
+		return nil
 	case "1", "2", "3", "4", "5":
 		a.tab = int(k[0] - '1')
 		return nil
@@ -266,7 +373,7 @@ func (a *App) render() string {
 	if a.width == 0 {
 		return "starting brewery…"
 	}
-	bodyH := a.bodyHeight()
+	bodyH := a.tabH
 	var body string
 	switch a.tab {
 	case tabHome:
@@ -280,7 +387,14 @@ func (a *App) render() string {
 	case tabTaps:
 		body = a.taps.view(a.errs[qTaps])
 	}
-	return lipgloss.JoinVertical(lipgloss.Left, a.tabBar(), body, a.statusBar())
+	if a.confirm != nil {
+		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
+	}
+	parts := []string{a.tabBar(), body}
+	if a.drawerShown() {
+		parts = append(parts, a.drawer.view(a.width, a.bodyHeight()-bodyH, a.now(), a.frame, a.mode == modeInsert))
+	}
+	return lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...)
 }
 
 // bodyHeight is the space between the tab bar (tabs + rule) and the status bar.
@@ -325,7 +439,14 @@ func (a *App) tabBar() string {
 
 func (a *App) statusBar() string {
 	st := a.st
-	left := st.Mode("NORMAL").Render("NORMAL") + " " + tabNames[a.tab]
+	badge := "NORMAL"
+	switch {
+	case a.mode == modeInsert:
+		badge = "INSERT"
+	case a.queue.Current() != nil:
+		badge = "RUNNING"
+	}
+	left := st.Mode(badge).Render(badge) + " " + tabNames[a.tab]
 	if a.tab == tabInstalled {
 		if p, ok := a.installed.selected(); ok {
 			left += " › " + p.Name
@@ -333,6 +454,19 @@ func (a *App) statusBar() string {
 	}
 
 	var right []string
+	if a.flash != "" {
+		right = append(right, a.flash)
+	}
+	if j := a.queue.Current(); j != nil {
+		job := spinnerFrames[a.frame%len(spinnerFrames)] + " " + j.Title
+		if j.State == jobs.Waiting {
+			job = "⏸ " + j.Title + " · waiting for brew's lock"
+		}
+		if n := a.queue.Queued(); n > 0 {
+			job += fmt.Sprintf(" +%d queued", n)
+		}
+		right = append(right, st.Info.Render(job))
+	}
 	var failed []string
 	for q, name := range queryNames {
 		if a.errs[query(q)] != nil {
@@ -354,7 +488,11 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := st.Muted.Render("1-5 tabs · r refresh · q quit")
+	hints := "1-5 tabs · r refresh · q quit"
+	if a.drawer.job != nil && !a.drawer.open {
+		hints = "o output · " + hints
+	}
+	hints = st.Muted.Render(hints)
 	if r != "" {
 		hints = r + "  " + hints
 	}
