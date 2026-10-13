@@ -77,3 +77,25 @@ func TestClientDoctorExitOneIsNotAnError(t *testing.T) {
 		t.Errorf("got %d warnings, want 2", len(ws))
 	}
 }
+
+func TestClientDoctorFailureWithoutWarningsIsAnError(t *testing.T) {
+	exitErr := exec.Command("false").Run() // a real *exec.ExitError with status 1
+	c := NewClient(fakeRunner{err: map[string]error{"doctor": exitErr}})
+	_, err := c.Doctor(context.Background())
+	var qe *QueryError
+	if !errors.As(err, &qe) {
+		t.Fatalf("want *QueryError, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "something broke") {
+		t.Errorf("error message missing stderr: %q", err)
+	}
+}
+
+func TestClientDoctorTimeout(t *testing.T) {
+	c := NewClient(fakeRunner{delay: time.Second})
+	c.Timeout = 10 * time.Millisecond
+	_, err := c.Doctor(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "timed out") {
+		t.Errorf("want timeout error, got %v", err)
+	}
+}

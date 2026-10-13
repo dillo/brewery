@@ -134,15 +134,24 @@ func (c *Client) Taps(ctx context.Context) ([]Tap, error) {
 }
 
 // Doctor runs `brew doctor`. It exits 1 whenever it finds warnings, so a
-// non-zero exit with output is a normal result, not an error.
+// non-zero exit that produced at least one warning is a normal result. A
+// timeout, a failure to run brew, or a non-zero exit with no warnings parsed
+// (a crash, or only an `Error:` on stderr) is reported as an error rather
+// than as a clean result.
 func (c *Client) Doctor(ctx context.Context) ([]DoctorWarning, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()
 	out, errb, err := c.r.Run(ctx, "doctor")
-	combined := string(out) + "\n" + string(errb)
+	if err != nil && ctx.Err() != nil {
+		return nil, &QueryError{Args: []string{"doctor"}, Stderr: string(errb), Err: fmt.Errorf("timed out after %s", c.Timeout)}
+	}
 	var exitErr *exec.ExitError
-	if err != nil && (!errors.As(err, &exitErr) || ctx.Err() != nil) {
+	if err != nil && !errors.As(err, &exitErr) {
 		return nil, &QueryError{Args: []string{"doctor"}, Stderr: string(errb), Err: err}
 	}
-	return ParseDoctor(combined), nil
+	warnings := ParseDoctor(string(out) + "\n" + string(errb))
+	if err != nil && len(warnings) == 0 {
+		return nil, &QueryError{Args: []string{"doctor"}, Stderr: string(errb), Err: err}
+	}
+	return warnings, nil
 }
