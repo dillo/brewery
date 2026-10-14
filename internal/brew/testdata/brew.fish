@@ -134,3 +134,6 @@ __fish_brew_complete_arg 'release' -l debug -d 'Display any debugging informatio
 __fish_brew_complete_arg 'release' -l force -d 'Actually create the release and trigger the workflow. Without this, just show what would be done'
 __fish_brew_complete_sub_cmd 'services' 'unload' 'Stop the service formula immediately and unregister it from launching at login (or boot),'
 __fish_brew_complete_sub_cmd 'services' 't' 'Stop the service formula immediately and unregister it from launching at login (or boot),'
+__fish_brew_complete_cmd 'bundle' 'Bundler for non-Ruby dependencies from Homebrew formulae, Homebrew casks, Mac App Store dependencies, VSCode (and forks/variants) extensions, Go packages, Cargo packages, uv tools, Flatpak packages, WinGet packages, Krew plugins and npm packages'
+__fish_brew_complete_sub_cmd 'bundle' 'install' 'Use this to restore a recorded installed state from a `Brewfile`'
+__fish_brew_complete_sub_cmd 'bundle' 'upgrade' 'Use this to restore a recorded installed state from a `Brewfile`'

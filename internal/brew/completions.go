@@ -61,7 +61,10 @@ const suggestPrefix = "(__fish_brew_suggest_"
 // commands are declared another way and are left out). brew lists every
 // subcommand alias on its own line with its canonical name's description;
 // a subcommand whose description matches an earlier one's is skipped, so
-// the first-declared (canonical) name wins.
+// the first-declared name wins. Subcommands are not told apart from aliases
+// by anything else in the script, so brew describing `bundle upgrade` the
+// same as `bundle install` means `bundle upgrade` is not offered in
+// completion (it still runs when typed).
 func ParseFish(r io.Reader) (Completions, error) {
 	cmds := map[string]*Command{}
 	subs := map[string]map[string]*Command{} // command → subcommand
@@ -109,7 +112,7 @@ func ParseFish(r io.Reader) (Completions, error) {
 					seenDesc[tok[1]] = map[string]string{}
 				}
 				if first, dup := seenDesc[tok[1]][desc]; dup && first != tok[2] {
-					continue // an alias of first
+					continue // same description as first: an alias, or a real subcommand folded into it (bundle upgrade)
 				}
 				seenDesc[tok[1]][desc] = tok[2]
 			}

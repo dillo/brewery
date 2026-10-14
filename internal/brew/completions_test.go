@@ -29,7 +29,7 @@ func TestParseFishCommands(t *testing.T) {
 	for _, cmd := range c.Commands {
 		names = append(names, cmd.Name)
 	}
-	want := []string{"--cache", "edit", "info", "pin", "services", "uninstall", "untap", "upgrade"}
+	want := []string{"--cache", "bundle", "edit", "info", "pin", "services", "uninstall", "untap", "upgrade"}
 	if !reflect.DeepEqual(names, want) {
 		t.Errorf("commands %v, want %v", names, want)
 	}
@@ -43,9 +43,6 @@ func TestParseFishCommands(t *testing.T) {
 	}
 	if _, ok := c.Command("release"); ok {
 		t.Error("release has options but no __fish_brew_complete_cmd line, so it isn't a command")
-	}
-	if _, ok := c.Command("bundle"); ok {
-		t.Error("bundle isn't in the fixture")
 	}
 }
 
@@ -119,6 +116,17 @@ func TestParseFishSubcommands(t *testing.T) {
 	if _, ok := services.Sub("launch"); ok {
 		t.Error("an alias without its own sub_cmd line should not become a subcommand")
 	}
+
+	// brew describes bundle upgrade exactly like bundle install, so it folds
+	// into install and is not offered. This is the accepted trade-off
+	// documented on ParseFish; typing "bundle upgrade" still runs.
+	bundle, _ := c.Command("bundle")
+	if _, ok := bundle.Sub("install"); !ok {
+		t.Errorf("bundle should have install: %+v", bundle.Subs)
+	}
+	if _, ok := bundle.Sub("upgrade"); ok {
+		t.Error("bundle upgrade shares install's description and should be folded into it")
+	}
 }
 
 func TestFishTokens(t *testing.T) {
@@ -148,7 +156,7 @@ func TestClientCompletionsReadsBrewsFishFile(t *testing.T) {
 
 	c := NewClient(fakeRunner{out: map[string][]byte{"--repository": []byte(repo + "\n")}})
 	got, err := c.Completions(context.Background())
-	if err != nil || len(got.Commands) != 8 {
+	if err != nil || len(got.Commands) != 9 {
 		t.Fatalf("got %d commands, err %v", len(got.Commands), err)
 	}
 
