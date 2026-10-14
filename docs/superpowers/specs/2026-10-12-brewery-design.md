@@ -75,7 +75,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Job** = argv (no shell), start and end time, exit code, and the end of its output (kept in its history record). Mutating jobs run **one at a time** because of brew's global lock. Extra jobs show as `queued`. Read-only queries skip the queue.
 - **PTY** through `creack/pty`. The drawer contains a terminal emulator (Charm `x/vt` or a minimal custom renderer) that handles `\r` redraws and ANSI colors. When the process asks for input (`Password:`, `[y/N]`), the drawer switches to INSERT mode and keys go to the PTY. Input is masked and never logged.
 - **Full-screen takeover** through Bubble Tea `ExecProcess` for `edit`, `sh`, `irb` and `bundle edit`. A `:!` prefix forces takeover.
-- **Confirmations for destructive actions:** uninstall shows dependents and the orphans it would leave, with an option to remove them. Cleanup runs `--dry-run` first to show space freed. Untap, services stop, `^c` on a running job, and `A` (upgrade all) also ask first. Commands typed at `:` don't ask.
+- **Confirmations for destructive actions:** uninstall shows dependents and the orphans it would leave, with an option to remove them. Cleanup (`c` on any tab) runs `--dry-run` first and offers the standard cleanup and clearing the whole download cache, each with the space it frees. Untap, services stop, `^c` on a running job, and `A` (upgrade all) also ask first. Commands typed at `:` don't ask.
 - **History:** `:jobs` lists jobs, and `Enter` replays a job's output in the drawer. The last 100 jobs are kept, each with the last 128 KiB of its output, in `~/.local/state/brewery/jobs/`.
 - **Completion:** a popup above the prompt. Commands, subcommands, flags (with descriptions) and the kind of argument each command takes come from the fish completion script brew ships (`<brew --repository>/completions/fish/brew.fish`), read once at start. Package, tap and service names come from the snapshot.
 
@@ -84,11 +84,11 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Modes** (colored block in the status bar): NORMAL (mauve), COMMAND (blue), FILTER (teal), RUNNING (peach + spinner), INSERT (green). `esc` goes back one step.
 - **Global keys:** `1`–`5` and `[`/`]` switch tabs. `Tab` moves focus. `:` opens the command line, `/` filters, `Ctrl-P` opens the palette, `r` refreshes, `U` runs update, `?` shows help, and `q` quits (with a confirmation if a job is running).
 - **List keys:** `j/k`, `gg/G`, `Ctrl-d/u`, `space` to multi-select, `Enter` to focus the preview. `u` upgrade, `x` uninstall, `p` pin, `o` open homepage, `y` copy name. On Services: `s` start, `S` stop, `R` restart, `l` show log. On Outdated: `A` upgrades all.
-- **Home:** tiles (Installed, Outdated, Services with error count, Doctor, reclaimable cache = size of `brew --cache`, measured in the background) + recent jobs. `Enter` on a tile jumps to its tab.
+- **Home:** tiles (Installed, Outdated, Services with error count, Doctor, Cleanup = what `brew cleanup --prune=all --dry-run` says it would free, measured after each refresh) + recent jobs. `Enter` on a tile jumps to its tab; on Cleanup it opens the cleanup dialog.
 - **Installed:** a view bar above the list shows every view with its count, the active one highlighted: **Top-level** (default; nothing else needs these, so leaves plus apps), **All**, **Apps** (casks) and **Dependencies** (installed only because something needed them). A line under the bar says what the active view shows; `f`/`F` step forward and back. Narrow panes use short names (Top, All, Apps, Deps). Columns: name, version, type, pin, outdated ↑, size. Preview: description, dependency tree, used-by, caveats, tap, install date.
 - **Outdated:** current → latest, multi-select upgrade.
-- **Services:** name, status (colored), user, plist. The preview shows the end of the log.
-- **Taps:** name, formula and cask counts, remote, official or not.
+- **Services:** name and status. The preview beside them shows the status and pid, the command, user, plist and log paths, and as much of the end of the log as fits. `l` follows the log full screen in `less +F`.
+- **Taps:** name, formula and cask counts, remote, official or not. `x` untaps.
 - **Theme:** semantic tokens (`accent`, `warn`, `err`, `muted`, …) → Catppuccin Macchiato. Other flavors later only need a new palette file. Nerd Font icons with an ASCII fallback (`--no-icons` or automatic detection).
 - **Responsive layout:** below 100 columns the preview stacks under the list. Below 60 columns the preview hides and `Enter` toggles it.
 
