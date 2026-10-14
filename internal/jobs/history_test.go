@@ -211,3 +211,18 @@ func TestHistoryConcurrentSavesWithTheSameStartAllSurvive(t *testing.T) {
 		t.Fatalf("Load = %d records, %v; want 8", len(got), err)
 	}
 }
+
+func TestDefaultStateDir(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", "/tmp/xdg")
+	if got := DefaultStateDir(); got != "/tmp/xdg/brewery" {
+		t.Errorf("got %s", got)
+	}
+	if got := DefaultHistoryDir(); got != "/tmp/xdg/brewery/jobs" {
+		t.Errorf("got %s", got)
+	}
+	t.Setenv("XDG_STATE_HOME", "")
+	t.Setenv("HOME", "")
+	if got := DefaultStateDir(); !filepath.IsAbs(got) || !strings.HasPrefix(got, os.TempDir()) {
+		t.Errorf("without a home directory state goes in the temp directory, got %s", got)
+	}
+}

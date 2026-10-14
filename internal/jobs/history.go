@@ -83,12 +83,22 @@ type History struct{ Dir string }
 // DefaultHistoryDir is $XDG_STATE_HOME/brewery/jobs, falling back to
 // ~/.local/state/brewery/jobs.
 func DefaultHistoryDir() string {
+	return filepath.Join(DefaultStateDir(), "jobs")
+}
+
+// DefaultStateDir is $XDG_STATE_HOME/brewery, falling back to
+// ~/.local/state/brewery. Without a home directory it uses the temp
+// directory rather than a path relative to wherever brewery started.
+func DefaultStateDir() string {
 	dir := os.Getenv("XDG_STATE_HOME")
 	if dir == "" {
-		home, _ := os.UserHomeDir()
+		home, err := os.UserHomeDir()
+		if err != nil || home == "" {
+			home = os.TempDir()
+		}
 		dir = filepath.Join(home, ".local", "state")
 	}
-	return filepath.Join(dir, "brewery", "jobs")
+	return filepath.Join(dir, "brewery")
 }
 
 // Save writes r and removes the oldest records beyond Keep.

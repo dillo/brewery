@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -58,13 +59,26 @@ func run(args []string, stdout, stderr io.Writer) int {
 	recs, _ := hist.Load() // no history yet is fine
 	app.UseHistory(hist, recs)
 	app.UseCompletions(client.Completions)
-	app.UseTakeover(func(args []string) *exec.Cmd { return exec.Command(bin, args...) })
+	// Full-screen commands get the real stderr: while the TUI runs,
+	// os.Stderr is the crash log.
+	realStderr := os.Stderr
+	fullScreen := func(cmd *exec.Cmd) *exec.Cmd {
+		cmd.Stderr = realStderr
+		return cmd
+	}
+	app.UseTakeover(func(args []string) *exec.Cmd { return fullScreen(exec.Command(bin, args...)) })
 	// less +F follows the log as it grows; ctrl+c stops following, q returns.
 	app.UsePager(func(files []string) *exec.Cmd {
-		return exec.Command("less", append([]string{"+F", "--"}, files...)...)
+		return fullScreen(exec.Command("less", append([]string{"+F", "--"}, files...)...))
 	})
 
-	if _, err := tea.NewProgram(app).Run(); err != nil {
+	crash, crashErr := startCrashLog(filepath.Join(jobs.DefaultStateDir(), "crash.log"))
+	_, err = tea.NewProgram(app).Run()
+	if crashErr == nil && crash.stop() {
+		fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", crash.path)
+		return 1
+	}
+	if err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)
 		return 1
 	}

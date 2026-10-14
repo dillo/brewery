@@ -29,11 +29,15 @@ type Snapshot struct {
 }
 
 // DefaultCachePath is $XDG_CACHE_HOME/brewery/snapshot.json, falling back
-// to ~/.cache/brewery/snapshot.json.
+// to ~/.cache/brewery/snapshot.json. Without a home directory it uses the
+// temp directory rather than a path relative to wherever brewery started.
 func DefaultCachePath() string {
 	dir := os.Getenv("XDG_CACHE_HOME")
 	if dir == "" {
-		home, _ := os.UserHomeDir()
+		home, err := os.UserHomeDir()
+		if err != nil || home == "" {
+			home = os.TempDir()
+		}
 		dir = filepath.Join(home, ".cache")
 	}
 	return filepath.Join(dir, "brewery", "snapshot.json")
@@ -79,5 +83,9 @@ func Save(path string, s Snapshot) error {
 		os.Remove(tmp.Name())
 		return err
 	}
-	return os.Rename(tmp.Name(), path)
+	if err := os.Rename(tmp.Name(), path); err != nil {
+		os.Remove(tmp.Name())
+		return err
+	}
+	return nil
 }
