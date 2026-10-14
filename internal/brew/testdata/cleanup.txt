@@ -1,0 +1,5 @@
+Would remove: /Users/locutus/Library/Caches/Homebrew/aom--3.15.2 (4.4MB)
+Would remove: /Users/locutus/Library/Caches/Homebrew/aom_bottle_manifest--3.15.2 (19.8KB)
+Would remove: /Users/locutus/Library/Caches/Homebrew/git--2.56.0_1 (24.2MB)
+Would remove: /opt/homebrew/Cellar/git/2.50.0 (1,523 files, 58.1MB)
+==> This operation would free approximately 86.7MB of disk space.

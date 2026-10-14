@@ -139,6 +139,15 @@ func TestParseServices(t *testing.T) {
 	}
 }
 
+func TestParseCleanup(t *testing.T) {
+	if got, want := ParseCleanup(string(fixture(t, "cleanup.txt"))), (CleanupEstimate{Items: 4, Size: "86.7MB"}); got != want {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+	if got := ParseCleanup(""); got != (CleanupEstimate{}) {
+		t.Errorf("nothing to clean up: got %+v", got)
+	}
+}
+
 func TestParseTaps(t *testing.T) {
 	got, err := ParseTaps(fixture(t, "taps.json"))
 	if err != nil {

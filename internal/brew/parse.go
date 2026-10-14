@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -219,6 +220,26 @@ func ParseTaps(b []byte) ([]Tap, error) {
 		})
 	}
 	return out, nil
+}
+
+// freeRe finds the total in brew cleanup's last line: "==> This operation
+// would free approximately 678.9MB of disk space."
+var freeRe = regexp.MustCompile(`would free approximately (\S+) of disk space`)
+
+// ParseCleanup reads the output of `brew cleanup --dry-run`: a "Would
+// remove: …" line per file or directory, then the total. A cleanup with
+// nothing to do prints nothing.
+func ParseCleanup(out string) CleanupEstimate {
+	var e CleanupEstimate
+	for _, line := range strings.Split(out, "\n") {
+		if strings.HasPrefix(line, "Would remove") {
+			e.Items++
+		}
+	}
+	if m := freeRe.FindStringSubmatch(out); m != nil {
+		e.Size = m[1]
+	}
+	return e
 }
 
 // ParseDoctor splits `brew doctor` output into one warning per "Warning:"

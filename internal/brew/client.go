@@ -140,6 +140,42 @@ func (c *Client) Taps(ctx context.Context) ([]Tap, error) {
 	return ParseTaps(out)
 }
 
+// Cleanup asks brew what each cleanup would free, running both dry-runs
+// at once.
+func (c *Client) Cleanup(ctx context.Context) (Cleanup, error) {
+	type result struct {
+		e   CleanupEstimate
+		err error
+	}
+	dryRun := func(args ...string) chan result {
+		ch := make(chan result, 1)
+		go func() {
+			ctx, cancel := context.WithTimeout(ctx, c.Timeout)
+			defer cancel()
+			out, errb, err := c.r.Run(ctx, args...)
+			if err != nil {
+				if ctx.Err() != nil {
+					err = fmt.Errorf("timed out after %s", c.Timeout)
+				}
+				ch <- result{err: &QueryError{Args: args, Stderr: string(errb), Err: err}}
+				return
+			}
+			// Some lines go to stderr: read both.
+			ch <- result{e: ParseCleanup(string(out) + "\n" + string(errb))}
+		}()
+		return ch
+	}
+	std, all := dryRun("cleanup", "--dry-run"), dryRun("cleanup", "--dry-run", "--prune=all")
+	s, a := <-std, <-all
+	if s.err != nil {
+		return Cleanup{}, s.err
+	}
+	if a.err != nil {
+		return Cleanup{}, a.err
+	}
+	return Cleanup{Standard: s.e, All: a.e}, nil
+}
+
 // Doctor runs `brew doctor`. It exits 1 whenever it finds warnings, so a
 // non-zero exit that produced at least one warning is a normal result. A
 // timeout, a failure to run brew, or a non-zero exit with no warnings parsed

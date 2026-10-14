@@ -17,12 +17,13 @@ import (
 	"brewery/internal/state"
 )
 
-// fakeSource serves the fixture snapshot. servicesErr and doctorErr make
-// one query fail.
+// fakeSource serves the fixture snapshot. servicesErr, doctorErr and
+// cleanupErr make one query fail.
 type fakeSource struct {
 	snap        state.Snapshot
 	servicesErr error
 	doctorErr   error
+	cleanupErr  error
 }
 
 func newFakeSource(t *testing.T) *fakeSource { return &fakeSource{snap: fixtureSnapshot(t)} }
@@ -35,6 +36,12 @@ func (f *fakeSource) Doctor(context.Context) ([]brew.DoctorWarning, error) {
 		return nil, f.doctorErr
 	}
 	return f.snap.Doctor, nil
+}
+func (f *fakeSource) Cleanup(context.Context) (brew.Cleanup, error) {
+	if f.cleanupErr != nil {
+		return brew.Cleanup{}, f.cleanupErr
+	}
+	return f.snap.Cleanup, nil
 }
 func (f *fakeSource) Services(context.Context) ([]brew.Service, error) {
 	if f.servicesErr != nil {
@@ -89,6 +96,9 @@ func TestRefreshLoadsEverythingThenDoctorThenSaves(t *testing.T) {
 	if !a.snap.DoctorRan || len(a.snap.Doctor) != 2 {
 		t.Errorf("doctor not applied: ran=%v warnings=%d", a.snap.DoctorRan, len(a.snap.Doctor))
 	}
+	if !a.snap.CleanupRan || a.snap.Cleanup.All.Size != "86.7MB" {
+		t.Errorf("cleanup's dry-runs not applied: ran=%v %+v", a.snap.CleanupRan, a.snap.Cleanup)
+	}
 	saved, err := state.Load(a.cachePath)
 	if err != nil {
 		t.Fatalf("cache not written: %v", err)
@@ -131,6 +141,10 @@ func (c *countingSource) Taps(ctx context.Context) ([]brew.Tap, error) {
 	c.calls["taps"]++
 	return c.fakeSource.Taps(ctx)
 }
+func (c *countingSource) Cleanup(ctx context.Context) (brew.Cleanup, error) {
+	c.calls["cleanup"]++
+	return c.fakeSource.Cleanup(ctx)
+}
 func (c *countingSource) Doctor(ctx context.Context) ([]brew.DoctorWarning, error) {
 	c.calls["doctor"]++
 	if c.onDoctor != nil {
@@ -163,7 +177,7 @@ func TestTargetedRequestSkipsDoctorAndSaves(t *testing.T) {
 	os.Remove(a.cachePath)
 
 	drain(t, a, a.request(qServices))
-	if src.calls["services"] != 1 || src.calls["doctor"] != 0 || src.calls["installed"] != 0 {
+	if src.calls["services"] != 1 || src.calls["doctor"] != 0 || src.calls["cleanup"] != 0 || src.calls["installed"] != 0 {
 		t.Errorf("a targeted request ran %v", src.calls)
 	}
 	if _, err := state.Load(a.cachePath); err != nil {

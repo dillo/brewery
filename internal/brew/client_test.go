@@ -42,6 +42,26 @@ func TestClientInstalled(t *testing.T) {
 	}
 }
 
+func TestClientCleanup(t *testing.T) {
+	c := NewClient(fakeRunner{out: map[string][]byte{
+		"cleanup --dry-run":             []byte("Would remove: /x (3.9KB)\n==> This operation would free approximately 3.9KB of disk space.\n"),
+		"cleanup --dry-run --prune=all": fixture(t, "cleanup.txt"),
+	}})
+	got, err := c.Cleanup(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Cleanup{Standard: CleanupEstimate{1, "3.9KB"}, All: CleanupEstimate{4, "86.7MB"}}
+	if got != want {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+
+	c = NewClient(fakeRunner{err: map[string]error{"cleanup --dry-run --prune=all": errors.New("exit status 1")}})
+	if _, err := c.Cleanup(context.Background()); err == nil || !strings.Contains(err.Error(), "brew cleanup --dry-run --prune=all") {
+		t.Errorf("a failed dry-run is an error naming it: %v", err)
+	}
+}
+
 func TestClientQueryErrorIncludesStderr(t *testing.T) {
 	c := NewClient(fakeRunner{err: map[string]error{"services info --all --json": errors.New("exit status 1")}})
 	_, err := c.Services(context.Background())

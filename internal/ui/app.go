@@ -58,7 +58,7 @@ type App struct {
 
 	inflight    map[query]bool // queries running now
 	again       map[query]bool // requested while running: run once more when done
-	doctorAfter bool           // run doctor when the JSON queries are done
+	doctorAfter bool           // run doctor and cleanup's dry-runs when the JSON queries are done
 	dirty       bool           // a query succeeded since the last cache save
 	saveErr     error
 
@@ -140,6 +140,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		}
 	}
 	a.loaded[qDoctor] = snap.DoctorRan
+	a.loaded[qCleanup] = snap.CleanupRan
 	a.sync()
 	return a
 }
@@ -153,7 +154,8 @@ func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
 	a.jobs.setRows(jobRows(recs, a.now()))
 }
 
-// refresh re-runs every query: the JSON ones in parallel, then doctor.
+// refresh re-runs every query: the JSON ones in parallel, then doctor and
+// cleanup's dry-runs.
 func (a *App) refresh() tea.Cmd {
 	a.doctorAfter = true
 	return a.request(jsonQueries...)
@@ -236,6 +238,8 @@ func (a *App) apply(m resultMsg) {
 		a.snap.Taps = m.taps
 	case qDoctor:
 		a.snap.Doctor, a.snap.DoctorRan = m.doctor, true
+	case qCleanup:
+		a.snap.Cleanup, a.snap.CleanupRan = m.cleanup, true
 	}
 	a.sync()
 }
@@ -327,8 +331,8 @@ func (a *App) layout() {
 }
 
 // handleResult applies one query result and decides what runs next: a
-// repeat of the same query, doctor after a full refresh, and a cache save
-// once the JSON queries are all back.
+// repeat of the same query, doctor and cleanup's dry-runs after a full
+// refresh, and a cache save once the JSON queries are all back.
 func (a *App) handleResult(m resultMsg) tea.Cmd {
 	a.inflight[m.q] = false
 	if m.err != nil && a.ctx.Err() != nil {
@@ -347,7 +351,7 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	}
 	if a.doctorAfter && !a.jsonBusy() {
 		a.doctorAfter = false
-		doctor = a.request(qDoctor)
+		doctor = a.request(qDoctor, qCleanup)
 	}
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.

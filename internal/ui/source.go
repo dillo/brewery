@@ -18,6 +18,7 @@ type Source interface {
 	Services(ctx context.Context) ([]brew.Service, error)
 	Taps(ctx context.Context) ([]brew.Tap, error)
 	Doctor(ctx context.Context) ([]brew.DoctorWarning, error)
+	Cleanup(ctx context.Context) (brew.Cleanup, error)
 }
 
 var _ Source = (*brew.Client)(nil)
@@ -30,10 +31,11 @@ const (
 	qServices
 	qTaps
 	qDoctor
+	qCleanup
 )
 
 // queryNames name each query in the status bar.
-var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor"}
+var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup"}
 
 // resultMsg carries one query's result back to the App.
 type resultMsg struct {
@@ -43,11 +45,12 @@ type resultMsg struct {
 	services []brew.Service
 	taps     []brew.Tap
 	doctor   []brew.DoctorWarning
+	cleanup  brew.Cleanup
 	err      error
 }
 
-// jsonQueries are the queries a full refresh runs in parallel; doctor
-// follows once they have all returned.
+// jsonQueries are the queries a full refresh runs in parallel; doctor and
+// cleanup's dry-runs follow once they have all returned.
 var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
 
 // fetch runs one query. ctx is the App's root context, so quitting stops
@@ -66,6 +69,8 @@ func fetch(ctx context.Context, src Source, q query) tea.Cmd {
 			m.taps, m.err = src.Taps(ctx)
 		case qDoctor:
 			m.doctor, m.err = src.Doctor(ctx)
+		case qCleanup:
+			m.cleanup, m.err = src.Cleanup(ctx)
 		}
 		return m
 	}

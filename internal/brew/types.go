@@ -76,3 +76,15 @@ type DoctorWarning struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`
 }
+
+// CleanupEstimate is what one `brew cleanup --dry-run` says it would do.
+type CleanupEstimate struct {
+	Items int    `json:"items"` // files and directories it would remove
+	Size  string `json:"size"`  // brew's total, e.g. "678.9MB"; "" when it frees nothing
+}
+
+// Cleanup is what each of the cleanups brewery offers would free.
+type Cleanup struct {
+	Standard CleanupEstimate `json:"standard"` // brew cleanup: old versions, downloads over 120 days old
+	All      CleanupEstimate `json:"all"`      // brew cleanup --prune=all: every cached download too
+}

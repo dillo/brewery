@@ -44,6 +44,11 @@ func fixtureSnapshot(t *testing.T) state.Snapshot {
 		t.Fatal(err)
 	}
 	s.Doctor, s.DoctorRan = brew.ParseDoctor(string(readFixture(t, "doctor.txt"))), true
+	s.Cleanup = brew.Cleanup{
+		Standard: brew.CleanupEstimate{Items: 1, Size: "3.9KB"},
+		All:      brew.ParseCleanup(string(readFixture(t, "cleanup.txt"))),
+	}
+	s.CleanupRan = true
 	return s
 }
 

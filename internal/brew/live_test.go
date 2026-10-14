@@ -49,6 +49,9 @@ func TestLiveQueries(t *testing.T) {
 	if _, err := c.Doctor(ctx); err != nil {
 		t.Error(err)
 	}
+	if _, err := c.Cleanup(ctx); err != nil {
+		t.Error(err)
+	}
 }
 
 // Runs a read-only brew command through the pseudo-terminal runner.
