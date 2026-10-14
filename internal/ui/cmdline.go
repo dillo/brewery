@@ -131,6 +131,8 @@ func (a *App) execute(line string) tea.Cmd {
 	switch args[0] {
 	case "q", "quit":
 		return a.askQuit()
+	case "jobs":
+		return a.openJobs()
 	}
 	refresh, full := refreshAfter(args)
 	return a.run(action{title: strings.Join(args, " "), args: args, refresh: refresh, full: full, typed: true})

@@ -92,6 +92,12 @@ func (d *drawer) start(j *jobs.Job, reply io.Writer) {
 	d.reply.set(reply)
 }
 
+// replay shows a finished job again from the output it printed.
+func (d *drawer) replay(j *jobs.Job, output string) {
+	d.start(j, nil)
+	d.write([]byte(output))
+}
+
 // stop detaches the finished process: later replies are dropped.
 func (d *drawer) stop() { d.reply.set(nil) }
 

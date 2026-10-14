@@ -204,6 +204,9 @@ func (a *App) serviceKey(k string) tea.Cmd {
 
 // actionHints are the status-bar hints for the current tab's actions.
 func (a *App) actionHints() string {
+	if a.jobsOpen {
+		return "enter show output · esc close"
+	}
 	switch a.tab {
 	case tabInstalled:
 		return "u upgrade · x uninstall · p pin · f/F view"

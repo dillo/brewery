@@ -69,9 +69,11 @@ type App struct {
 	ticking   bool
 	frame     int
 
-	hist    *jobs.History // where finished jobs are saved, or nil
-	history []jobs.Record // finished jobs, newest first
-	histErr error         // the last save failed
+	hist     *jobs.History // where finished jobs are saved, or nil
+	history  []jobs.Record // finished jobs, newest first
+	histErr  error         // the last save failed
+	jobs     listTab       // the ":jobs" view
+	jobsOpen bool
 
 	mode    mode
 	cmd     cmdline     // the ":" prompt
@@ -112,7 +114,11 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
 		taps:      newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
+		jobs:      newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
 	}
+	// The history is read before the app starts, so the jobs view is never
+	// waiting for it.
+	a.jobs.loaded = true
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -130,6 +136,7 @@ func (a *App) Init() tea.Cmd { return a.refresh() }
 // there (newest first).
 func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
 	a.hist, a.history = &h, recs
+	a.jobs.setRows(jobRows(recs, a.now()))
 }
 
 // refresh re-runs every query: the JSON ones in parallel, then doctor.
@@ -284,7 +291,7 @@ func (a *App) layout() {
 		a.tabH -= dh
 	}
 	a.installed.resize(a.width, a.tabH)
-	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps} {
+	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs} {
 		t.resize(a.width, a.tabH)
 	}
 }
@@ -347,6 +354,11 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	}
 	if a.mode == modeCommand {
 		return a.cmdKey(msg)
+	}
+	if a.jobsOpen {
+		if cmd, ok := a.jobsKey(msg); ok {
+			return cmd
+		}
 	}
 
 	switch k {
@@ -430,6 +442,9 @@ func (a *App) render() string {
 	case tabTaps:
 		body = a.taps.view(a.errs[qTaps])
 	}
+	if a.jobsOpen {
+		body = a.jobs.view(nil)
+	}
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
 	}
@@ -495,7 +510,10 @@ func (a *App) statusBar() string {
 		badge = "RUNNING"
 	}
 	left := st.Mode(badge).Render(badge) + " " + tabNames[a.tab]
-	if a.tab == tabInstalled {
+	switch {
+	case a.jobsOpen:
+		left = st.Mode(badge).Render(badge) + " Jobs"
+	case a.tab == tabInstalled:
 		if p, ok := a.installed.selected(); ok {
 			left += " › " + p.Name
 		}
