@@ -85,6 +85,7 @@ type App struct {
 	cmd      cmdline         // the ":" prompt
 	filterIn textinput.Model // the "/" prompt
 	confirm  *confirmBox     // open confirmation, or nil
+	help     bool            // the ? overlay is open
 	flash    string          // one-off status message, cleared by the next key
 
 	comp     brew.Completions // brew's commands, for completing the prompt
@@ -403,6 +404,10 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if a.mode != modeCommand {
 		a.flash = "" // in COMMAND the bar shows only the prompt: keep it for when the line closes
 	}
+	if a.help {
+		a.help = false // any key closes help, and does nothing else
+		return nil
+	}
 	if a.confirm != nil {
 		ch, ok := a.confirm.answer(k)
 		if !ok {
@@ -453,6 +458,9 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.openCmdline()
 	case "/":
 		return a.openFilter()
+	case "?":
+		a.help = true
+		return nil
 	case "y":
 		return a.copyName()
 	case "ctrl+c":
@@ -548,6 +556,9 @@ func (a *App) render() string {
 	body = clipLines(body, bodyH) // a tab too tall for a small window mustn't push the rest off it
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
+	}
+	if a.help {
+		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
 	}
 	parts := []string{a.tabBar(), body}
 	if a.drawerShown() {
@@ -698,7 +709,7 @@ func (a *App) statusBar() string {
 	if a.jobsOpen {
 		quit = "close" // q closes the jobs view
 	}
-	hints := a.actionHints() + " · : command · q " + quit
+	hints := a.actionHints() + " · : command · ? help · q " + quit
 	if a.drawer.job != nil && !a.drawer.open {
 		hints = "o output · " + hints
 	}
