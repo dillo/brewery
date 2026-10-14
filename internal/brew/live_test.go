@@ -79,8 +79,16 @@ func TestLiveCompletions(t *testing.T) {
 	if !ok || up.Desc == "" || len(up.Flags) < 10 || len(up.Args) == 0 {
 		t.Errorf("upgrade parsed as %+v", up)
 	}
+	for _, cmd := range c.Commands {
+		if cmd.Desc == "" {
+			t.Errorf("command %s has no description", cmd.Name)
+		}
+	}
 	services, _ := c.Command("services")
 	if _, ok := services.Sub("start"); !ok {
 		t.Error("services start is missing")
+	}
+	if _, ok := services.Sub("t"); ok {
+		t.Error("services t is an alias of stop and should be skipped")
 	}
 }

@@ -41,6 +41,9 @@ func TestParseFishCommands(t *testing.T) {
 	if !strings.HasPrefix(services.Desc, "Manage background services") {
 		t.Errorf("the first description should win: %q", services.Desc)
 	}
+	if _, ok := c.Command("release"); ok {
+		t.Error("release has options but no __fish_brew_complete_cmd line, so it isn't a command")
+	}
 	if _, ok := c.Command("bundle"); ok {
 		t.Error("bundle isn't in the fixture")
 	}
@@ -103,6 +106,15 @@ func TestParseFishSubcommands(t *testing.T) {
 	}
 	if !all {
 		t.Errorf("start should have --all: %+v", start.Flags)
+	}
+	for _, alias := range []string{"unload", "t"} {
+		if _, ok := services.Sub(alias); ok {
+			t.Errorf("%s is an alias of stop and should be skipped", alias)
+		}
+	}
+	stop, _ := services.Sub("stop")
+	if len(stop.Flags) == 0 {
+		t.Errorf("stop lost its flags: %+v", stop)
 	}
 	if _, ok := services.Sub("launch"); ok {
 		t.Error("an alias without its own sub_cmd line should not become a subcommand")

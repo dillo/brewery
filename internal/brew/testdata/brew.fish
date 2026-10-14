@@ -129,3 +129,8 @@ __fish_brew_complete_sub_cmd 'services' 'start'   "Start service immediately and
 __fish_brew_complete_sub_cmd 'services' 'stop'    "Stop service immediately and unregister it from launching at login/boot"
 __fish_brew_complete_sub_arg 'services' 'run start stop restart' -l all -d "Run all available services"
 __fish_brew_complete_sub_arg 'services' 'run start stop restart' -a '(__fish_brew_suggest_services)'
+complete -f -c brew -n 'not __fish_brew_command; and set -q HOMEBREW_DEVELOPER' -a 'release' -d 'Create a new draft Homebrew/brew release with the appropriate version number and release notes'
+__fish_brew_complete_arg 'release' -l debug -d 'Display any debugging information'
+__fish_brew_complete_arg 'release' -l force -d 'Actually create the release and trigger the workflow. Without this, just show what would be done'
+__fish_brew_complete_sub_cmd 'services' 'unload' 'Stop the service formula immediately and unregister it from launching at login (or boot),'
+__fish_brew_complete_sub_cmd 'services' 't' 'Stop the service formula immediately and unregister it from launching at login (or boot),'

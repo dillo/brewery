@@ -56,7 +56,12 @@ const suggestPrefix = "(__fish_brew_suggest_"
 
 // ParseFish reads brew's fish completion script. Lines it doesn't
 // recognise are skipped; when a command is described twice (a tap can
-// append its own block), the first description wins.
+// append its own block), the first description wins. Options only attach
+// to commands declared by a __fish_brew_complete_cmd line (developer-only
+// commands are declared another way and are left out). brew lists every
+// subcommand alias on its own line with its canonical name's description;
+// a subcommand whose description matches an earlier one's is skipped, so
+// the first-declared (canonical) name wins.
 func ParseFish(r io.Reader) (Completions, error) {
 	cmds := map[string]*Command{}
 	subs := map[string]map[string]*Command{} // command → subcommand
@@ -68,7 +73,9 @@ func ParseFish(r io.Reader) (Completions, error) {
 	}
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64<<10), 1<<20)
-	var subArgs [][]string // applied once every subcommand is known
+	var subArgs [][]string                     // applied once every subcommand is known
+	var cmdArgs [][]string                     // applied once every command is known
+	seenDesc := map[string]map[string]string{} // command → description → first name
 	for sc.Scan() {
 		tok := fishTokens(sc.Text())
 		if len(tok) < 2 {
@@ -82,8 +89,7 @@ func ParseFish(r io.Reader) (Completions, error) {
 		case "__fish_brew_complete_arg":
 			// The first argument is the command, maybe followed by a fish
 			// condition ("upgrade; and not __fish_seen_argument …").
-			name, _, _ := strings.Cut(tok[1], ";")
-			addOptions(get(strings.TrimSpace(name)), tok[2:])
+			cmdArgs = append(cmdArgs, tok)
 		case "__fish_brew_complete_sub_cmd":
 			if len(tok) < 3 {
 				continue
@@ -91,19 +97,35 @@ func ParseFish(r io.Reader) (Completions, error) {
 			if subs[tok[1]] == nil {
 				subs[tok[1]] = map[string]*Command{}
 			}
-			if s := subs[tok[1]][tok[2]]; s == nil {
-				s = &Command{Name: tok[2]}
-				if len(tok) > 3 {
-					s.Desc = tok[3]
-				}
-				subs[tok[1]][tok[2]] = s
+			if subs[tok[1]][tok[2]] != nil {
+				continue
 			}
+			desc := ""
+			if len(tok) > 3 {
+				desc = tok[3]
+			}
+			if desc != "" {
+				if seenDesc[tok[1]] == nil {
+					seenDesc[tok[1]] = map[string]string{}
+				}
+				if first, dup := seenDesc[tok[1]][desc]; dup && first != tok[2] {
+					continue // an alias of first
+				}
+				seenDesc[tok[1]][desc] = tok[2]
+			}
+			subs[tok[1]][tok[2]] = &Command{Name: tok[2], Desc: desc}
 		case "__fish_brew_complete_sub_arg":
 			subArgs = append(subArgs, tok)
 		}
 	}
 	if err := sc.Err(); err != nil {
 		return Completions{}, err
+	}
+	for _, tok := range cmdArgs {
+		name, _, _ := strings.Cut(tok[1], ";")
+		if c := cmds[strings.TrimSpace(name)]; c != nil {
+			addOptions(c, tok[2:])
+		}
 	}
 	for _, tok := range subArgs {
 		if len(tok) < 3 {
