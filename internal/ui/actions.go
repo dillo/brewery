@@ -311,7 +311,10 @@ func (a *App) actionHints() string {
 	}
 	switch a.tab {
 	case tabInstalled:
-		return "u upgrade · x uninstall · p pin · f/F view"
+		if a.installed.pv.focus {
+			return "j/k scroll · tab back to the list · u upgrade · x uninstall"
+		}
+		return "u upgrade · x uninstall · p pin · f/F view · tab preview"
 	case tabOutdated:
 		return "u upgrade · A upgrade all"
 	case tabServices:

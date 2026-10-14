@@ -461,6 +461,10 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		return a.quit()
 	case "esc":
+		if a.tab == tabInstalled && a.installed.pv.focus {
+			a.installed.pv.focus = false // back to the list first
+			return nil
+		}
 		a.drawer.open = false
 		return nil
 	case "o":

@@ -46,6 +46,7 @@ type installedTab struct {
 	ix     *state.Index
 	rows   []brew.Package // the filtered rows, in table order
 	match  string         // the "/" filter on names
+	pv     scroller       // the preview, which tab or enter focuses
 	loaded bool
 	table  table.Model
 	w, h   int
@@ -92,7 +93,26 @@ func (t *installedTab) apply() {
 	for i, p := range t.rows {
 		rows[i] = table.Row{p.Name, p.Version, p.Kind.String(), status(p)}
 	}
+	before := t.selectedKey()
 	setRowsKeeping(&t.table, rows, installedKey)
+	t.followSelection(before)
+}
+
+// selectedKey identifies the selected package, or is "" for none.
+func (t *installedTab) selectedKey() string {
+	p, ok := t.selected()
+	if !ok {
+		return ""
+	}
+	return p.Name + "\x00" + p.Kind.String()
+}
+
+// followSelection starts the preview at the top when the selection has
+// moved on from before.
+func (t *installedTab) followSelection(before string) {
+	if t.selectedKey() != before {
+		t.pv.off = 0
+	}
 }
 
 // installedKey identifies an Installed row by name and type: a formula
@@ -126,7 +146,17 @@ func (t *installedTab) selected() (brew.Package, bool) {
 }
 
 func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	if k := msg.String(); k == "f" || k == "F" {
+	k := msg.String()
+	switch {
+	case k == "tab" || (k == "enter" && !t.pv.focus):
+		t.pv.focus = !t.pv.focus
+		return nil
+	case t.pv.focus && k != "f" && k != "F":
+		_, ih := paneInner(t.w-t.listWidth(), t.h)
+		t.pv.scroll(k, ih/2)
+		return nil
+	}
+	if k == "f" || k == "F" {
 		step := installedFilter(1)
 		if k == "F" {
 			step = installedFilter(len(views) - 1)
@@ -135,8 +165,10 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 		t.apply() // keeps the selected package if the new view shows it
 		return nil
 	}
+	before := t.selectedKey()
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
+	t.followSelection(before)
 	return cmd
 }
 
@@ -169,7 +201,7 @@ func (t *installedTab) view(err error) string {
 	if t.match != "" {
 		title += " · /" + t.match
 	}
-	list := pane(t.st, title, body+t.table.View(), listW, h, true)
+	list := pane(t.st, title, body+t.table.View(), listW, h, !t.pv.focus)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
@@ -178,11 +210,12 @@ func (t *installedTab) view(err error) string {
 	}
 	switch {
 	case ok:
-		previewTitle, body = p.Name, t.preview(p)
+		_, ph := paneInner(w-listW, h)
+		previewTitle, body = p.Name, t.pv.window(t.preview(p), ph)
 	case !t.loaded && err == nil:
 		body = t.st.Muted.Render("loading…")
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, false))
+	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, t.pv.focus))
 }
 
 // viewBar lists every view with its count, the active one highlighted,
