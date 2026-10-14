@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -83,6 +84,9 @@ type App struct {
 
 	comp     brew.Completions // brew's commands, for completing the prompt
 	loadComp func(context.Context) (brew.Completions, error)
+
+	takeoverCmd func(args []string) *exec.Cmd // builds full-screen commands
+	takingOver  *jobs.Job                     // the full-screen command running now
 
 	tab           int
 	width, height int
@@ -251,6 +255,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.saveErr = msg.err
 	case historySavedMsg:
 		a.histErr = msg.err
+	case takeoverDoneMsg:
+		return a.takeoverDone(msg)
 	case completionsMsg:
 		if msg.err == nil {
 			a.comp = msg.comp // without them, only brewery's own commands complete

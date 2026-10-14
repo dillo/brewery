@@ -133,8 +133,11 @@ func (a *App) cmdKey(msg tea.KeyPressMsg) tea.Cmd {
 
 // execute runs a line typed at the prompt. A leading "brew" is optional.
 // Lines run exactly as typed: no confirmation, and brew may auto-update.
+// Editors and shells take over the terminal, as does any line starting
+// with "!".
 func (a *App) execute(line string) tea.Cmd {
-	args, err := splitArgs(line)
+	full, force := strings.CutPrefix(line, "!")
+	args, err := splitArgs(full)
 	if err != nil {
 		return a.note(err.Error())
 	}
@@ -144,14 +147,17 @@ func (a *App) execute(line string) tea.Cmd {
 	if len(args) == 0 {
 		return nil
 	}
+	if force || takesOver(args) {
+		return a.takeover(args)
+	}
 	switch args[0] {
 	case "q", "quit":
 		return a.askQuit()
 	case "jobs":
 		return a.openJobs()
 	}
-	refresh, full := refreshAfter(args)
-	return a.run(action{title: strings.Join(args, " "), args: args, refresh: refresh, full: full, typed: true})
+	refresh, all := refreshAfter(args)
+	return a.run(action{title: strings.Join(args, " "), args: args, refresh: refresh, full: all, typed: true})
 }
 
 // readOnly are brew commands that change nothing brewery shows, so no

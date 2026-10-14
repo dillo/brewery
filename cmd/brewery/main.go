@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -57,6 +58,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	recs, _ := hist.Load() // no history yet is fine
 	app.UseHistory(hist, recs)
 	app.UseCompletions(client.Completions)
+	app.UseTakeover(func(args []string) *exec.Cmd { return exec.Command(bin, args...) })
 
 	if _, err := tea.NewProgram(app).Run(); err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)
