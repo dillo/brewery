@@ -1,10 +1,12 @@
 package jobs
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -158,19 +160,54 @@ func TestHistoryFilesArePrivate(t *testing.T) {
 	}
 }
 
-func TestHistorySaveRemovesStrayTempFiles(t *testing.T) {
+func TestHistorySaveLeavesTempFilesAndLoadSweepsOldOnes(t *testing.T) {
 	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
 	if err := os.MkdirAll(h.Dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	stray := filepath.Join(h.Dir, "123.tmp")
-	if err := os.WriteFile(stray, []byte("half"), 0o600); err != nil {
+	inflight := filepath.Join(h.Dir, "inflight.tmp") // another save, mid-write
+	stray := filepath.Join(h.Dir, "stray.tmp")       // left by a crash
+	for _, f := range []string{inflight, stray} {
+		if err := os.WriteFile(f, []byte("half"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	old := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(stray, old, old); err != nil {
 		t.Fatal(err)
 	}
 	if err := h.Save(record("pin git", t0)); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := os.Stat(inflight); err != nil {
+		t.Errorf("Save must not touch another save's temp file: %v", err)
+	}
+	if _, err := h.Load(); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := os.Stat(stray); !os.IsNotExist(err) {
-		t.Errorf("stray temp file should be removed: %v", err)
+		t.Errorf("Load should remove an old stray temp file: %v", err)
+	}
+	if _, err := os.Stat(inflight); err != nil {
+		t.Errorf("Load must keep a fresh temp file: %v", err)
+	}
+}
+
+func TestHistoryConcurrentSavesWithTheSameStartAllSurvive(t *testing.T) {
+	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
+	var wg sync.WaitGroup
+	for i := range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := h.Save(record(fmt.Sprintf("job %d", i), t0)); err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	wg.Wait()
+	got, err := h.Load()
+	if err != nil || len(got) != 8 {
+		t.Fatalf("Load = %d records, %v; want 8", len(got), err)
 	}
 }

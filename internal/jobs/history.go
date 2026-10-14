@@ -114,26 +114,24 @@ func (h History) Save(r Record) error {
 		os.Remove(tmp)
 		return werr
 	}
-	// Jobs that start within the clock's precision share a name: add a
-	// suffix, which still sorts after the timestamp, rather than lose one.
+	// Jobs that start within the clock's precision share a name. Linking
+	// fails if the name is taken, so a concurrent save is never replaced:
+	// try "-1", "-2", … instead. (The order among records with the same
+	// start time is unspecified.)
 	stem := filepath.Join(h.Dir, r.Started.UTC().Format("20060102T150405.000000000"))
 	name := stem + ".json"
 	for i := 1; ; i++ {
-		if _, err := os.Lstat(name); os.IsNotExist(err) {
+		err := os.Link(tmp, name)
+		if err == nil {
 			break
+		}
+		if !os.IsExist(err) {
+			os.Remove(tmp)
+			return err
 		}
 		name = fmt.Sprintf("%s-%d.json", stem, i)
 	}
-	if err := os.Rename(tmp, name); err != nil {
-		os.Remove(tmp)
-		return err
-	}
-	// A crash mid-save leaves a temp file behind.
-	if stray, _ := filepath.Glob(filepath.Join(h.Dir, "*.tmp")); len(stray) > 0 {
-		for _, s := range stray {
-			os.Remove(s)
-		}
-	}
+	os.Remove(tmp)
 	files, err := h.files()
 	if err != nil {
 		return err
@@ -147,6 +145,7 @@ func (h History) Save(r Record) error {
 // Load reads the history, newest first. A missing directory is an empty
 // history, and files that can't be read are skipped.
 func (h History) Load() ([]Record, error) {
+	h.sweepTemps()
 	files, err := h.files()
 	if err != nil {
 		return nil, err
@@ -163,6 +162,17 @@ func (h History) Load() ([]Record, error) {
 		}
 	}
 	return recs, nil
+}
+
+// sweepTemps removes temp files a crash left mid-save. A recent one may
+// belong to a save in progress (another instance's), so it stays.
+func (h History) sweepTemps() {
+	stray, _ := filepath.Glob(filepath.Join(h.Dir, "*.tmp"))
+	for _, f := range stray {
+		if fi, err := os.Stat(f); err == nil && time.Since(fi.ModTime()) > time.Minute {
+			os.Remove(f)
+		}
+	}
 }
 
 // files lists the record files, oldest first.
