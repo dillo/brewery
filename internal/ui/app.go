@@ -68,6 +68,10 @@ type App struct {
 	ticking   bool
 	frame     int
 
+	hist    *jobs.History // where finished jobs are saved, or nil
+	history []jobs.Record // finished jobs, newest first
+	histErr error         // the last save failed
+
 	mode    mode
 	confirm *confirmBox // open confirmation, or nil
 	flash   string      // one-off status message, cleared by the next key
@@ -114,6 +118,12 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 }
 
 func (a *App) Init() tea.Cmd { return a.refresh() }
+
+// UseHistory saves finished jobs to h, starting from the records already
+// there (newest first).
+func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
+	a.hist, a.history = &h, recs
+}
 
 // refresh re-runs every query: the JSON ones in parallel, then doctor.
 func (a *App) refresh() tea.Cmd {
@@ -215,6 +225,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		return a.handleResult(msg)
 	case savedMsg:
 		a.saveErr = msg.err
+	case historySavedMsg:
+		a.histErr = msg.err
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
 	case tea.PasteMsg:
@@ -493,6 +505,9 @@ func (a *App) statusBar() string {
 	}
 	if a.saveErr != nil {
 		right = append(right, st.Warn.Render("cache not saved"))
+	}
+	if a.histErr != nil {
+		right = append(right, st.Warn.Render("history not saved"))
 	}
 	r := strings.Join(right, "  ")
 

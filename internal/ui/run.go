@@ -89,7 +89,7 @@ func (a *App) launch(j *jobs.Job) tea.Cmd {
 	if err != nil {
 		a.queue.Finish(j, -1, false, err.Error(), a.now())
 		a.flash = a.st.Err.Render(fmt.Sprintf("✗ %s: couldn't start brew: %v", j.Title, err))
-		return a.runNext()
+		return tea.Batch(a.record(j, "couldn't start brew: "+err.Error()), a.runNext())
 	}
 	a.proc, a.canceled = p, false
 	a.drawer.start(j, p)
@@ -182,10 +182,27 @@ func (a *App) afterJob(j *jobs.Job) tea.Cmd {
 		a.flash = a.st.Err.Render(msg)
 	}
 	act := a.acts[j.ID]
+	saving := a.record(j, a.drawer.output())
 	if act.full {
-		return a.refresh()
+		return tea.Batch(saving, a.refresh())
 	}
-	return a.request(act.refresh...)
+	return tea.Batch(saving, a.request(act.refresh...))
+}
+
+// historySavedMsg reports whether a finished job was saved to the history.
+type historySavedMsg struct{ err error }
+
+// record adds a finished job to the history and saves it. The job's
+// action is no longer needed.
+func (a *App) record(j *jobs.Job, output string) tea.Cmd {
+	delete(a.acts, j.ID)
+	r := jobs.NewRecord(j, output)
+	a.history = append([]jobs.Record{r}, a.history[:min(len(a.history), jobs.Keep-1)]...)
+	if a.hist == nil {
+		return nil
+	}
+	h := *a.hist
+	return func() tea.Msg { return historySavedMsg{err: h.Save(r)} }
 }
 
 // stopJob interrupts the current job, as ctrl+c in a terminal would. A job

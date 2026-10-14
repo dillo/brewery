@@ -11,6 +11,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"brewery/internal/brew"
+	"brewery/internal/jobs"
 	"brewery/internal/state"
 	"brewery/internal/ui"
 )
@@ -51,7 +52,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return brew.StartPTY(bin, args, env, cols, rows)
 	}
 
-	if _, err := tea.NewProgram(ui.New(client, start, snap, cachePath)).Run(); err != nil {
+	app := ui.New(client, start, snap, cachePath)
+	hist := jobs.History{Dir: jobs.DefaultHistoryDir()}
+	recs, _ := hist.Load() // no history yet is fine
+	app.UseHistory(hist, recs)
+
+	if _, err := tea.NewProgram(app).Run(); err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)
 		return 1
 	}
