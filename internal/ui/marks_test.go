@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"brewery/internal/brew"
 )
 
 func TestMarkAndUpgradeSeveral(t *testing.T) {
@@ -86,5 +88,72 @@ func TestUninstallSeveralRefusesWhatOthersNeed(t *testing.T) {
 	keys(t, a, "esc", "esc")
 	if a.marks() != 0 || len(fs.calls) != 0 {
 		t.Errorf("esc closes the box, then clears the marks: %d marked, ran %v", a.marks(), fs.calls)
+	}
+}
+
+func TestStatusBarCountsMarksTheFilterHides(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "space") // docker-desktop
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked") || strings.Contains(bar, "hidden") {
+		t.Errorf("a shown mark: bar %q", bar)
+	}
+	keys(t, a, "/")
+	typeText(t, a, "git")
+	keys(t, a, "enter")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked · 1 hidden") {
+		t.Errorf("a filtered-out mark: bar %q", bar)
+	}
+	keys(t, a, "/", "esc")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked") || strings.Contains(bar, "hidden") {
+		t.Errorf("shown again: bar %q", bar)
+	}
+}
+
+func TestStatusBarCountsMarksTheViewHides(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "f") // all
+	keys(t, a, "j", "j", "j", "space")
+	if a.marks() != 1 || strings.Contains(stripANSI(a.statusBar()), "hidden") {
+		t.Fatalf("one shown mark: bar %q", stripANSI(a.statusBar()))
+	}
+	for i := 0; i < 6 && !strings.Contains(stripANSI(a.statusBar()), "hidden"); i++ {
+		keys(t, a, "f")
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked · 1 hidden") {
+		t.Errorf("some view should hide the mark: bar %q", bar)
+	}
+}
+
+func TestStatusBarCountsOutdatedMarksTheFilterHides(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "3", "space") // lua-language-server
+	keys(t, a, "/")
+	typeText(t, a, "dock")
+	keys(t, a, "enter")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked · 1 hidden") {
+		t.Errorf("bar %q", bar)
+	}
+	keys(t, a, "/", "esc")
+	if bar := stripANSI(a.statusBar()); strings.Contains(bar, "hidden") {
+		t.Errorf("shown again: bar %q", bar)
+	}
+}
+
+func TestMarksOnVanishedRowsAreDropped(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "space") // docker-desktop
+	if a.marks() != 1 {
+		t.Fatalf("marks: %d", a.marks())
+	}
+	var keep []brew.Package
+	for _, p := range a.snap.Packages {
+		if p.Name != "docker-desktop" {
+			keep = append(keep, p)
+		}
+	}
+	a.snap.Packages = keep
+	a.sync()
+	if a.marks() != 0 {
+		t.Errorf("a mark on a removed package should go: %d", a.marks())
 	}
 }

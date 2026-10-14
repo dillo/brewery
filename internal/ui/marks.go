@@ -49,6 +49,18 @@ func (a *App) marks() int {
 	return 0
 }
 
+// hiddenMarks is how many marked rows the current tab isn't showing, hidden
+// by its view or its "/" filter.
+func (a *App) hiddenMarks() int {
+	switch a.tab {
+	case tabInstalled:
+		return a.installed.hiddenMarks()
+	case tabOutdated:
+		return a.outdated.hiddenMarks()
+	}
+	return 0
+}
+
 // clearMarks unmarks every row on the current tab.
 func (a *App) clearMarks() {
 	switch a.tab {
@@ -150,7 +162,7 @@ func (a *App) askUninstallMarked() tea.Cmd {
 	run := func(extra []string) func() tea.Cmd {
 		return func() tea.Cmd {
 			a.clearMarks()
-			all := ts
+			all := slices.Clone(ts)
 			for _, o := range extra {
 				all = append(all, target{o, brew.KindFormula}) // only formulae are installed as dependencies
 			}
@@ -225,6 +237,28 @@ func (t *listTab) toggleMark() {
 		t.marked[k] = true
 	}
 	t.apply()
+}
+
+// hiddenMarks is how many marked packages aren't among the rows.
+func (t *installedTab) hiddenMarks() int {
+	shown := 0
+	for _, p := range t.rows {
+		if t.marked[pkgKey(p)] {
+			shown++
+		}
+	}
+	return len(t.marked) - shown
+}
+
+// hiddenMarks is how many marked rows the filter hides.
+func (t *listTab) hiddenMarks() int {
+	shown := 0
+	for _, i := range t.idx {
+		if t.marked[t.key(t.all[i])] {
+			shown++
+		}
+	}
+	return len(t.marked) - shown
 }
 
 // markedIdx are the marked rows' indexes into the slice the rows were

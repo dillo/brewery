@@ -651,6 +651,9 @@ func (a *App) statusBar() string {
 	}
 	if n := a.marks(); n > 0 && !a.jobsOpen {
 		left += fmt.Sprintf(" · %d marked", n)
+		if h := a.hiddenMarks(); h > 0 {
+			left += fmt.Sprintf(" · %d hidden", h)
+		}
 	}
 
 	var right []string
