@@ -86,7 +86,7 @@ func TestHomeCleanupTile(t *testing.T) {
 		return tl.value + " (" + tl.detail + ")"
 	}
 	h := loadedHome()
-	if got := cleanupTile(h, state.Snapshot{CleanupRan: true}); got != "✓ tidy (nothing to remove)" {
+	if got := cleanupTile(h, state.Snapshot{CleanupRan: true}); got != "✓ tidy (all clean)" {
 		t.Errorf("nothing to clean: %q", got)
 	}
 	only := state.Snapshot{CleanupRan: true, Cleanup: brew.Cleanup{Standard: brew.CleanupEstimate{Items: 1, Size: "3.9KB"}}}

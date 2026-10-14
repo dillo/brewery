@@ -89,7 +89,7 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 			doctor.value, doctor.style, doctor.detail = plural(n, "warning"), st.Warn, "see below"
 		}
 	}
-	cleanup := tile{"Cleanup", "✓ tidy", st.OK, "nothing to remove", openCleanup}
+	cleanup := tile{"Cleanup", "✓ tidy", st.OK, "all clean", openCleanup}
 	switch size := cmp.Or(snap.Cleanup.All.Size, snap.Cleanup.Standard.Size); {
 	case h.errs[qCleanup] != nil:
 		cleanup.value, cleanup.style, cleanup.detail = "✗ failed", st.Err, "r retries"

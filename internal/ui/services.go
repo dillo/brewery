@@ -48,10 +48,11 @@ func readLogTail(path string) (string, error) {
 	}
 	off := max(info.Size()-logTailBytes, 0)
 	b := make([]byte, info.Size()-off)
-	if _, err := f.ReadAt(b, off); err != nil && !errors.Is(err, io.EOF) {
+	n, err := f.ReadAt(b, off)
+	if err != nil && !errors.Is(err, io.EOF) {
 		return "", err
 	}
-	s := strings.ToValidUTF8(string(b), "�")
+	s := strings.ToValidUTF8(string(b[:n]), "�")
 	if off > 0 {
 		if i := strings.IndexByte(s, '\n'); i >= 0 {
 			s = s[i+1:] // the first line was cut

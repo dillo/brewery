@@ -382,7 +382,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.mode = modeNormal
 		} else if a.proc != nil {
 			if k == "ctrl+c" {
-				a.canceled = true // brew's death by 0x03 is a stop, not a failure
+				a.canceled = true // a ctrl+c the user sends marks the run as stopped, unless brew then finishes cleanly
 			}
 			a.proc.Write(keyBytes(msg))
 		}
