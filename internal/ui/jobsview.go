@@ -58,7 +58,7 @@ func (a *App) jobsKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	case "1", "2", "3", "4", "5", "[", "]":
 		a.jobsOpen = false
 		return nil, false
-	case ":", "o", "r", "ctrl+c":
+	case ":", "/", "o", "r", "ctrl+c":
 		return nil, false
 	}
 	return a.jobs.update(msg), true

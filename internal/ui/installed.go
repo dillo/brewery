@@ -45,6 +45,7 @@ type installedTab struct {
 	all    []brew.Package
 	ix     *state.Index
 	rows   []brew.Package // the filtered rows, in table order
+	match  string         // the "/" filter on names
 	loaded bool
 	table  table.Model
 	w, h   int
@@ -77,7 +78,7 @@ func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
 func (t *installedTab) apply() {
 	t.rows = t.rows[:0]
 	for _, p := range t.all {
-		if t.shows(t.filter, p) {
+		if t.shows(t.filter, p) && matches(p.Name, t.match) {
 			t.rows = append(t.rows, p)
 		}
 	}
@@ -107,6 +108,13 @@ func status(p brew.Package) string {
 		s = append(s, "↑")
 	}
 	return strings.Join(s, " ")
+}
+
+func (t *installedTab) matchText() string { return t.match }
+
+func (t *installedTab) setMatch(m string) {
+	t.match = m
+	t.apply()
 }
 
 func (t *installedTab) selected() (brew.Package, bool) {
@@ -157,10 +165,17 @@ func (t *installedTab) view(err error) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(max(ih, 0))
-	list := pane(t.st, "Installed", body+t.table.View(), listW, h, true)
+	title := "Installed"
+	if t.match != "" {
+		title += " · /" + t.match
+	}
+	list := pane(t.st, title, body+t.table.View(), listW, h, true)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
+	if t.match != "" {
+		body = t.st.Muted.Render("nothing in this view matches /" + t.match)
+	}
 	switch {
 	case ok:
 		previewTitle, body = p.Name, t.preview(p)

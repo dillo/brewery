@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
@@ -39,6 +40,7 @@ const (
 	modeNormal  mode = iota // keys drive brewery
 	modeInsert              // keys go to the running brew command
 	modeCommand             // keys edit the ":" command line
+	modeFilter              // keys edit the "/" filter
 )
 
 // App is the root Bubble Tea model.
@@ -79,10 +81,11 @@ type App struct {
 	jobs     listTab       // the ":jobs" view
 	jobsOpen bool
 
-	mode    mode
-	cmd     cmdline     // the ":" prompt
-	confirm *confirmBox // open confirmation, or nil
-	flash   string      // one-off status message, cleared by the next key
+	mode     mode
+	cmd      cmdline         // the ":" prompt
+	filterIn textinput.Model // the "/" prompt
+	confirm  *confirmBox     // open confirmation, or nil
+	flash    string          // one-off status message, cleared by the next key
 
 	comp     brew.Completions // brew's commands, for completing the prompt
 	loadComp func(context.Context) (brew.Completions, error)
@@ -125,6 +128,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		readLog:   readLogTail,
 		drawer:    newDrawer(st),
 		cmd:       newCmdline(st),
+		filterIn:  newFilterInput(st),
 		installed: newInstalledTab(st),
 		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
@@ -134,6 +138,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	// The history is read before the app starts, so the jobs view is never
 	// waiting for it.
 	a.jobs.loaded = true
+	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
@@ -307,6 +312,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 			cmd := a.cmd.update(msg)
 			a.suggest(false)
 			return cmd
+		case a.mode == modeFilter:
+			return a.filterKey(msg)
 		}
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
@@ -415,6 +422,9 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if a.mode == modeCommand {
 		return a.cmdKey(msg)
 	}
+	if a.mode == modeFilter {
+		return a.filterKey(msg)
+	}
 	if a.jobsOpen {
 		if cmd, ok := a.jobsKey(msg); ok {
 			return cmd
@@ -426,6 +436,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.askQuit()
 	case ":":
 		return a.openCmdline()
+	case "/":
+		return a.openFilter()
 	case "ctrl+c":
 		if a.queue.Current() != nil {
 			return a.askStop()
@@ -571,19 +583,31 @@ func (a *App) tabBar() string {
 	return tabs + "\n" + st.TabRule.Render(strings.Repeat("─", a.width))
 }
 
+// promptBar is the status bar while a line is being typed: the mode's
+// badge, the line in what room is left, and a hint when it fits.
+func (a *App) promptBar(mode, hint string, line func(w int) string) string {
+	st := a.st
+	badge := st.Mode(mode).Render(mode) + " "
+	hint = st.Muted.Render(hint + " ")
+	room := a.width - lipgloss.Width(badge) - 1
+	if room-lipgloss.Width(hint) >= 30 {
+		room -= lipgloss.Width(hint)
+	} else {
+		hint = ""
+	}
+	return st.StatusBar.Width(a.width).Render(ansi.Truncate(badge+line(room)+hint, a.width, ""))
+}
+
 func (a *App) statusBar() string {
 	st := a.st
-	if a.mode == modeCommand {
-		badge := st.Mode("COMMAND").Render("COMMAND") + " "
-		hint := st.Muted.Render("tab complete · ↑↓ history · esc cancel ")
-		room := a.width - lipgloss.Width(badge) - 1
-		if room-lipgloss.Width(hint) >= 30 {
-			room -= lipgloss.Width(hint)
-		} else {
-			hint = ""
-		}
-		line := badge + a.cmd.view(room) + hint
-		return st.StatusBar.Width(a.width).Render(ansi.Truncate(line, a.width, ""))
+	switch a.mode {
+	case modeCommand:
+		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
+	case modeFilter:
+		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
+			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
+			return a.filterIn.View()
+		})
 	}
 	badge := "NORMAL"
 	switch {
