@@ -509,6 +509,7 @@ func (a *App) render() string {
 			body = a.taps.view(a.errs[qTaps])
 		}
 	}
+	body = clipLines(body, bodyH) // a tab too tall for a small window mustn't push the rest off it
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
 	}
@@ -516,12 +517,18 @@ func (a *App) render() string {
 	if a.drawerShown() {
 		parts = append(parts, a.drawer.view(a.width, a.bodyHeight()-bodyH, a.now(), a.frame, a.mode == modeInsert))
 	}
-	screen := lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...)
+	screen := clipLines(lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...), a.height)
 	if p := a.cmd.popup(a.st, a.width); a.mode == modeCommand && p != "" {
 		h := lipgloss.Height(screen)
 		screen = overlayAt(screen, p, a.width, h, 0, max(h-1-lipgloss.Height(p), 0))
 	}
 	return screen
+}
+
+// clipLines keeps at most the first n lines of s.
+func clipLines(s string, n int) string {
+	lines := strings.Split(s, "\n")
+	return strings.Join(lines[:min(len(lines), max(n, 0))], "\n")
 }
 
 // bodyHeight is the space between the tab bar (tabs + rule) and the status bar.

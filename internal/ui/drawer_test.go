@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
 	"brewery/internal/jobs"
@@ -172,7 +173,7 @@ func TestDrawerDropsRepliesAfterStop(t *testing.T) {
 }
 
 func TestDrawerHeight(t *testing.T) {
-	for _, tt := range []struct{ body, want int }{{40, 14}, {21, 8}, {12, 6}, {7, 4}, {3, 0}} {
+	for _, tt := range []struct{ body, want int }{{40, 16}, {37, 16}, {21, 10}, {13, 7}, {12, 6}, {9, 5}, {7, 5}, {3, 3}} {
 		if got := drawerHeight(tt.body); got != tt.want {
 			t.Errorf("drawerHeight(%d) = %d, want %d", tt.body, got, tt.want)
 		}
@@ -220,5 +221,32 @@ func TestDrawerKeepsDrainingAfterAFailedReply(t *testing.T) {
 	case <-done:
 	case <-time.After(2 * time.Second):
 		t.Fatal("write blocked: the reply drain stopped after a failed reply")
+	}
+}
+
+func TestFrameFitsSmallWindows(t *testing.T) {
+	for _, h := range []int{6, 7, 8, 9, 10, 12, 16, 24, 30, 40} {
+		a := newJobApp(t, &fakeStarter{})
+		a.Update(tea.WindowSizeMsg{Width: 80, Height: h})
+		if got := lipgloss.Height(a.render()); got != h {
+			t.Errorf("height %d, no job: rendered %d lines", h, got)
+		}
+		p := newFakeProc(0, "working")
+		a = newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+		a.Update(tea.WindowSizeMsg{Width: 80, Height: h})
+		settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
+		out := a.render()
+		if got := lipgloss.Height(out); got != h {
+			t.Errorf("height %d, drawer open: rendered %d lines", h, got)
+		}
+		if h >= 10 && !strings.Contains(stripANSI(out), "working") {
+			t.Errorf("height %d: the drawer should show the job's output:\n%s", h, stripANSI(out))
+		}
+	}
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{newFakeProc(0)}})
+	a.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
+	if a.drawer.rows != 6 {
+		t.Errorf("at 80x24 the drawer shows %d lines of output, want 6", a.drawer.rows)
 	}
 }

@@ -232,12 +232,12 @@ func TestJobPTYSizeMatchesDrawer(t *testing.T) {
 	p := newFakeProc(0)
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
 	waiting := settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
-	if p.cols != 116 || p.rows != 10 {
-		t.Errorf("pty is %dx%d, want the drawer's inner 116x10", p.cols, p.rows)
+	if p.cols != 116 || p.rows != 12 {
+		t.Errorf("pty is %dx%d, want the drawer's inner 116x12", p.cols, p.rows)
 	}
 	a.Update(tea.WindowSizeMsg{Width: 100, Height: 30})
-	if p.cols != 96 || p.rows != 6 {
-		t.Errorf("after resize pty is %dx%d, want 96x6", p.cols, p.rows)
+	if p.cols != 96 || p.rows != 9 {
+		t.Errorf("after resize pty is %dx%d, want 96x9", p.cols, p.rows)
 	}
 	p.exit()
 	resume(t, a, waiting)

@@ -77,9 +77,16 @@ func (r *replyTo) set(w io.Writer) {
 }
 
 // drawerHeight is how tall the drawer is for a body of height bodyH: about
-// two fifths, between 6 and 14 lines, leaving the tab at least 3.
+// half of it, between 10 lines (6 of output) and 16, leaving the tab at
+// least 6. When that leaves no room for output, the drawer takes 5 lines
+// (one of output), or the whole body if that's shorter: a running job's
+// output matters more than the tab behind it.
 func drawerHeight(bodyH int) int {
-	return max(min(bodyH*2/5, 14, bodyH-3), min(6, bodyH-3), 0)
+	h := min(max(bodyH/2, 10), 16, bodyH-6)
+	if h < 5 {
+		h = min(5, bodyH)
+	}
+	return max(h, 0)
 }
 
 // start shows a new run of j on a clean screen. Terminal replies go to
