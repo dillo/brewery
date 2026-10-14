@@ -186,7 +186,8 @@ func ParseOutdated(b []byte) ([]Outdated, error) {
 	return out, nil
 }
 
-// ParseServices parses `brew services list --json`.
+// ParseServices parses `brew services info --all --json`, which says
+// everything `services list` does plus each service's command and logs.
 func ParseServices(b []byte) ([]Service, error) {
 	var out []Service
 	if err := json.Unmarshal(jsonPayload(b), &out); err != nil {

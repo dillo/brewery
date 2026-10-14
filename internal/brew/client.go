@@ -125,7 +125,7 @@ func (c *Client) Outdated(ctx context.Context) ([]Outdated, error) {
 }
 
 func (c *Client) Services(ctx context.Context) ([]Service, error) {
-	out, err := c.query(ctx, "services", "list", "--json")
+	out, err := c.query(ctx, "services", "info", "--all", "--json")
 	if err != nil {
 		return nil, err
 	}

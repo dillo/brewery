@@ -129,6 +129,14 @@ func TestParseServices(t *testing.T) {
 	if got[1].ExitCode != nil {
 		t.Errorf("null exit code should stay nil, got %v", *got[1].ExitCode)
 	}
+	redis := got[1]
+	if redis.PID != 80476 || redis.Log != "/opt/homebrew/var/log/redis.log" || redis.ErrorLog != "" ||
+		redis.Command != "/opt/homebrew/opt/redis/bin/redis-server /opt/homebrew/etc/redis.conf" {
+		t.Errorf("redis details parsed wrong: %+v", redis)
+	}
+	if pg := got[0]; pg.PID != 0 || pg.ErrorLog != "/opt/homebrew/var/log/postgresql@16.log" {
+		t.Errorf("a stopped service has no pid: %+v", pg)
+	}
 }
 
 func TestParseTaps(t *testing.T) {

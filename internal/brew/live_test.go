@@ -34,8 +34,14 @@ func TestLiveQueries(t *testing.T) {
 	if _, err := c.Outdated(ctx); err != nil {
 		t.Error(err)
 	}
-	if _, err := c.Services(ctx); err != nil {
+	services, err := c.Services(ctx)
+	if err != nil {
 		t.Error(err)
+	}
+	for _, s := range services {
+		if s.Name == "" || s.Status == "" {
+			t.Errorf("incomplete service: %+v", s)
+		}
 	}
 	if _, err := c.Taps(ctx); err != nil {
 		t.Error(err)

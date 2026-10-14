@@ -1,4 +1,44 @@
 [
-  {"name": "postgresql@16", "status": "error", "user": "locutus", "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.postgresql@16.plist", "exit_code": 1},
-  {"name": "redis", "status": "none", "user": "locutus", "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.redis.plist", "exit_code": null}
+  {
+    "name": "postgresql@16",
+    "service_name": "homebrew.mxcl.postgresql@16",
+    "running": false,
+    "loaded": true,
+    "schedulable": false,
+    "pid": null,
+    "exit_code": 1,
+    "user": "locutus",
+    "status": "error",
+    "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.postgresql@16.plist",
+    "registered": true,
+    "loaded_file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.postgresql@16.plist",
+    "command": "LC_ALL=\"en_US.UTF-8\" /opt/homebrew/opt/postgresql@16/bin/postgres -D /opt/homebrew/var/postgresql@16",
+    "working_dir": "/opt/homebrew",
+    "root_dir": null,
+    "log_path": "/opt/homebrew/var/log/postgresql@16.log",
+    "error_log_path": "/opt/homebrew/var/log/postgresql@16.log",
+    "interval": null,
+    "cron": null
+  },
+  {
+    "name": "redis",
+    "service_name": "homebrew.mxcl.redis",
+    "running": true,
+    "loaded": true,
+    "schedulable": false,
+    "pid": 80476,
+    "exit_code": null,
+    "user": "locutus",
+    "status": "started",
+    "file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.redis.plist",
+    "registered": true,
+    "loaded_file": "/Users/locutus/Library/LaunchAgents/homebrew.mxcl.redis.plist",
+    "command": "/opt/homebrew/opt/redis/bin/redis-server /opt/homebrew/etc/redis.conf",
+    "working_dir": "/opt/homebrew/var",
+    "root_dir": null,
+    "log_path": "/opt/homebrew/var/log/redis.log",
+    "error_log_path": null,
+    "interval": null,
+    "cron": null
+  }
 ]

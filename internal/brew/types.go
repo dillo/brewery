@@ -48,13 +48,17 @@ type Outdated struct {
 	Pinned    bool   `json:"pinned"`
 }
 
-// Service is one row of `brew services list --json`.
+// Service is one entry of `brew services info --all --json`.
 type Service struct {
 	Name     string `json:"name"`
 	Status   string `json:"status"` // started, stopped, none, error, scheduled, unknown
 	User     string `json:"user"`
 	File     string `json:"file"`
 	ExitCode *int   `json:"exit_code"`
+	PID      int    `json:"pid"`            // 0 when it isn't running
+	Command  string `json:"command"`        // what launchd runs
+	Log      string `json:"log_path"`       // where its output goes, if anywhere
+	ErrorLog string `json:"error_log_path"` // where its errors go; often the same file
 }
 
 // Tap is one row of `brew tap-info --json --installed`.

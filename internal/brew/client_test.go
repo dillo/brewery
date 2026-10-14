@@ -43,13 +43,13 @@ func TestClientInstalled(t *testing.T) {
 }
 
 func TestClientQueryErrorIncludesStderr(t *testing.T) {
-	c := NewClient(fakeRunner{err: map[string]error{"services list --json": errors.New("exit status 1")}})
+	c := NewClient(fakeRunner{err: map[string]error{"services info --all --json": errors.New("exit status 1")}})
 	_, err := c.Services(context.Background())
 	var qe *QueryError
 	if !errors.As(err, &qe) {
 		t.Fatalf("want *QueryError, got %v", err)
 	}
-	if !strings.Contains(err.Error(), "brew services list --json") || !strings.Contains(err.Error(), "something broke") {
+	if !strings.Contains(err.Error(), "brew services info --all --json") || !strings.Contains(err.Error(), "something broke") {
 		t.Errorf("error message missing details: %q", err)
 	}
 }

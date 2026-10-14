@@ -47,7 +47,7 @@ func TestServiceAndTapRows(t *testing.T) {
 	if got := serviceRows(snap.Services)[0]; got[0] != "postgresql@16" || got[1] != "error (exit 1)" {
 		t.Errorf("service row = %v", got)
 	}
-	if got := serviceRows(snap.Services)[1][1]; got != "none" {
+	if got := serviceRows(snap.Services)[1][1]; got != "started" {
 		t.Errorf("status without exit code = %q", got)
 	}
 	if got := tapRows(snap.Taps)[0]; got[1] != "2" || got[2] != "1" || got[3] != "" {
