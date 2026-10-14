@@ -481,17 +481,82 @@ func TestStoppingAJobWaitingForTheLock(t *testing.T) {
 	_ = waiting // the hour-long retry timer is abandoned with the test
 }
 
-func TestQuitWhileRunningAsksAndKills(t *testing.T) {
+// quits reports whether cmd, or a batch or sequence it returns, quits.
+// Commands other than tea.Quit are not run, so a long tick can't block.
+func quits(cmd tea.Cmd) bool {
+	if cmd == nil {
+		return false
+	}
+	if reflect.ValueOf(cmd).Pointer() == reflect.ValueOf(tea.Quit).Pointer() {
+		return true
+	}
+	msg := cmd()
+	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeOf(tea.Cmd(nil)) {
+		for i := range v.Len() {
+			if c := v.Index(i).Interface().(tea.Cmd); c != nil && reflect.ValueOf(c).Pointer() == reflect.ValueOf(tea.Quit).Pointer() {
+				return true
+			}
+		}
+	}
+	_, ok := msg.(tea.QuitMsg)
+	return ok
+}
+
+// quitWithJob starts a job (and queues a second), then quits with q, y.
+func quitWithJob(t *testing.T) (*App, *fakeProc, *fakeStarter, tea.Cmd) {
+	t.Helper()
 	p := newFakeProc(0, "working")
-	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	fs := &fakeStarter{procs: []*fakeProc{p}}
+	a := newJobApp(t, fs)
+	a.quitGrace = time.Hour
 	settle(t, a, a.run(action{title: "upgrade", args: []string{"upgrade"}}))
+	a.run(action{title: "pin git", args: []string{"pin", "git"}})
 	_, cmd := a.Update(press("q"))
 	if cmd != nil || a.confirm == nil {
 		t.Fatal("q with a running job should ask first")
 	}
 	_, cmd = a.Update(press("y"))
-	if _, ok := cmd().(tea.QuitMsg); !ok || !p.killed {
-		t.Errorf("y should kill brew and quit (killed=%v)", p.killed)
+	return a, p, fs, cmd
+}
+
+func TestQuitStopsTheRunningJobFirst(t *testing.T) {
+	a, p, fs, cmd := quitWithJob(t)
+	if !p.interrupted || p.killed || cmd == nil {
+		t.Fatalf("y should send brew ctrl+c and wait (interrupted=%v killed=%v)", p.interrupted, p.killed)
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "stopping upgrade… · ctrl+c quits now") {
+		t.Errorf("status bar: %q", bar)
+	}
+	a.Update(press("2"))
+	if a.tab != tabHome {
+		t.Error("keys do nothing while brewery is quitting")
+	}
+	j := a.queue.Current()
+	_, cmd = a.Update(jobExitMsg{j.ID, j.Attempts, 130})
+	if !quits(cmd) {
+		t.Error("once the job has stopped, brewery quits")
+	}
+	if len(a.history) != 1 || a.history[0].State != jobs.Canceled {
+		t.Errorf("the stopped job is recorded: %+v", a.history)
+	}
+	if len(fs.calls) != 1 {
+		t.Errorf("the queued job must not start: %v", fs.calls)
+	}
+}
+
+func TestQuitKillsAJobThatWontStop(t *testing.T) {
+	a, p, _, _ := quitWithJob(t)
+	_, cmd := a.Update(quitNowMsg{})
+	if !p.killed || !quits(cmd) {
+		t.Errorf("after the grace period brew is killed and brewery quits (killed=%v)", p.killed)
+	}
+}
+
+func TestCtrlCWhileQuittingQuitsNow(t *testing.T) {
+	a, p, _, _ := quitWithJob(t)
+	_, cmd := a.Update(press("ctrl+c"))
+	if !p.killed || !quits(cmd) {
+		t.Errorf("a second ctrl+c doesn't wait (killed=%v)", p.killed)
 	}
 }
 

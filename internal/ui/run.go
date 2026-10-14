@@ -37,7 +37,12 @@ type (
 	jobExitMsg  struct{ id, attempt, code int }
 	jobRetryMsg struct{ id int }
 	tickMsg     struct{}
+	quitNowMsg  struct{} // the running job had its chance to stop: quit anyway
 )
+
+// quitGrace is how long a running job gets to stop after ctrl+c when
+// brewery quits, before it is killed.
+const quitGrace = 3 * time.Second
 
 // readOutput reads the next chunk of a job's output.
 func readOutput(p Proc, id, attempt int) tea.Cmd {
@@ -165,6 +170,11 @@ func (a *App) finish(j *jobs.Job, code int) tea.Cmd {
 	a.proc = nil
 	if a.mode == modeInsert {
 		a.mode = modeNormal
+	}
+	if a.quitting {
+		// Stopped on the way out: record it, start nothing else, and go.
+		a.queue.Finish(j, code, true, a.drawer.output(), a.now())
+		return tea.Sequence(a.record(j, a.drawer.output()), tea.Quit)
 	}
 	if a.queue.Finish(j, code, a.canceled, a.drawer.output(), a.now()) {
 		wait := a.backoff(j.Attempts)

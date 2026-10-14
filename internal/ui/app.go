@@ -70,6 +70,8 @@ type App struct {
 	tickEvery time.Duration // spinner speed; 0 turns the spinner off
 	ticking   bool
 	frame     int
+	quitGrace time.Duration // how long a running job gets to stop when brewery quits
+	quitting  bool          // brewery is waiting for the running job to stop, then exits
 
 	hist     *jobs.History // where finished jobs are saved, or nil
 	history  []jobs.Record // finished jobs, newest first
@@ -119,7 +121,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		src: src, start: start, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
-		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond,
+		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
 		readLog:   readLogTail,
 		drawer:    newDrawer(st),
 		cmd:       newCmdline(st),
@@ -197,9 +199,23 @@ func (a *App) jsonBusy() bool {
 	return false
 }
 
-// quit stops running queries and any running job, then exits.
+// quit stops running queries and exits. A running job first gets ctrl+c,
+// as it would in a terminal, so brew can clean up after itself; brewery
+// exits once the job has stopped and been recorded, or kills it after
+// quitGrace.
 func (a *App) quit() tea.Cmd {
 	a.cancel()
+	if a.proc == nil {
+		return tea.Quit
+	}
+	a.quitting, a.canceled = true, true
+	a.proc.Interrupt()
+	a.flash = a.st.Warn.Render("stopping " + a.queue.Current().Title + "… · ctrl+c quits now")
+	return tea.Tick(a.quitGrace, func(time.Time) tea.Msg { return quitNowMsg{} })
+}
+
+// quitNow kills a job that hasn't stopped, and exits.
+func (a *App) quitNow() tea.Cmd {
 	if a.proc != nil {
 		a.proc.Kill()
 	}
@@ -271,6 +287,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.histErr = msg.err
 	case takeoverDoneMsg:
 		return a.takeoverDone(msg)
+	case quitNowMsg:
+		return a.quitNow()
 	case logMsg:
 		a.gotLog(msg)
 	case pagerDoneMsg:
@@ -363,6 +381,12 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 // never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
+	if a.quitting {
+		if k == "ctrl+c" {
+			return a.quitNow()
+		}
+		return nil // on the way out: nothing else may start
+	}
 	if a.mode != modeCommand {
 		a.flash = "" // in COMMAND the bar shows only the prompt: keep it for when the line closes
 	}
