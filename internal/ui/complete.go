@@ -60,6 +60,7 @@ func (a *App) loadCompletions() tea.Cmd {
 // command's subcommands, its flags (once the word starts with "-"), or
 // the installed packages, taps or services it takes.
 func (a *App) candidates(line string) (word string, cs []candidate) {
+	line = strings.TrimPrefix(line, "!") // a "!" line completes like the command after it
 	words := strings.Fields(line)
 	if !strings.HasSuffix(line, " ") && len(words) > 0 {
 		word, words = words[len(words)-1], words[:len(words)-1]

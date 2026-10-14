@@ -566,6 +566,20 @@ func TestFailureFlashOmitsOutputHintWhenNextJobStarts(t *testing.T) {
 	resume(t, a, waiting)
 }
 
+func TestFailureFlashSurvivesTheCommandLine(t *testing.T) {
+	p := newFakeProc(1, "boom")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	keys(t, a, ":")
+	typeText(t, a, "inf")
+	p.exit()
+	resume(t, a, waiting)
+	keys(t, a, "esc")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ upgrade fd failed (exit 1)") {
+		t.Errorf("a failure while the line was open should show once it closes: %q", bar)
+	}
+}
+
 func TestInsertCtrlCCountsAsStop(t *testing.T) {
 	p := newFakeProc(0, "Proceed? [y/N] ")
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})

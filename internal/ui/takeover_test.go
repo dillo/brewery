@@ -40,6 +40,7 @@ func TestFullScreenCommandsTakeOver(t *testing.T) {
 		{"sh", []string{"sh"}},
 		{"irb", []string{"irb"}},
 		{"bundle edit", []string{"bundle", "edit"}},
+		{"bundle sh", []string{"bundle", "sh"}},
 		{"!info fd", []string{"info", "fd"}},
 		{"! brew log git", []string{"log", "git"}},
 		{"bundle list", nil},

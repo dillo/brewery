@@ -46,6 +46,8 @@ func TestColonJobsListsThePastJobs(t *testing.T) {
 	}
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "Jobs") || !strings.Contains(bar, "enter show output") {
 		t.Errorf("status bar: %q", bar)
+	} else if !strings.Contains(bar, "q close") || strings.Contains(bar, "q quit") {
+		t.Errorf("q closes the jobs view, so the hint should say so: %q", bar)
 	}
 }
 

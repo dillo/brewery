@@ -345,7 +345,9 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 // never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
-	a.flash = ""
+	if a.mode != modeCommand {
+		a.flash = "" // in COMMAND the bar shows only the prompt: keep it for when the line closes
+	}
 	if a.confirm != nil {
 		ch, ok := a.confirm.answer(k)
 		if !ok {
@@ -446,20 +448,21 @@ func (a *App) render() string {
 	}
 	bodyH := a.tabH
 	var body string
-	switch a.tab {
-	case tabHome:
-		body = a.home.view(a.snap, a.history, a.now(), a.width, bodyH)
-	case tabInstalled:
-		body = a.installed.view(a.errs[qInstalled])
-	case tabOutdated:
-		body = a.outdated.view(a.errs[qOutdated])
-	case tabServices:
-		body = a.services.view(a.errs[qServices])
-	case tabTaps:
-		body = a.taps.view(a.errs[qTaps])
-	}
 	if a.jobsOpen {
 		body = a.jobs.view(nil)
+	} else {
+		switch a.tab {
+		case tabHome:
+			body = a.home.view(a.snap, a.history, a.now(), a.width, bodyH)
+		case tabInstalled:
+			body = a.installed.view(a.errs[qInstalled])
+		case tabOutdated:
+			body = a.outdated.view(a.errs[qOutdated])
+		case tabServices:
+			body = a.services.view(a.errs[qServices])
+		case tabTaps:
+			body = a.taps.view(a.errs[qTaps])
+		}
 	}
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
@@ -585,7 +588,11 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := a.actionHints() + " · : command · q quit"
+	quit := "quit"
+	if a.jobsOpen {
+		quit = "close" // q closes the jobs view
+	}
+	hints := a.actionHints() + " · : command · q " + quit
 	if a.drawer.job != nil && !a.drawer.open {
 		hints = "o output · " + hints
 	}

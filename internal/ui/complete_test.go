@@ -124,6 +124,16 @@ func TestTabCyclesAndInserts(t *testing.T) {
 	}
 }
 
+func TestTabCompletesAfterABang(t *testing.T) {
+	a := newCompletingApp(t, &fakeStarter{})
+	keys(t, a, ":")
+	typeText(t, a, "!up")
+	keys(t, a, "tab")
+	if v := a.cmd.value(); v != "!update" {
+		t.Errorf("tab after !: %q", v)
+	}
+}
+
 func TestTabOnAnEmptyLineListsCommands(t *testing.T) {
 	a := newCompletingApp(t, &fakeStarter{})
 	keys(t, a, ":")

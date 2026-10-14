@@ -30,7 +30,7 @@ func takesOver(args []string) bool {
 	case "edit", "sh", "irb":
 		return true
 	case "bundle":
-		return len(args) > 1 && args[1] == "edit"
+		return len(args) > 1 && (args[1] == "edit" || args[1] == "sh")
 	}
 	return false
 }
