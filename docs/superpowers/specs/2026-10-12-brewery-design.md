@@ -72,12 +72,12 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 
 ## 3. Running commands (approved)
 
-- **Job** = argv (no shell), start and end time, exit code, log file. Mutating jobs run **one at a time** because of brew's global lock. Extra jobs show as `queued`. Read-only queries skip the queue.
+- **Job** = argv (no shell), start and end time, exit code, and the end of its output (kept in its history record). Mutating jobs run **one at a time** because of brew's global lock. Extra jobs show as `queued`. Read-only queries skip the queue.
 - **PTY** through `creack/pty`. The drawer contains a terminal emulator (Charm `x/vt` or a minimal custom renderer) that handles `\r` redraws and ANSI colors. When the process asks for input (`Password:`, `[y/N]`), the drawer switches to INSERT mode and keys go to the PTY. Input is masked and never logged.
 - **Full-screen takeover** through Bubble Tea `ExecProcess` for `edit`, `sh`, `irb` and `bundle edit`. A `:!` prefix forces takeover.
 - **Confirmations for destructive actions:** uninstall shows dependents and the orphans it would leave, with an option to remove them. Cleanup runs `--dry-run` first to show space freed. Untap, services stop, `^c` on a running job, and `A` (upgrade all) also ask first. Commands typed at `:` don't ask.
-- **History:** `:jobs` lists jobs, and `Enter` reopens a log in the drawer. The last 100 jobs are kept.
-- **Completion:** subcommands come from `brew commands --quiet`, and flags are parsed from `brew <cmd> --help`. Both are cached per brew version. Package names come from the snapshot.
+- **History:** `:jobs` lists jobs, and `Enter` replays a job's output in the drawer. The last 100 jobs are kept, each with the last 128 KiB of its output, in `~/.local/state/brewery/jobs/`.
+- **Completion:** a popup above the prompt. Commands, subcommands, flags (with descriptions) and the kind of argument each command takes come from the fish completion script brew ships (`<brew --repository>/completions/fish/brew.fish`), read once at start. Package, tap and service names come from the snapshot.
 
 ## 4. UI, keymap and theme (approved)
 
