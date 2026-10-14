@@ -88,8 +88,9 @@ type App struct {
 	takeoverCmd func(args []string) *exec.Cmd // builds full-screen commands
 	takingOver  *jobs.Job                     // the full-screen command running now
 
-	readLog func(path string) (string, error) // reads the end of a log; tests swap it
-	log     logTail                           // the services preview's log
+	readLog  func(path string) (string, error) // reads the end of a log; tests swap it
+	log      logTail                           // the services preview's log
+	pagerCmd func(files []string) *exec.Cmd    // builds the full-screen log viewer
 
 	tab           int
 	width, height int
@@ -268,6 +269,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		return a.takeoverDone(msg)
 	case logMsg:
 		a.gotLog(msg)
+	case pagerDoneMsg:
+		a.pagerDone(msg)
 	case completionsMsg:
 		if msg.err == nil {
 			a.comp = msg.comp // without them, only brewery's own commands complete

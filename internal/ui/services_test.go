@@ -1,9 +1,11 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -146,6 +148,93 @@ func TestTilde(t *testing.T) {
 	}
 	if got := tilde("/opt/homebrew/var/log/x.log"); got != "/opt/homebrew/var/log/x.log" {
 		t.Errorf("got %q", got)
+	}
+}
+
+// fakePager records the files handed to the log viewer.
+type fakePager struct{ calls [][]string }
+
+func (f *fakePager) cmd(files []string) *exec.Cmd {
+	f.calls = append(f.calls, files)
+	return exec.Command("true")
+}
+
+func TestLogKeyOpensTheLogs(t *testing.T) {
+	dir := t.TempDir()
+	out, errs := filepath.Join(dir, "out.log"), filepath.Join(dir, "err.log")
+	for _, f := range []string{out, errs} {
+		if err := os.WriteFile(f, []byte("x\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	pg := &fakePager{}
+	a.UsePager(pg.cmd)
+	a.snap.Services[0].Log, a.snap.Services[0].ErrorLog = out, errs // postgresql@16
+	a.snap.Services[1].Log, a.snap.Services[1].ErrorLog = out, out  // redis
+	a.sync()
+	keys(t, a, "4", "l", "j", "l")
+	if want := [][]string{{out, errs}, {out}}; !reflect.DeepEqual(pg.calls, want) {
+		t.Errorf("opened %v, want %v", pg.calls, want)
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "l log") {
+		t.Errorf("the hint should name l: %q", bar)
+	}
+}
+
+func TestLogKeyExplainsMissingLogs(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	pg := &fakePager{}
+	a.UsePager(pg.cmd)
+	a.snap.Services[0].Log = filepath.Join(t.TempDir(), "none.log")
+	a.snap.Services[0].ErrorLog = ""
+	a.snap.Services[1].Log, a.snap.Services[1].ErrorLog = "", ""
+	a.sync()
+	keys(t, a, "4", "l")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "postgresql@16 hasn't logged anything yet") {
+		t.Errorf("status bar %q", bar)
+	}
+	keys(t, a, "j", "l")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "brew knows no log for redis") {
+		t.Errorf("status bar %q", bar)
+	}
+	if len(pg.calls) != 0 {
+		t.Errorf("nothing to show, so no viewer: %v", pg.calls)
+	}
+}
+
+func TestLogKeyWaitsForTheRunningJob(t *testing.T) {
+	log := filepath.Join(t.TempDir(), "x.log")
+	if err := os.WriteFile(log, []byte("x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	p := newFakeProc(0)
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	a.readLog = (&fakeLogs{}).read
+	pg := &fakePager{}
+	a.UsePager(pg.cmd)
+	a.snap.Services[0].Log = log
+	a.sync()
+	keys(t, a, "U", "4", "l")
+	if len(pg.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "wait for update to finish") {
+		t.Errorf("the viewer must wait for the job: %v %q", pg.calls, stripANSI(a.statusBar()))
+	}
+}
+
+func TestPagerDoneRereadsTheLog(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	logs := &fakeLogs{text: map[string]string{"/opt/homebrew/var/log/postgresql@16.log": "x"}}
+	a.readLog = logs.read
+	keys(t, a, "4")
+	_, cmd := a.Update(pagerDoneMsg{err: errors.New("exec: \"less\": executable file not found in $PATH")})
+	settle(t, a, cmd)
+	if logs.reads["/opt/homebrew/var/log/postgresql@16.log"] != 2 {
+		t.Errorf("reads %v: the log is read again after viewing it", logs.reads)
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "couldn't show the log") {
+		t.Errorf("a failed viewer says so: %q", bar)
 	}
 }
 

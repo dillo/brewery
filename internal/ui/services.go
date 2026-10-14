@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -115,6 +117,56 @@ func tilde(path string) string {
 		return "~/" + rest
 	}
 	return path
+}
+
+// pagerDoneMsg reports that the log viewer has exited.
+type pagerDoneMsg struct{ err error }
+
+// UsePager sets how the app builds the command that shows log files full
+// screen, following what gets added. The UI never starts programs itself.
+func (a *App) UsePager(cmd func(files []string) *exec.Cmd) {
+	a.pagerCmd = cmd
+}
+
+// openLog shows the selected service's log full screen, and its error log
+// when that is another file. Like a takeover, it waits for a running job.
+func (a *App) openLog() tea.Cmd {
+	s, ok := a.selectedService()
+	if !ok {
+		return nil
+	}
+	if a.pagerCmd == nil {
+		return a.note("the log viewer isn't available")
+	}
+	var files []string
+	for _, f := range []string{s.Log, s.ErrorLog} {
+		if f != "" && !slices.Contains(files, f) {
+			files = append(files, f)
+		}
+	}
+	if len(files) == 0 {
+		return a.note("brew knows no log for " + s.Name)
+	}
+	files = slices.DeleteFunc(files, func(f string) bool {
+		_, err := os.Stat(f)
+		return err != nil
+	})
+	if len(files) == 0 {
+		return a.note(s.Name + " hasn't logged anything yet")
+	}
+	if cur := a.queue.Current(); cur != nil {
+		return a.note("wait for " + cur.Title + " to finish: the log takes over the terminal")
+	}
+	return tea.ExecProcess(a.pagerCmd(files), func(err error) tea.Msg { return pagerDoneMsg{err} })
+}
+
+// pagerDone reads the log again, since more may have been written while it
+// was open, and says if the viewer failed.
+func (a *App) pagerDone(m pagerDoneMsg) {
+	a.log.stale = true
+	if m.err != nil {
+		a.flash = a.st.Err.Render("✗ couldn't show the log: " + m.err.Error())
+	}
 }
 
 // serviceStatus is a service's status, with its exit code if it failed.

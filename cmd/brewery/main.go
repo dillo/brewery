@@ -59,6 +59,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseHistory(hist, recs)
 	app.UseCompletions(client.Completions)
 	app.UseTakeover(func(args []string) *exec.Cmd { return exec.Command(bin, args...) })
+	// less +F follows the log as it grows; ctrl+c stops following, q returns.
+	app.UsePager(func(files []string) *exec.Cmd {
+		return exec.Command("less", append([]string{"+F", "--"}, files...)...)
+	})
 
 	if _, err := tea.NewProgram(app).Run(); err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)

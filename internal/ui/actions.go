@@ -48,6 +48,8 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.askUpgradeAll(), true
 	case a.tab == tabServices && (k == "s" || k == "S" || k == "R"):
 		return a.serviceKey(k), true
+	case a.tab == tabServices && k == "l":
+		return a.openLog(), true
 	}
 	return nil, false
 }
@@ -213,7 +215,7 @@ func (a *App) actionHints() string {
 	case tabOutdated:
 		return "u upgrade · A upgrade all"
 	case tabServices:
-		return "s start · S stop · R restart"
+		return "s start · S stop · R restart · l log"
 	}
 	return "1-5 tabs · r refresh · U update"
 }
