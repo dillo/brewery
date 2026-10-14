@@ -52,6 +52,8 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.serviceKey(k), true
 	case a.tab == tabServices && k == "l":
 		return a.openLog(), true
+	case a.tab == tabTaps && k == "x":
+		return a.askUntap(), true
 	}
 	return nil, false
 }
@@ -212,6 +214,72 @@ func (a *App) askCleanup() tea.Cmd {
 	return nil
 }
 
+// selectedTap is the tap under the cursor, found by name.
+func (a *App) selectedTap() (brew.Tap, bool) {
+	row := a.taps.table.SelectedRow()
+	if a.taps.n == 0 || row == nil {
+		return brew.Tap{}, false
+	}
+	for _, t := range a.snap.Taps {
+		if t.Name == row[0] {
+			return t, true
+		}
+	}
+	return brew.Tap{}, false
+}
+
+// askUntap confirms untapping the selected tap. If anything installed came
+// from it, it explains that brew would refuse instead.
+func (a *App) askUntap() tea.Cmd {
+	t, ok := a.selectedTap()
+	if !ok {
+		return nil
+	}
+	var from []string
+	for _, p := range a.snap.Packages {
+		if p.Tap == t.Name {
+			from = append(from, p.Name)
+		}
+	}
+	if len(from) > 0 {
+		a.confirm = &confirmBox{
+			title:   "Can't untap " + t.Name,
+			body:    []string{"Installed from it: " + strings.Join(from, ", ") + ".", "Uninstall those first, or brew will refuse."},
+			choices: []choice{{"n", "close", nil}},
+		}
+		return nil
+	}
+	untap := action{title: "untap " + t.Name, args: []string{"untap", t.Name}, refresh: []query{qTaps}}
+	box := &confirmBox{
+		title: "Untap " + t.Name + "?",
+		choices: []choice{
+			{"y", "untap", func() tea.Cmd { return a.run(untap) }},
+			{"n", "cancel", nil},
+		},
+	}
+	if what := tapContents(t); what != "" {
+		box.body = []string{"Its " + what + " won't be available", "until you tap it again."}
+	}
+	a.confirm = box
+	return nil
+}
+
+// tapContents says what a tap holds, such as "2 formulae and 1 cask".
+func tapContents(t brew.Tap) string {
+	var parts []string
+	switch t.Formulae {
+	case 0:
+	case 1:
+		parts = append(parts, "1 formula")
+	default:
+		parts = append(parts, fmt.Sprintf("%d formulae", t.Formulae))
+	}
+	if t.Casks > 0 {
+		parts = append(parts, plural(t.Casks, "cask"))
+	}
+	return strings.Join(parts, " and ")
+}
+
 // serviceKey starts (s), stops (S, after asking) or restarts (R) the
 // selected service.
 func (a *App) serviceKey(k string) tea.Cmd {
@@ -248,6 +316,8 @@ func (a *App) actionHints() string {
 		return "u upgrade · A upgrade all"
 	case tabServices:
 		return "s start · S stop · R restart · l log"
+	case tabTaps:
+		return "x untap"
 	}
 	return "1-5 tabs · r refresh · U update · c clean up"
 }

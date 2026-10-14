@@ -223,7 +223,7 @@ func TestUpdateRefreshesEverything(t *testing.T) {
 	if want := []string{"update"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
-	for _, q := range []string{"installed", "outdated", "services", "taps", "doctor"} {
+	for _, q := range []string{"installed", "outdated", "services", "taps", "doctor", "cleanup"} {
 		if src.calls[q] != 1 {
 			t.Errorf("after brew update, %s ran %d times, want 1", q, src.calls[q])
 		}
@@ -233,7 +233,7 @@ func TestUpdateRefreshesEverything(t *testing.T) {
 func TestActionKeysOnlyWorkOnTheirTab(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "x", "p", "4", "u", "A", "5", "s")
+	keys(t, a, "3", "x", "p", "l", "4", "u", "A", "x", "5", "s", "l")
 	if len(fs.calls) != 0 || a.confirm != nil {
 		t.Errorf("keys off their tab must do nothing: %v %+v", fs.calls, a.confirm)
 	}
@@ -245,8 +245,9 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 	for _, tt := range []struct{ key, want string }{
 		{"2", "u upgrade · x uninstall · p pin · f/F view"},
 		{"3", "u upgrade · A upgrade all"},
-		{"4", "s start · S stop · R restart"},
-		{"5", "U update"},
+		{"4", "s start · S stop · R restart · l log"},
+		{"5", "x untap"},
+		{"1", "U update · c clean up"},
 	} {
 		keys(t, a, tt.key)
 		if bar := stripANSI(a.statusBar()); !strings.Contains(bar, tt.want) {
