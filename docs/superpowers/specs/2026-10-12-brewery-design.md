@@ -16,7 +16,7 @@ brewery is a terminal UI that wraps Homebrew. It shows what the plain `brew` CLI
 | Scope order | See (A), then Maintain (C), then Discover (B) |
 | Audience | The user first; published later through a tap |
 | Stack | Go + Bubble Tea / Lip Gloss / Bubbles (Charm) |
-| Interaction | Panes + Vim keys + `:` command line (runs any brew command) + `/` filter + `Ctrl-P` palette |
+| Interaction | Panes + Vim keys + `:` command line (runs any brew command, with completion) + `/` filter + `?` help |
 | Layout | Numbered tabs + wide table + preview pane (gh-dash style). The Home tab holds health tiles |
 | Command output | A Claude Code-style output drawer that slides up and streams live, plus a `:jobs` history |
 | Theme | Catppuccin Macchiato |
@@ -82,8 +82,8 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 ## 4. UI, keymap and theme (approved)
 
 - **Modes** (colored block in the status bar): NORMAL (mauve), COMMAND (blue), FILTER (teal), RUNNING (peach + spinner), INSERT (green). `esc` goes back one step.
-- **Global keys:** `1`–`5` and `[`/`]` switch tabs. `Tab` moves focus. `:` opens the command line, `/` filters, `Ctrl-P` opens the palette, `r` refreshes, `U` runs update, `?` shows help, and `q` quits (with a confirmation if a job is running).
-- **List keys:** `j/k`, `gg/G`, `Ctrl-d/u`, `space` to multi-select, `Enter` to focus the preview. `u` upgrade, `x` uninstall, `p` pin, `o` open homepage, `y` copy name. On Services: `s` start, `S` stop, `R` restart, `l` show log. On Outdated: `A` upgrades all.
+- **Global keys:** `1`–`5` and `[`/`]` switch tabs. `:` opens the command line, `/` filters the list, `r` refreshes, `U` runs update, `c` cleans up, `o` shows or hides the job's output, `?` shows help, and `q` quits (with a confirmation if a job is running; the job gets ctrl+c and a few seconds to stop). There is no `Ctrl-P` palette: `:` completion and `?` cover it.
+- **List keys:** `j/k`, `gg/G`, `Ctrl-d/u`, `space` to mark several (Installed, Outdated), `Tab` or `Enter` to focus the preview (Installed). `u` upgrade, `x` uninstall, `p` pin, `gx` open homepage, `y` copy name. On Services: `s` start, `S` stop, `R` restart, `l` show log. On Outdated: `A` upgrades all.
 - **Home:** tiles (Installed, Outdated, Services with error count, Doctor, Cleanup = what `brew cleanup --prune=all --dry-run` says it would free, measured after each refresh) + recent jobs. `Enter` on a tile jumps to its tab; on Cleanup it opens the cleanup dialog.
 - **Installed:** a view bar above the list shows every view with its count, the active one highlighted: **Top-level** (default; nothing else needs these, so leaves plus apps), **All**, **Apps** (casks) and **Dependencies** (installed only because something needed them). A line under the bar says what the active view shows; `f`/`F` step forward and back. Narrow panes use short names (Top, All, Apps, Deps). Columns: name, version, type, pin, outdated ↑, size. Preview: description, dependency tree, used-by, caveats, tap, install date.
 - **Outdated:** current → latest, multi-select upgrade.
