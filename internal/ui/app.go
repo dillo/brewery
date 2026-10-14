@@ -438,8 +438,11 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 
 	switch a.tab {
 	case tabHome:
-		if t := a.home.update(msg, a.snap); t >= 0 {
+		switch t := a.home.update(msg, a.snap); {
+		case t >= 0:
 			a.tab = t
+		case t == openCleanup:
+			return a.askCleanup()
 		}
 	case tabInstalled:
 		return a.installed.update(msg)

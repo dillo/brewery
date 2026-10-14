@@ -15,7 +15,7 @@ import (
 // loadedHome is a Home tab whose queries have all succeeded.
 func loadedHome() homeTab {
 	return homeTab{st: testStyles, errs: map[query]error{},
-		loaded: map[query]bool{qInstalled: true, qOutdated: true, qServices: true, qTaps: true, qDoctor: true}}
+		loaded: map[query]bool{qInstalled: true, qOutdated: true, qServices: true, qTaps: true, qDoctor: true, qCleanup: true}}
 }
 
 func TestHomeTiles(t *testing.T) {
@@ -30,6 +30,7 @@ func TestHomeTiles(t *testing.T) {
 		"Outdated=2 (lua-language-server, docker-desktop)",
 		"Services=1 error (postgresql@16)",
 		"Doctor=2 warnings (see below)",
+		"Cleanup=86.7MB (c to reclaim)",
 	}
 	if strings.Join(got, "\n") != strings.Join(want, "\n") {
 		t.Errorf("tiles:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
@@ -79,6 +80,28 @@ func TestHomeTilesFailed(t *testing.T) {
 	}
 }
 
+func TestHomeCleanupTile(t *testing.T) {
+	cleanupTile := func(h homeTab, snap state.Snapshot) string {
+		tl := h.tiles(snap)[4]
+		return tl.value + " (" + tl.detail + ")"
+	}
+	h := loadedHome()
+	if got := cleanupTile(h, state.Snapshot{CleanupRan: true}); got != "✓ tidy (nothing to remove)" {
+		t.Errorf("nothing to clean: %q", got)
+	}
+	only := state.Snapshot{CleanupRan: true, Cleanup: brew.Cleanup{Standard: brew.CleanupEstimate{Items: 1, Size: "3.9KB"}}}
+	if got := cleanupTile(h, only); got != "3.9KB (c to reclaim)" {
+		t.Errorf("standard cleanup only: %q", got)
+	}
+	if got := cleanupTile(homeTab{st: testStyles}, state.Snapshot{}); got != "… (measuring)" {
+		t.Errorf("before the dry-runs: %q", got)
+	}
+	h.errs[qCleanup] = errors.New("brew cleanup --dry-run: exit status 1")
+	if got := cleanupTile(h, fixtureSnapshot(t)); got != "✗ failed (r retries)" {
+		t.Errorf("failed dry-run: %q", got)
+	}
+}
+
 func TestHomeNavigation(t *testing.T) {
 	h := homeTab{st: testStyles}
 	snap := fixtureSnapshot(t)
@@ -93,9 +116,13 @@ func TestHomeNavigation(t *testing.T) {
 	for range 5 {
 		h.update(press("l"), snap)
 	}
-	if h.sel != 3 {
+	if h.sel != 4 {
 		t.Errorf("selection should stop at the last tile, got %d", h.sel)
 	}
+	if tab := h.update(press("enter"), snap); tab != openCleanup {
+		t.Errorf("enter on cleanup tile -> %d, want openCleanup", tab)
+	}
+	h.update(press("h"), snap)
 	if tab := h.update(press("enter"), snap); tab != -1 {
 		t.Errorf("enter on doctor tile -> %d, want -1", tab)
 	}
@@ -105,7 +132,7 @@ func TestHomeView(t *testing.T) {
 	h := loadedHome()
 	view := h.view(fixtureSnapshot(t), nil, testNow, 140, 30)
 	out := stripANSI(view)
-	for _, want := range []string{"Installed", "5 formulae · 2 casks", "lua-language-server, docker-", "1 error",
+	for _, want := range []string{"Installed", "5 formulae · 2 casks", "lua-language-server,", "1 error", "86.7MB",
 		"⚠ The following taps are not trusted:", "brew untap oven-sh/bun", "⚠ Some installed casks are deprecated"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q", want)

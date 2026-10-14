@@ -38,6 +38,8 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 	switch {
 	case k == "U":
 		return a.run(action{title: "update", args: []string{"update"}, full: true}), true
+	case k == "c":
+		return a.askCleanup(), true
 	case k == "u" && (a.tab == tabInstalled || a.tab == tabOutdated):
 		return a.upgradeSelected(), true
 	case k == "x" && a.tab == tabInstalled:
@@ -180,6 +182,36 @@ func (a *App) askUpgradeAll() tea.Cmd {
 	return nil
 }
 
+// askCleanup offers brew's standard cleanup and pruning the whole download
+// cache, each with what its dry-run says it would free.
+func (a *App) askCleanup() tea.Cmd {
+	cl := a.snap.Cleanup
+	switch {
+	case a.errs[qCleanup] != nil:
+		return a.note("couldn't measure the cleanup · r retries")
+	case !a.loaded[qCleanup]:
+		return a.note("still measuring what cleanup would free")
+	case cl.Standard.Size == "" && cl.All.Size == "":
+		return a.note("nothing to clean up")
+	}
+	box := &confirmBox{title: "Clean up Homebrew?"}
+	if cl.Standard.Size != "" {
+		std := action{title: "cleanup", args: []string{"cleanup"}, refresh: []query{qCleanup}}
+		box.body = append(box.body, "The standard cleanup frees "+cl.Standard.Size+":", "  old versions, and downloads over 120 days old")
+		box.choices = append(box.choices, choice{"y", "standard", func() tea.Cmd { return a.run(std) }})
+	} else {
+		box.body = append(box.body, "The standard cleanup has nothing to remove.")
+	}
+	if cl.All.Items > cl.Standard.Items {
+		all := action{title: "cleanup --prune=all", args: []string{"cleanup", "--prune=all"}, refresh: []query{qCleanup}}
+		box.body = append(box.body, "Clearing the download cache frees "+cl.All.Size+":", "  every download brew has kept")
+		box.choices = append(box.choices, choice{"a", "whole cache", func() tea.Cmd { return a.run(all) }})
+	}
+	box.choices = append(box.choices, choice{"n", "cancel", nil})
+	a.confirm = box
+	return nil
+}
+
 // serviceKey starts (s), stops (S, after asking) or restarts (R) the
 // selected service.
 func (a *App) serviceKey(k string) tea.Cmd {
@@ -217,5 +249,5 @@ func (a *App) actionHints() string {
 	case tabServices:
 		return "s start · S stop · R restart · l log"
 	}
-	return "1-5 tabs · r refresh · U update"
+	return "1-5 tabs · r refresh · U update · c clean up"
 }

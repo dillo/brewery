@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 	"time"
@@ -21,8 +22,12 @@ type tile struct {
 	value  string
 	style  lipgloss.Style
 	detail string
-	tab    int // tab to open on Enter; -1 for none
+	tab    int // tab to open on Enter; -1 for none, openCleanup for the cleanup dialog
 }
+
+// openCleanup is the Cleanup tile's Enter: it asks to clean up rather than
+// opening a tab.
+const openCleanup = -2
 
 // homeTab shows health tiles and doctor's warnings.
 type homeTab struct {
@@ -84,7 +89,16 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 			doctor.value, doctor.style, doctor.detail = plural(n, "warning"), st.Warn, "see below"
 		}
 	}
-	return []tile{installed, outdated, services, doctor}
+	cleanup := tile{"Cleanup", "✓ tidy", st.OK, "nothing to remove", openCleanup}
+	switch size := cmp.Or(snap.Cleanup.All.Size, snap.Cleanup.Standard.Size); {
+	case h.errs[qCleanup] != nil:
+		cleanup.value, cleanup.style, cleanup.detail = "✗ failed", st.Err, "r retries"
+	case !h.loaded[qCleanup]:
+		cleanup.value, cleanup.style, cleanup.detail = "…", st.Muted, "measuring"
+	case size != "":
+		cleanup.value, cleanup.style, cleanup.detail = size, st.Title, "c to reclaim"
+	}
+	return []tile{installed, outdated, services, doctor, cleanup}
 }
 
 // markUnknown replaces a tile's numbers when its query has failed or has
