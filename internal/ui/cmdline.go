@@ -18,6 +18,10 @@ type cmdline struct {
 	past  []string // earlier commands, oldest first
 	back  int      // how far up into past the line is; 0 is the draft
 	draft string   // what was typed before browsing past commands
+
+	items []candidate // the completion popup, empty when hidden
+	sel   int         // the selected item, -1 for none
+	base  string      // the line before the word being completed
 }
 
 func newCmdline(st theme.Styles) cmdline {
@@ -35,7 +39,7 @@ func newCmdline(st theme.Styles) cmdline {
 func (c *cmdline) open() {
 	c.input.Reset()
 	c.input.Focus()
-	c.back, c.draft = 0, ""
+	c.back, c.draft, c.items = 0, "", nil
 }
 
 func (c *cmdline) value() string { return c.input.Value() }
@@ -103,6 +107,16 @@ func (a *App) cmdKey(msg tea.KeyPressMsg) tea.Cmd {
 	case "esc":
 		a.mode = modeNormal
 		return nil
+	case "tab", "shift+tab":
+		if len(a.cmd.items) == 0 {
+			a.suggest(true)
+		}
+		dir := 1
+		if msg.String() == "shift+tab" {
+			dir = -1
+		}
+		a.cmd.cycle(dir)
+		return nil
 	case "enter":
 		a.mode = modeNormal
 		line := strings.TrimSpace(a.cmd.value())
@@ -112,7 +126,9 @@ func (a *App) cmdKey(msg tea.KeyPressMsg) tea.Cmd {
 		a.cmd.remember(line)
 		return a.execute(line)
 	}
-	return a.cmd.update(msg)
+	cmd := a.cmd.update(msg)
+	a.suggest(false)
+	return cmd
 }
 
 // execute runs a line typed at the prompt. A leading "brew" is optional.

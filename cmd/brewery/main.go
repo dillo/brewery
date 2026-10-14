@@ -56,6 +56,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	hist := jobs.History{Dir: jobs.DefaultHistoryDir()}
 	recs, _ := hist.Load() // no history yet is fine
 	app.UseHistory(hist, recs)
+	app.UseCompletions(client.Completions)
 
 	if _, err := tea.NewProgram(app).Run(); err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)

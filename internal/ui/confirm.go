@@ -60,8 +60,11 @@ func (c *confirmBox) view(st theme.Styles, maxW int) string {
 
 // overlay draws box centered over body, which is w×h; the result is w×h.
 func overlay(body, box string, w, h int) string {
-	x := max((w-lipgloss.Width(box))/2, 0)
-	y := max((h-lipgloss.Height(box))/2, 0)
+	return overlayAt(body, box, w, h, max((w-lipgloss.Width(box))/2, 0), max((h-lipgloss.Height(box))/2, 0))
+}
+
+// overlayAt draws box over body with its top-left corner at x, y.
+func overlayAt(body, box string, w, h, x, y int) string {
 	canvas := lipgloss.NewCanvas(w, h)
 	canvas.Compose(lipgloss.NewCompositor(
 		lipgloss.NewLayer(body),

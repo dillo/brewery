@@ -10,6 +10,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"brewery/internal/brew"
 	"brewery/internal/jobs"
 	"brewery/internal/state"
 	"brewery/internal/theme"
@@ -80,6 +81,9 @@ type App struct {
 	confirm *confirmBox // open confirmation, or nil
 	flash   string      // one-off status message, cleared by the next key
 
+	comp     brew.Completions // brew's commands, for completing the prompt
+	loadComp func(context.Context) (brew.Completions, error)
+
 	tab           int
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
@@ -130,7 +134,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	return a
 }
 
-func (a *App) Init() tea.Cmd { return a.refresh() }
+func (a *App) Init() tea.Cmd { return tea.Batch(a.refresh(), a.loadCompletions()) }
 
 // UseHistory saves finished jobs to h, starting from the records already
 // there (newest first).
@@ -247,6 +251,10 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.saveErr = msg.err
 	case historySavedMsg:
 		a.histErr = msg.err
+	case completionsMsg:
+		if msg.err == nil {
+			a.comp = msg.comp // without them, only brewery's own commands complete
+		}
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
 	case tea.PasteMsg:
@@ -254,7 +262,9 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		case a.mode == modeInsert && a.proc != nil:
 			a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
 		case a.mode == modeCommand:
-			return a.cmd.update(msg)
+			cmd := a.cmd.update(msg)
+			a.suggest(false)
+			return cmd
 		}
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
@@ -452,7 +462,12 @@ func (a *App) render() string {
 	if a.drawerShown() {
 		parts = append(parts, a.drawer.view(a.width, a.bodyHeight()-bodyH, a.now(), a.frame, a.mode == modeInsert))
 	}
-	return lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...)
+	screen := lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...)
+	if p := a.cmd.popup(a.st, a.width); a.mode == modeCommand && p != "" {
+		h := lipgloss.Height(screen)
+		screen = overlayAt(screen, p, a.width, h, 0, max(h-1-lipgloss.Height(p), 0))
+	}
+	return screen
 }
 
 // bodyHeight is the space between the tab bar (tabs + rule) and the status bar.
@@ -499,7 +514,14 @@ func (a *App) statusBar() string {
 	st := a.st
 	if a.mode == modeCommand {
 		badge := st.Mode("COMMAND").Render("COMMAND") + " "
-		line := badge + a.cmd.view(a.width-lipgloss.Width(badge)-1)
+		hint := st.Muted.Render("tab complete · ↑↓ history · esc cancel ")
+		room := a.width - lipgloss.Width(badge) - 1
+		if room-lipgloss.Width(hint) >= 30 {
+			room -= lipgloss.Width(hint)
+		} else {
+			hint = ""
+		}
+		line := badge + a.cmd.view(room) + hint
 		return st.StatusBar.Width(a.width).Render(ansi.Truncate(line, a.width, ""))
 	}
 	badge := "NORMAL"
