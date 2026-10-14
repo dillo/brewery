@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"charm.land/lipgloss/v2"
 
@@ -102,7 +103,7 @@ func TestHomeNavigation(t *testing.T) {
 
 func TestHomeView(t *testing.T) {
 	h := loadedHome()
-	view := h.view(fixtureSnapshot(t), 140, 30)
+	view := h.view(fixtureSnapshot(t), nil, testNow, 140, 30)
 	out := stripANSI(view)
 	for _, want := range []string{"Installed", "5 formulae · 2 casks", "lua-language-server, docker-", "1 error",
 		"⚠ The following taps are not trusted:", "brew untap oven-sh/bun", "⚠ Some installed casks are deprecated"} {
@@ -113,7 +114,7 @@ func TestHomeView(t *testing.T) {
 	if lipgloss.Height(view) != 30 {
 		t.Errorf("home view height = %d, want 30", lipgloss.Height(view))
 	}
-	clean := stripANSI(h.view(state.Snapshot{DoctorRan: true}, 140, 30))
+	clean := stripANSI(h.view(state.Snapshot{DoctorRan: true}, nil, testNow, 140, 30))
 	if !strings.Contains(clean, "Your system is ready to brew.") {
 		t.Error("clean doctor message missing")
 	}
@@ -124,7 +125,7 @@ func TestHomeDoctorFailed(t *testing.T) {
 	if got := h.tiles(state.Snapshot{})[3]; got.value != "✗ failed" || got.detail != "see below" || got.tab != -1 {
 		t.Errorf("doctor tile = %+v", got)
 	}
-	out := stripANSI(h.view(state.Snapshot{}, 140, 30))
+	out := stripANSI(h.view(state.Snapshot{}, nil, testNow, 140, 30))
 	for _, want := range []string{"brew doctor failed", "timed out after 30s", "press r to retry"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q", want)
@@ -134,10 +135,61 @@ func TestHomeDoctorFailed(t *testing.T) {
 		t.Error("failed doctor should not claim to be running")
 	}
 
-	out = stripANSI(h.view(fixtureSnapshot(t), 140, 30))
+	out = stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30))
 	for _, want := range []string{"Warnings from the last successful check:", "The following taps are not trusted"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q with earlier warnings", want)
+		}
+	}
+}
+
+func TestHomeShowsRecentJobs(t *testing.T) {
+	h := loadedHome()
+	for _, size := range [][2]int{{140, 30}, {80, 24}} {
+		view := h.view(fixtureSnapshot(t), pastJobs(), testNow, size[0], size[1])
+		if lipgloss.Width(view) != size[0] || lipgloss.Height(view) != size[1] {
+			t.Errorf("at %v the view is %dx%d", size, lipgloss.Width(view), lipgloss.Height(view))
+		}
+		out := stripANSI(view)
+		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", ":jobs"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("at %v missing %q:\n%s", size, want, out)
+			}
+		}
+	}
+	out := stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30))
+	if !strings.Contains(out, "no jobs yet") {
+		t.Errorf("empty recent jobs:\n%s", out)
+	}
+}
+
+func TestShortDoctorLinesAreNotCutOff(t *testing.T) {
+	h := loadedHome()
+	snap := state.Snapshot{DoctorRan: true, Doctor: []brew.DoctorWarning{{
+		Title: "The following taps are not trusted:",
+		Body:  "oven-sh/bun\nHomebrew is currently ignoring formulae, casks and commands from these taps because tap trust is required.",
+	}}}
+	out := stripANSI(h.view(snap, nil, testNow, 100, 30))
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "oven-sh/bun") && strings.Contains(line, "…") {
+			t.Errorf("a short line is padded to the long one and cut off: %q", line)
+		}
+	}
+}
+
+func TestAgo(t *testing.T) {
+	for _, tt := range []struct {
+		d    time.Duration
+		want string
+	}{
+		{10 * time.Second, "just now"},
+		{5 * time.Minute, "5m ago"},
+		{3 * time.Hour, "3h ago"},
+		{30 * time.Hour, "yesterday"},
+		{72 * time.Hour, "3d ago"},
+	} {
+		if got := ago(testNow, testNow.Add(-tt.d)); got != tt.want {
+			t.Errorf("ago(%v) = %q, want %q", tt.d, got, tt.want)
 		}
 	}
 }

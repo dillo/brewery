@@ -3,12 +3,14 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/brew"
+	"brewery/internal/jobs"
 	"brewery/internal/state"
 	"brewery/internal/theme"
 )
@@ -109,7 +111,9 @@ func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) (openTab int)
 	return -1
 }
 
-func (h *homeTab) view(snap state.Snapshot, w, height int) string {
+// view renders the tiles over doctor's findings and the recent jobs
+// (newest first).
+func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time, w, height int) string {
 	st := h.st
 	tiles := h.tiles(snap)
 	tileH := 5
@@ -143,8 +147,53 @@ func (h *homeTab) view(snap state.Snapshot, w, height int) string {
 	default:
 		h.writeWarnings(&b, snap.Doctor)
 	}
-	doctor := pane(st, "Doctor", b.String(), w, max(height-tileH, 3), false)
-	return lipgloss.JoinVertical(lipgloss.Left, row, doctor)
+	lowH := max(height-tileH, 3)
+	doctorW := w * 3 / 5
+	doctor := pane(st, "Doctor", b.String(), doctorW, lowH, false)
+	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, false)
+	return lipgloss.JoinVertical(lipgloss.Left, row, lipgloss.JoinHorizontal(lipgloss.Top, doctor, jobsPane))
+}
+
+// recentJobs lists as many recent jobs as fit a w×h pane, each with how
+// long ago it started, above a hint for the full list.
+func (h *homeTab) recentJobs(recent []jobs.Record, now time.Time, w, height int) string {
+	st := h.st
+	iw, ih := paneInner(w, height)
+	hint := st.Muted.Render(":jobs shows them all")
+	if len(recent) == 0 {
+		return st.Muted.Render("no jobs yet") + "\n" + hint
+	}
+	var lines []string
+	for _, r := range recent[:min(len(recent), max(ih-1, 0))] {
+		icon := st.OK.Render("✓")
+		switch r.State {
+		case jobs.Failed:
+			icon = st.Err.Render("✗")
+		case jobs.Canceled:
+			icon = st.Warn.Render("⊘")
+		}
+		when := st.Muted.Render(ago(now, r.Started))
+		title := ansi.Truncate(r.Title, max(iw-4-lipgloss.Width(when), 1), "…")
+		gap := max(iw-2-lipgloss.Width(title)-lipgloss.Width(when), 1)
+		lines = append(lines, icon+" "+title+strings.Repeat(" ", gap)+when)
+	}
+	return strings.Join(append(lines, hint), "\n")
+}
+
+// ago says roughly how long before now t was.
+func ago(now, t time.Time) string {
+	d := now.Sub(t)
+	switch {
+	case d < time.Minute:
+		return "just now"
+	case d < time.Hour:
+		return fmt.Sprintf("%dm ago", int(d.Minutes()))
+	case d < 24*time.Hour:
+		return fmt.Sprintf("%dh ago", int(d.Hours()))
+	case d < 48*time.Hour:
+		return "yesterday"
+	}
+	return fmt.Sprintf("%dd ago", int(d.Hours()/24))
 }
 
 // writeWarnings renders each doctor warning as a title and indented body.
@@ -153,7 +202,11 @@ func (h *homeTab) writeWarnings(b *strings.Builder, warnings []brew.DoctorWarnin
 	for _, d := range warnings {
 		b.WriteString(st.Warn.Render("⚠ "+d.Title) + "\n")
 		if d.Body != "" {
-			b.WriteString(st.Muted.Render(indent(d.Body, "  ")) + "\n")
+			// Style each line alone: as one block, every line would be
+			// padded to the longest, and a narrow pane cuts the padding off.
+			for _, line := range strings.Split(d.Body, "\n") {
+				b.WriteString(st.Muted.Render("  "+line) + "\n")
+			}
 		}
 		b.WriteString("\n")
 	}
@@ -165,8 +218,4 @@ func plural(n int, noun string) string {
 		return fmt.Sprintf("%d %s", n, noun)
 	}
 	return fmt.Sprintf("%d %ss", n, noun)
-}
-
-func indent(s, prefix string) string {
-	return prefix + strings.ReplaceAll(s, "\n", "\n"+prefix)
 }

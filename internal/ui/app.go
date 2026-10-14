@@ -432,7 +432,7 @@ func (a *App) render() string {
 	var body string
 	switch a.tab {
 	case tabHome:
-		body = a.home.view(a.snap, a.width, bodyH)
+		body = a.home.view(a.snap, a.history, a.now(), a.width, bodyH)
 	case tabInstalled:
 		body = a.installed.view(a.errs[qInstalled])
 	case tabOutdated:
