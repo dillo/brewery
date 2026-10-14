@@ -127,7 +127,7 @@ func TestDrawerTitles(t *testing.T) {
 	if out := stripANSI(d.view(70, 8, testNow, 0, true)); !strings.Contains(out, "typing goes to brew") {
 		t.Errorf("insert hint missing:\n%s", out)
 	}
-	q.Finish(j, 1, false, "A `brew update` process has already locked /x.", testNow)
+	q.Finish(j, 1, false, "Error: A `brew update` process has already locked /x.", testNow)
 	d.retryAt = testNow.Add(4 * time.Second)
 	if out := stripANSI(d.view(70, 8, testNow, 0, false)); !strings.Contains(out, "waiting for brew's lock") || !strings.Contains(out, "retry 2 of 5 in 0:04") {
 		t.Errorf("waiting title wrong:\n%s", out)

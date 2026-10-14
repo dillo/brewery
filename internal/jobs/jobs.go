@@ -3,8 +3,10 @@
 package jobs
 
 import (
-	"strings"
+	"regexp"
 	"time"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 // State is where a job is in its life.
@@ -127,8 +129,15 @@ func Backoff(attempt int) time.Duration {
 	return min(2*time.Second<<max(attempt-1, 0), 30*time.Second)
 }
 
+// lockRe matches the error brew prints when another brew process holds
+// the lock it needs: "Error: A `brew upgrade` process has already locked
+// /opt/homebrew/Cellar/fd.lock." It must start a line, so a package's own
+// output that merely mentions the words can't trigger retries.
+var lockRe = regexp.MustCompile("(?m)^Error: A `[^`\n]*` process has already locked ")
+
 // IsLockError reports whether brew's output says another brew process
-// holds the lock it needs ("A `brew …` process has already locked …").
+// holds the lock it needs. In a terminal brew colors "Error", so colors are
+// stripped first.
 func IsLockError(output string) bool {
-	return strings.Contains(output, "has already locked")
+	return lockRe.MatchString(ansi.Strip(output))
 }

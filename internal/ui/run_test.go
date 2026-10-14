@@ -460,7 +460,7 @@ func TestStopDialogOnlyStopsTheJobItNamed(t *testing.T) {
 }
 
 func TestStoppingAJobWaitingForTheLock(t *testing.T) {
-	locked := newFakeProc(1, "A `brew update` process has already locked /x.\r\n")
+	locked := newFakeProc(1, "Error: A `brew update` process has already locked /x.\r\n")
 	locked.exit()
 	fs := &fakeStarter{procs: []*fakeProc{locked}}
 	a := newJobApp(t, fs)

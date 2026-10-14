@@ -61,7 +61,7 @@ func TestLockedJobRetriesThenFails(t *testing.T) {
 	j := q.Add("upgrade", []string{"upgrade"})
 	other := q.Add("pin git", nil)
 	q.Next(t0)
-	locked := "A `brew update` process has already locked /opt/homebrew/var/homebrew/locks/update."
+	locked := "Error: A `brew update` process has already locked /opt/homebrew/var/homebrew/locks/update."
 	for attempt := 1; attempt < MaxAttempts; attempt++ {
 		if !q.Finish(j, 1, false, locked, t0) {
 			t.Fatalf("attempt %d should retry", attempt)
@@ -79,6 +79,23 @@ func TestLockedJobRetriesThenFails(t *testing.T) {
 	}
 	if q.Next(t0) != other {
 		t.Error("the next job starts once the locked one gives up")
+	}
+}
+
+func TestIsLockError(t *testing.T) {
+	for _, tt := range []struct {
+		output string
+		want   bool
+	}{
+		{"Error: A `brew upgrade` process has already locked /opt/homebrew/Cellar/fd.lock.", true},
+		{"==> Upgrading fd\r\n\x1b[4;31mError\x1b[0m: A `brew upgrade fd` process has already locked /opt/homebrew/Cellar/fd.lock.\r\nPlease wait for it to finish or terminate it to continue.\r\n", true},
+		{"A `brew update` process has already locked /x.", false},                         // not brew's error line
+		{"==> Caveats\nThis tool says: Error: A `x` process has already locked y", false}, // mid-line
+		{"Error: No such keg: /opt/homebrew/Cellar/fd", false},
+	} {
+		if got := IsLockError(tt.output); got != tt.want {
+			t.Errorf("IsLockError(%q) = %v, want %v", tt.output, got, tt.want)
+		}
 	}
 }
 
