@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Keep is how many finished jobs the history holds.
@@ -46,7 +47,13 @@ func Tail(s string, n int) string {
 	if len(s) <= n {
 		return s
 	}
+	if n <= 0 {
+		return ""
+	}
 	cut := len(s) - n
+	for cut < len(s) && !utf8.RuneStart(s[cut]) {
+		cut++ // never start inside a multi-byte character
+	}
 	midLine := s[cut-1] != '\n'
 	s = s[cut:]
 	if i := strings.IndexByte(s, '\n'); midLine && i >= 0 && i < len(s)-1 {
@@ -90,17 +97,42 @@ func (h History) Save(r Record) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(h.Dir, 0o755); err != nil {
+	// Records hold brew's output and typed args: keep them private.
+	if err := os.MkdirAll(h.Dir, 0o700); err != nil {
 		return err
 	}
-	name := filepath.Join(h.Dir, r.Started.UTC().Format("20060102T150405.000000000")+".json")
-	tmp := name + ".tmp"
-	if err := os.WriteFile(tmp, b, 0o644); err != nil {
+	f, err := os.CreateTemp(h.Dir, "*.tmp") // 0600
+	if err != nil {
 		return err
+	}
+	tmp := f.Name()
+	_, werr := f.Write(b)
+	if cerr := f.Close(); werr == nil {
+		werr = cerr
+	}
+	if werr != nil {
+		os.Remove(tmp)
+		return werr
+	}
+	// Jobs that start within the clock's precision share a name: add a
+	// suffix, which still sorts after the timestamp, rather than lose one.
+	stem := filepath.Join(h.Dir, r.Started.UTC().Format("20060102T150405.000000000"))
+	name := stem + ".json"
+	for i := 1; ; i++ {
+		if _, err := os.Lstat(name); os.IsNotExist(err) {
+			break
+		}
+		name = fmt.Sprintf("%s-%d.json", stem, i)
 	}
 	if err := os.Rename(tmp, name); err != nil {
 		os.Remove(tmp)
 		return err
+	}
+	// A crash mid-save leaves a temp file behind.
+	if stray, _ := filepath.Glob(filepath.Join(h.Dir, "*.tmp")); len(stray) > 0 {
+		for _, s := range stray {
+			os.Remove(s)
+		}
 	}
 	files, err := h.files()
 	if err != nil {

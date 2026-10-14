@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 func record(title string, started time.Time) Record {
@@ -112,5 +113,64 @@ func TestTail(t *testing.T) {
 		if got := Tail(tt.s, tt.n); got != tt.want {
 			t.Errorf("Tail(%q, %d) = %q, want %q", tt.s, tt.n, got, tt.want)
 		}
+	}
+}
+
+func TestTailKeepsRunesWhole(t *testing.T) {
+	s := strings.Repeat("é", 10) // 2 bytes each
+	for n := 1; n < len(s); n++ {
+		if got := Tail(s, n); !utf8.ValidString(got) {
+			t.Errorf("Tail(n=%d) = %q, not valid UTF-8", n, got)
+		}
+	}
+	if got := Tail("abc", 0); got != "" {
+		t.Errorf("Tail(s, 0) = %q, want empty", got)
+	}
+	if got := Tail("abc", -1); got != "" {
+		t.Errorf("Tail(s, -1) = %q, want empty", got)
+	}
+}
+
+func TestHistoryKeepsRecordsWithTheSameStart(t *testing.T) {
+	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
+	for _, title := range []string{"one", "two", "three"} {
+		if err := h.Save(record(title, t0)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := h.Load()
+	if err != nil || len(got) != 3 {
+		t.Fatalf("Load = %d records, %v; want 3", len(got), err)
+	}
+}
+
+func TestHistoryFilesArePrivate(t *testing.T) {
+	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
+	if err := h.Save(record("pin git", t0)); err != nil {
+		t.Fatal(err)
+	}
+	if fi, err := os.Stat(h.Dir); err != nil || fi.Mode().Perm() != 0o700 {
+		t.Errorf("dir mode = %v, %v; want 0700", fi.Mode().Perm(), err)
+	}
+	files, _ := h.files()
+	if fi, err := os.Stat(files[0]); err != nil || fi.Mode().Perm() != 0o600 {
+		t.Errorf("file mode = %v, %v; want 0600", fi.Mode().Perm(), err)
+	}
+}
+
+func TestHistorySaveRemovesStrayTempFiles(t *testing.T) {
+	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
+	if err := os.MkdirAll(h.Dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	stray := filepath.Join(h.Dir, "123.tmp")
+	if err := os.WriteFile(stray, []byte("half"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Save(record("pin git", t0)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(stray); !os.IsNotExist(err) {
+		t.Errorf("stray temp file should be removed: %v", err)
 	}
 }
