@@ -107,3 +107,18 @@ func TestPTYKill(t *testing.T) {
 		t.Errorf("a killed command reports -1, got %d", code)
 	}
 }
+
+// A process brew leaves running in the background (a daemon a post-install
+// step started) keeps the terminal open, but on macOS the output still ends
+// when brew exits, so the job finishes then.
+func TestPTYEndsWhenTheCommandExitsDespiteABackgroundChild(t *testing.T) {
+	p := sh(t, `(trap '' HUP; sleep 3) & echo started`)
+	start := time.Now()
+	out, code := finish(t, p)
+	if !strings.Contains(out, "started") || code != 0 {
+		t.Errorf("got %q, exit %d", out, code)
+	}
+	if d := time.Since(start); d > 2*time.Second {
+		t.Errorf("output ended after %v: it waited for the background child", d)
+	}
+}

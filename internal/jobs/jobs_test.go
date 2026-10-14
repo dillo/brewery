@@ -41,6 +41,8 @@ func TestFinishStates(t *testing.T) {
 		{0, false, "", Done},
 		{1, false, "Error: No such keg", Failed},
 		{-1, true, "", Canceled},
+		{130, true, "", Canceled},
+		{0, true, "", Done}, // brew took the ctrl+c as an answer and finished anyway
 		{1, false, "Error: A `brew upgrade` process has already locked /opt/homebrew/Cellar/fd.lock.", Waiting},
 	}
 	for _, tt := range tests {

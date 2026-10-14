@@ -90,12 +90,13 @@ func (q *Queue) Queued() int {
 
 // Finish records how a job's run ended. If brew refused to run because
 // another brew process held the lock, the job waits to retry instead of
-// failing, until MaxAttempts runs have been tried. It reports whether the
-// job will be retried.
+// failing, until MaxAttempts runs have been tried. A job the user stopped
+// counts as stopped only if it then failed: brew can take ctrl+c as an
+// answer and finish anyway. It reports whether the job will be retried.
 func (q *Queue) Finish(j *Job, code int, canceled bool, output string, now time.Time) (retry bool) {
 	j.ExitCode = code
 	switch {
-	case canceled:
+	case canceled && code != 0:
 		j.State = Canceled
 	case code == 0:
 		j.State = Done
