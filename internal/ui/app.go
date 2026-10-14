@@ -34,8 +34,9 @@ var tabQueries = map[int]query{
 type mode int
 
 const (
-	modeNormal mode = iota // keys drive brewery
-	modeInsert             // keys go to the running brew command
+	modeNormal  mode = iota // keys drive brewery
+	modeInsert              // keys go to the running brew command
+	modeCommand             // keys edit the ":" command line
 )
 
 // App is the root Bubble Tea model.
@@ -73,6 +74,7 @@ type App struct {
 	histErr error         // the last save failed
 
 	mode    mode
+	cmd     cmdline     // the ":" prompt
 	confirm *confirmBox // open confirmation, or nil
 	flash   string      // one-off status message, cleared by the next key
 
@@ -101,6 +103,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond,
 		drawer:    newDrawer(st),
+		cmd:       newCmdline(st),
 		installed: newInstalledTab(st),
 		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
 		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
@@ -230,8 +233,11 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
 	case tea.PasteMsg:
-		if a.mode == modeInsert && a.proc != nil {
+		switch {
+		case a.mode == modeInsert && a.proc != nil:
 			a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
+		case a.mode == modeCommand:
+			return a.cmd.update(msg)
 		}
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
@@ -329,10 +335,15 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		return nil
 	}
+	if a.mode == modeCommand {
+		return a.cmdKey(msg)
+	}
 
 	switch k {
 	case "q":
 		return a.askQuit()
+	case ":":
+		return a.openCmdline()
 	case "ctrl+c":
 		if a.queue.Current() != nil {
 			return a.askStop()
@@ -461,6 +472,11 @@ func (a *App) tabBar() string {
 
 func (a *App) statusBar() string {
 	st := a.st
+	if a.mode == modeCommand {
+		badge := st.Mode("COMMAND").Render("COMMAND") + " "
+		line := badge + a.cmd.view(a.width-lipgloss.Width(badge)-1)
+		return st.StatusBar.Width(a.width).Render(ansi.Truncate(line, a.width, ""))
+	}
 	badge := "NORMAL"
 	switch {
 	case a.mode == modeInsert:
@@ -513,7 +529,7 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := a.actionHints() + " · q quit"
+	hints := a.actionHints() + " · : command · q quit"
 	if a.drawer.job != nil && !a.drawer.open {
 		hints = "o output · " + hints
 	}

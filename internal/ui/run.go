@@ -84,7 +84,11 @@ func (a *App) runNext() tea.Cmd {
 
 // launch starts a run of j and shows it in the drawer.
 func (a *App) launch(j *jobs.Job) tea.Cmd {
-	env := append(slices.Clone(brew.JobEnv), a.acts[j.ID].env...)
+	act := a.acts[j.ID]
+	env := append(slices.Clone(brew.JobEnv), act.env...)
+	if act.typed {
+		env = nil
+	}
 	p, err := a.start(j.Args, env, a.drawer.cols, a.drawer.rows)
 	if err != nil {
 		a.queue.Finish(j, -1, false, err.Error(), a.now())

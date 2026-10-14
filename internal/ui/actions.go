@@ -17,6 +17,7 @@ type action struct {
 	refresh []query  // queries to re-run when it finishes
 	full    bool     // re-run every query, doctor included (after brew update)
 	env     []string // added to the job's environment
+	typed   bool     // typed at ":": runs as brew would, auto-update included
 }
 
 // kindArgs builds brew arguments for verb on packages of one kind.
