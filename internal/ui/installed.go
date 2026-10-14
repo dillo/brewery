@@ -59,8 +59,9 @@ func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
 	t.apply()
 }
 
-// shows reports whether view f lists p. Apps count as top-level: nothing
-// depends on a cask, so they are always things you chose to install.
+// shows reports whether view f lists p. Apps count as top-level: brew
+// doesn't record whether a cask came in for another one, so they are all
+// taken as things you chose to install.
 func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
 	switch f {
 	case filterTop:
@@ -239,7 +240,7 @@ func (t *installedTab) preview(p brew.Package) string {
 	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "installed", how,
 		"latest", latest, "pinned", pinned, "deprecated", deprecated, "homepage", p.Homepage))
 
-	if p.Kind == brew.KindFormula {
+	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {
 		b.WriteString("\n" + st.Accent.Render("Dependencies") + "\n")
 		if len(p.DirectDeps) == 0 {
 			b.WriteString(st.Muted.Render("none") + "\n")

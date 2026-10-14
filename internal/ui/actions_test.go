@@ -124,6 +124,37 @@ func TestUninstallWithoutOrphans(t *testing.T) {
 	}
 }
 
+func TestUninstallCask(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	keys(t, a, "2", "f", "f", "g", "x") // apps: docker-desktop
+	if a.confirm == nil || a.confirm.title != "Uninstall docker-desktop 4.39.0,184744?" {
+		t.Fatalf("x should ask: %+v", a.confirm)
+	}
+	keys(t, a, "y")
+	if want := []string{"uninstall", "--cask", "docker-desktop"}; !reflect.DeepEqual(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+}
+
+func TestUninstallRefusesWhatACaskNeeds(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	for i, p := range a.snap.Packages {
+		if p.Name == "docker-desktop" {
+			a.snap.Packages[i].Deps, a.snap.Packages[i].DirectDeps = []string{"fd"}, []string{"fd"}
+		}
+	}
+	a.sync()
+	keys(t, a, "2", "f", "j", "x") // all: fd
+	if a.confirm == nil || a.confirm.title != "Can't uninstall fd" {
+		t.Fatalf("want an explanation, got %+v", a.confirm)
+	}
+	if out := stripANSI(a.render()); !strings.Contains(out, "Required by docker-desktop.") {
+		t.Errorf("should say the cask needs it:\n%s", out)
+	}
+}
+
 func TestUninstallRefusesWhatOthersNeed(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)

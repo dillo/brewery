@@ -127,6 +127,22 @@ func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 	}
 }
 
+func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
+	snap := fixtureSnapshot(t)
+	for i, p := range snap.Packages {
+		if p.Name == "docker-desktop" {
+			snap.Packages[i].Deps, snap.Packages[i].DirectDeps = []string{"fd"}, []string{"fd"}
+		}
+	}
+	it := newInstalledTab(testStyles)
+	it.resize(140, 30)
+	it.setData(snap.Packages, state.NewIndex(snap.Packages))
+	out := stripANSI(it.view(nil)) // docker-desktop is first
+	if !strings.Contains(out, "Dependencies") || !strings.Contains(out, "└─ fd") {
+		t.Errorf("a cask that needs something should show it:\n%s", out)
+	}
+}
+
 func TestInstalledEmptyFilter(t *testing.T) {
 	it := newInstalledTab(testStyles)
 	it.resize(100, 12)

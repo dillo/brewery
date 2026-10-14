@@ -100,3 +100,39 @@ func TestUsedByReturnsACopy(t *testing.T) {
 		t.Errorf("changing the result changed the index: %v", got)
 	}
 }
+
+func TestOrphansTakesSeveralRounds(t *testing.T) {
+	// a needs b and c; b needs c. x, installed by hand, still needs b, so
+	// b stays, and then c stays too because b needs it: c only turns out
+	// to be needed once b has been dropped.
+	pkgs := []brew.Package{
+		{FullName: "a", OnRequest: true, Deps: []string{"b", "c"}},
+		{FullName: "b", Deps: []string{"c"}},
+		{FullName: "c"},
+		{FullName: "x", OnRequest: true, Deps: []string{"b"}},
+	}
+	for range 20 { // map order varies: c may be looked at before or after b
+		if got := NewIndex(pkgs).Orphans("a"); len(got) != 0 {
+			t.Fatalf("x still needs b, and b needs c; got %v", got)
+		}
+	}
+}
+
+func TestCaskDependencies(t *testing.T) {
+	// The cask a needs libusb, which needs libffi; both came in for it.
+	pkgs := []brew.Package{
+		{Name: "a", FullName: "a", Kind: brew.KindCask, OnRequest: true, Deps: []string{"libusb", "libffi"}, DirectDeps: []string{"libusb"}},
+		{Name: "libusb", FullName: "libusb", Kind: brew.KindFormula, Deps: []string{"libffi"}, DirectDeps: []string{"libffi"}},
+		{Name: "libffi", FullName: "libffi", Kind: brew.KindFormula},
+	}
+	ix := NewIndex(pkgs)
+	if got := ix.UsedBy("libusb"); !reflect.DeepEqual(got, []string{"a"}) {
+		t.Errorf("UsedBy(libusb) = %v: the cask needs it", got)
+	}
+	if got := ix.Orphans("a"); !reflect.DeepEqual(got, []string{"libffi", "libusb"}) {
+		t.Errorf("Orphans(a) = %v", got)
+	}
+	if ix.IsLeaf(pkgs[1]) {
+		t.Error("libusb isn't top-level while a cask needs it")
+	}
+}

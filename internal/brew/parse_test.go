@@ -67,6 +67,37 @@ func TestParseInfo(t *testing.T) {
 	}
 }
 
+func TestParseInfoCaskDependencies(t *testing.T) {
+	// b needs the cask a, which needs the formula libusb, which needs
+	// libffi. brew lists only what each cask names itself.
+	in := `{"formulae": [
+	  {"name": "libusb", "full_name": "libusb", "installed": [{"version": "1.0", "runtime_dependencies": [{"full_name": "libffi", "declared_directly": true}]}]},
+	  {"name": "libffi", "full_name": "libffi", "installed": [{"version": "3.5"}]}
+	], "casks": [
+	  {"token": "a", "full_token": "a", "depends_on": {"formula": ["libusb"], "macos": {">=": ["14"]}}},
+	  {"token": "b", "full_token": "b", "depends_on": {"cask": ["a"]}},
+	  {"token": "c", "full_token": "c", "depends_on": {}}
+	]}`
+	pkgs, err := ParseInfo([]byte(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name         string
+		deps, direct []string
+	}{
+		{"a", []string{"libusb", "libffi"}, []string{"libusb"}},
+		{"b", []string{"a", "libusb", "libffi"}, []string{"a"}},
+		{"c", nil, nil},
+	}
+	for _, tt := range tests {
+		p := byName(pkgs, tt.name)
+		if !reflect.DeepEqual(p.Deps, tt.deps) || !reflect.DeepEqual(p.DirectDeps, tt.direct) {
+			t.Errorf("%s: deps %v, direct %v; want %v, %v", tt.name, p.Deps, p.DirectDeps, tt.deps, tt.direct)
+		}
+	}
+}
+
 func TestParseInfoBadJSON(t *testing.T) {
 	if _, err := ParseInfo([]byte("Error: not json")); err == nil {
 		t.Fatal("want error for non-JSON output")

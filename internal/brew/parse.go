@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 )
@@ -62,6 +63,10 @@ type infoJSON struct {
 		Outdated      bool     `json:"outdated"`
 		Deprecated    bool     `json:"deprecated"`
 		Caveats       *string  `json:"caveats"`
+		DependsOn     struct {
+			Formula []string `json:"formula"`
+			Cask    []string `json:"cask"`
+		} `json:"depends_on"`
 	} `json:"casks"`
 }
 
@@ -106,9 +111,46 @@ func ParseInfo(b []byte) ([]Package, error) {
 		if c.InstalledTime != nil {
 			p.InstalledAt = time.Unix(*c.InstalledTime, 0)
 		}
+		p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
 		pkgs = append(pkgs, p)
 	}
+	caskDeps(pkgs)
 	return pkgs, nil
+}
+
+// caskDeps fills in each cask's Deps: brew lists only what a cask names
+// itself, but it needs everything those need too, as a formula's
+// runtime_dependencies already say.
+func caskDeps(pkgs []Package) {
+	byName := map[string]*Package{}
+	for i := range pkgs {
+		byName[pkgs[i].FullName] = &pkgs[i]
+	}
+	for i := range pkgs {
+		p := &pkgs[i]
+		if p.Kind != KindCask {
+			continue
+		}
+		seen := map[string]bool{p.FullName: true}
+		var walk func(names []string)
+		walk = func(names []string) {
+			for _, d := range names {
+				if seen[d] {
+					continue
+				}
+				seen[d] = true
+				p.Deps = append(p.Deps, d)
+				if dp, ok := byName[d]; ok {
+					if dp.Kind == KindCask {
+						walk(dp.DirectDeps)
+					} else {
+						walk(dp.Deps)
+					}
+				}
+			}
+		}
+		walk(p.DirectDeps)
+	}
 }
 
 type outdatedJSON struct {
