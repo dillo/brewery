@@ -16,6 +16,7 @@ type action struct {
 	args    []string // brew's arguments
 	refresh []query  // queries to re-run when it finishes
 	full    bool     // re-run every query, doctor included (after brew update)
+	env     []string // added to the job's environment
 }
 
 // kindArgs builds brew arguments for verb on packages of one kind.
@@ -162,7 +163,9 @@ func (a *App) askUpgradeAll() tea.Cmd {
 	if pinned > 0 {
 		body = append(body, fmt.Sprintf("%d pinned will be skipped.", pinned))
 	}
-	all := action{title: "upgrade all", args: []string{"upgrade"}, refresh: packageQueries}
+	// This dialog is the confirmation, so brew 7 needn't ask again. The
+	// variable, unlike --no-ask, is ignored by older brews.
+	all := action{title: "upgrade all", args: []string{"upgrade"}, env: []string{"HOMEBREW_NO_ASK=1"}, refresh: packageQueries}
 	a.confirm = &confirmBox{
 		title: fmt.Sprintf("Upgrade all %d outdated?", n),
 		body:  body,

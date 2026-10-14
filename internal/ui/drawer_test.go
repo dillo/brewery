@@ -89,6 +89,10 @@ func TestDrawerPromptDetection(t *testing.T) {
 		{"Proceed (y/n)? ", true},
 		{"==> Downloading https://example.com/x.dmg\r\n", false},
 		{"Password:\r\nok, thanks\r\n", false}, // answered: the cursor moved on
+		{"Password:\r\n", false},               // answered with enter
+		// brew 7's own confirmation ends its line and waits for one key.
+		{"==> Upgrading 2 outdated packages:\r\n==> Do you want to proceed with the upgrade? [y/n]\r\n", true},
+		{"==> Do you want to proceed with the upgrade? [y/n]\r\ny\r\n", false},
 	}
 	for _, tt := range tests {
 		d := newTestDrawer(t, runningJob())

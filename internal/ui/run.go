@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"io"
+	"slices"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -83,7 +84,8 @@ func (a *App) runNext() tea.Cmd {
 
 // launch starts a run of j and shows it in the drawer.
 func (a *App) launch(j *jobs.Job) tea.Cmd {
-	p, err := a.start(j.Args, brew.JobEnv, a.drawer.cols, a.drawer.rows)
+	env := append(slices.Clone(brew.JobEnv), a.acts[j.ID].env...)
+	p, err := a.start(j.Args, env, a.drawer.cols, a.drawer.rows)
 	if err != nil {
 		a.queue.Finish(j, -1, false, err.Error(), a.now())
 		a.flash = a.st.Err.Render(fmt.Sprintf("✗ %s: couldn't start brew: %v", j.Title, err))

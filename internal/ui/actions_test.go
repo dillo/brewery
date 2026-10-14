@@ -3,6 +3,7 @@ package ui
 import (
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -81,6 +82,9 @@ func TestUpgradeAllAsksFirst(t *testing.T) {
 	keys(t, a, "y")
 	if want := []string{"upgrade"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+	if env := fs.envs[len(fs.envs)-1]; !slices.Contains(env, "HOMEBREW_NO_ASK=1") {
+		t.Errorf("confirmed here, so brew needn't ask again: env %v", env)
 	}
 }
 

@@ -19,6 +19,10 @@ import (
 // password prompt (sudo) or a yes/no question.
 var promptRe = regexp.MustCompile(`(?i)(password|passphrase)[^:]*:\s*$|[\[(]y/n[\])]\??\s*$`)
 
+// askRe matches brew's own confirmation ("==> Do you want to proceed with
+// the upgrade? [y/n]"), which ends its line before waiting for one key.
+var askRe = regexp.MustCompile(`(?i)\[y/n\]\s*$`)
+
 // spinnerFrames animate a running job's title.
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
@@ -107,14 +111,19 @@ func (d *drawer) resize(cols, rows int) {
 }
 
 // prompt reports whether the process is waiting for typed input: the text
-// before the cursor looks like a password prompt or a y/n question.
+// before the cursor looks like a password prompt or a y/n question, or the
+// cursor starts an empty line under brew's own [y/n] question.
 func (d *drawer) prompt() bool {
 	pos := d.term.CursorPosition()
 	lines := strings.Split(ansi.Strip(d.term.Render()), "\n")
 	if pos.Y < 0 || pos.Y >= len(lines) {
 		return false
 	}
-	return promptRe.MatchString(ansi.Truncate(lines[pos.Y], pos.X, ""))
+	before := ansi.Truncate(lines[pos.Y], pos.X, "")
+	if strings.TrimSpace(before) == "" && pos.Y > 0 && askRe.MatchString(lines[pos.Y-1]) {
+		return true
+	}
+	return promptRe.MatchString(before)
 }
 
 // view renders the drawer as a w×h pane. frame picks the spinner frame;

@@ -349,6 +349,21 @@ func TestPasswordPromptSwitchesToInsert(t *testing.T) {
 	resume(t, a, waiting)
 }
 
+func TestBrewsOwnConfirmationSwitchesToInsert(t *testing.T) {
+	p := newFakeProc(0, "==> Upgrading fd\r\n  fd 10.5.0 -> 10.6.0\r\n==> Do you want to proceed with the upgrade? [y/n]\r\n")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	if a.mode != modeInsert {
+		t.Fatalf("brew's [y/n] question should switch to insert, mode %v", a.mode)
+	}
+	keys(t, a, "y")
+	if p.input() != "y" {
+		t.Errorf("brew got %q, want y", p.input())
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
 func TestInsertModeEndsWithTheJob(t *testing.T) {
 	p := newFakeProc(0, "Proceed? [y/N] ")
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
