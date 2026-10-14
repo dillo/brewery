@@ -46,7 +46,8 @@ type col struct {
 }
 
 // tableKeys is the table's built-in Vim-style navigation, minus the default
-// single-letter page keys (u, d, b, f) that brewery uses for actions.
+// single-letter page keys (u, d, b, f) that brewery uses for actions, and
+// g: brewery reads gg (top) and gx (homepage) itself.
 func tableKeys() table.KeyMap {
 	return table.KeyMap{
 		LineUp:       key.NewBinding(key.WithKeys("up", "k")),
@@ -55,7 +56,7 @@ func tableKeys() table.KeyMap {
 		PageDown:     key.NewBinding(key.WithKeys("pgdown")),
 		HalfPageUp:   key.NewBinding(key.WithKeys("ctrl+u")),
 		HalfPageDown: key.NewBinding(key.WithKeys("ctrl+d")),
-		GotoTop:      key.NewBinding(key.WithKeys("home", "g")),
+		GotoTop:      key.NewBinding(key.WithKeys("home")), // gg is handled by the app
 		GotoBottom:   key.NewBinding(key.WithKeys("end", "G")),
 	}
 }

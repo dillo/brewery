@@ -93,6 +93,10 @@ type App struct {
 	takeoverCmd func(args []string) *exec.Cmd // builds full-screen commands
 	takingOver  *jobs.Job                     // the full-screen command running now
 
+	opener    func(url string) error  // opens a web page
+	clipboard func(text string) error // copies text
+	gPending  bool                    // g was pressed: the next key completes gg or gx
+
 	readLog  func(path string) (string, error) // reads the end of a log; tests swap it
 	log      logTail                           // the services preview's log
 	pagerCmd func(files []string) *exec.Cmd    // builds the full-screen log viewer
@@ -298,6 +302,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.gotLog(msg)
 	case pagerDoneMsg:
 		a.pagerDone(msg)
+	case openedMsg, copiedMsg:
+		a.linkDone(msg)
 	case completionsMsg:
 		if msg.err == nil {
 			a.comp = msg.comp // without them, only brewery's own commands complete
@@ -425,6 +431,15 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if a.mode == modeFilter {
 		return a.filterKey(msg)
 	}
+	if a.gPending {
+		a.gPending = false
+		if cmd, ok := a.gKey(k); ok {
+			return cmd
+		}
+	} else if k == "g" {
+		a.gPending = true
+		return nil
+	}
 	if a.jobsOpen {
 		if cmd, ok := a.jobsKey(msg); ok {
 			return cmd
@@ -438,6 +453,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.openCmdline()
 	case "/":
 		return a.openFilter()
+	case "y":
+		return a.copyName()
 	case "ctrl+c":
 		if a.queue.Current() != nil {
 			return a.askStop()

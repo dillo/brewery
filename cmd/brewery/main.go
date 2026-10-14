@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/atotto/clipboard"
 
 	"brewery/internal/brew"
 	"brewery/internal/jobs"
@@ -71,6 +72,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UsePager(func(files []string) *exec.Cmd {
 		return fullScreen(exec.Command("less", append([]string{"+F", "--"}, files...)...))
 	})
+
+	app.UseOpener(func(url string) error { return exec.Command("open", url).Run() }) // macOS's open
+	app.UseClipboard(clipboard.WriteAll)
 
 	crash, crashErr := startCrashLog(filepath.Join(jobs.DefaultStateDir(), "crash.log"))
 	_, err = tea.NewProgram(app).Run()

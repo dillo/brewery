@@ -411,6 +411,7 @@ func selectInstalled(t *testing.T, a *App, name string) {
 	a.Update(press("2"))
 	a.Update(press("f")) // all
 	a.Update(press("g"))
+	a.Update(press("g"))
 	for range len(a.installed.rows) {
 		if p, ok := a.installed.selected(); ok && p.Name == name {
 			return

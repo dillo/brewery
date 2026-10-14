@@ -1,0 +1,89 @@
+package ui
+
+import (
+	"errors"
+	"reflect"
+	"strings"
+	"testing"
+
+	"brewery/internal/jobs"
+)
+
+// fakeLinks records the pages opened and the text copied.
+type fakeLinks struct {
+	opened, copied []string
+	err            error
+}
+
+func (f *fakeLinks) open(url string) error  { f.opened = append(f.opened, url); return f.err }
+func (f *fakeLinks) copy(text string) error { f.copied = append(f.copied, text); return f.err }
+
+func newLinksApp(t *testing.T) (*App, *fakeLinks) {
+	t.Helper()
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	l := &fakeLinks{}
+	a.UseOpener(l.open)
+	a.UseClipboard(l.copy)
+	return a, l
+}
+
+func TestGGGoesToTheTop(t *testing.T) {
+	a, _ := newLinksApp(t)
+	keys(t, a, "2", "j", "j", "g", "g")
+	if p, _ := a.installed.selected(); p.Name != "docker-desktop" {
+		t.Errorf("gg should select the first row, got %s", p.Name)
+	}
+	keys(t, a, "g", "3")
+	if a.tab != tabOutdated {
+		t.Error("after g, any other key does what it always does")
+	}
+}
+
+func TestGXOpensTheHomepage(t *testing.T) {
+	a, l := newLinksApp(t)
+	keys(t, a, "2", "j", "g", "x") // fd
+	fd, _ := a.installed.selected()
+	keys(t, a, "3", "g", "x") // lua-language-server, from its installed package
+	lua, _ := a.packageNamed("lua-language-server", fd.Kind)
+	keys(t, a, "5", "g", "x") // anomalyco/tap: its remote, without .git
+	want := []string{fd.Homepage, lua.Homepage, "https://github.com/anomalyco/homebrew-tap"}
+	if !reflect.DeepEqual(l.opened, want) {
+		t.Errorf("opened %q, want %q", l.opened, want)
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "opening https://github.com/anomalyco/homebrew-tap") {
+		t.Errorf("status bar %q", bar)
+	}
+	keys(t, a, "j", "g", "x") // homebrew/core has no remote
+	if bar := stripANSI(a.statusBar()); len(l.opened) != 3 || !strings.Contains(bar, "no web page for homebrew/core") {
+		t.Errorf("opened %q, bar %q", l.opened, bar)
+	}
+}
+
+func TestYCopiesTheName(t *testing.T) {
+	a, l := newLinksApp(t)
+	keys(t, a, "4", "y")
+	if !reflect.DeepEqual(l.copied, []string{"postgresql@16"}) || !strings.Contains(stripANSI(a.statusBar()), "copied postgresql@16") {
+		t.Errorf("copied %q, bar %q", l.copied, stripANSI(a.statusBar()))
+	}
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, pastJobs())
+	keys(t, a, ":")
+	typeText(t, a, "jobs")
+	keys(t, a, "enter", "y")
+	if got := l.copied[len(l.copied)-1]; got != "brew upgrade fd" {
+		t.Errorf("in :jobs y copies the command, got %q", got)
+	}
+}
+
+func TestLinkErrorsShow(t *testing.T) {
+	a, l := newLinksApp(t)
+	l.err = errors.New("no browser")
+	keys(t, a, "2", "g", "x")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "couldn't open the page: no browser") {
+		t.Errorf("status bar %q", bar)
+	}
+	keys(t, a, "y")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "couldn't copy: no browser") {
+		t.Errorf("status bar %q", bar)
+	}
+}

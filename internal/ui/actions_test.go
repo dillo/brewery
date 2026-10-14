@@ -127,7 +127,7 @@ func TestUninstallWithoutOrphans(t *testing.T) {
 func TestUninstallCask(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "f", "g", "x") // apps: docker-desktop
+	keys(t, a, "2", "f", "f", "g", "g", "x") // apps: docker-desktop
 	if a.confirm == nil || a.confirm.title != "Uninstall docker-desktop 4.39.0,184744?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
 	}
@@ -158,7 +158,7 @@ func TestUninstallRefusesWhatACaskNeeds(t *testing.T) {
 func TestUninstallRefusesWhatOthersNeed(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "f", "f", "g", "x") // deps filter, top row: json-c, used by git and pcre2
+	keys(t, a, "2", "f", "f", "f", "g", "g", "x") // deps filter, top row: json-c, used by git and pcre2
 	if a.confirm == nil || a.confirm.title != "Can't uninstall json-c" {
 		t.Fatalf("want an explanation, got %+v", a.confirm)
 	}
@@ -186,7 +186,7 @@ func TestPinToggles(t *testing.T) {
 	if want := []string{"unpin", "git"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
-	keys(t, a, "f", "f", "g", "p") // casks: docker-desktop
+	keys(t, a, "f", "f", "g", "g", "p") // casks: docker-desktop
 	if want := []string{"pin", "--cask", "docker-desktop"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}

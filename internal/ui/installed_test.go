@@ -120,7 +120,7 @@ func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 		t.Errorf("json-c preview should show it is a dependency used by git and pcre2:\n%s", out)
 	}
 
-	it.update(press("g")) // docker-desktop
+	it.update(press("home")) // docker-desktop
 	out = stripANSI(it.view(nil))
 	if !strings.Contains(out, "4.95.0,242831 ↑") || strings.Contains(out, "Used by") {
 		t.Errorf("cask preview should show the newer version and no dependency sections:\n%s", out)
