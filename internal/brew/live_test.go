@@ -61,3 +61,26 @@ func TestLivePTY(t *testing.T) {
 		t.Errorf("brew --version via PTY: code %d, err %v, output %q", code, err, out)
 	}
 }
+
+// TestLiveCompletions reads the fish completions the installed brew ships.
+func TestLiveCompletions(t *testing.T) {
+	bin, err := Locate()
+	if err != nil {
+		t.Skip("brew not installed")
+	}
+	c, err := NewClient(ExecRunner{Bin: bin, Env: QueryEnv}).Completions(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.Commands) < 50 {
+		t.Errorf("only %d commands parsed", len(c.Commands))
+	}
+	up, ok := c.Command("upgrade")
+	if !ok || up.Desc == "" || len(up.Flags) < 10 || len(up.Args) == 0 {
+		t.Errorf("upgrade parsed as %+v", up)
+	}
+	services, _ := c.Command("services")
+	if _, ok := services.Sub("start"); !ok {
+		t.Error("services start is missing")
+	}
+}
