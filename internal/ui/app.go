@@ -88,6 +88,9 @@ type App struct {
 	takeoverCmd func(args []string) *exec.Cmd // builds full-screen commands
 	takingOver  *jobs.Job                     // the full-screen command running now
 
+	readLog func(path string) (string, error) // reads the end of a log; tests swap it
+	log     logTail                           // the services preview's log
+
 	tab           int
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
@@ -116,6 +119,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond,
+		readLog:   readLogTail,
 		drawer:    newDrawer(st),
 		cmd:       newCmdline(st),
 		installed: newInstalledTab(st),
@@ -127,6 +131,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	// The history is read before the app starts, so the jobs view is never
 	// waiting for it.
 	a.jobs.loaded = true
+	a.services.preview = a.servicePreview
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -225,6 +230,7 @@ func (a *App) apply(m resultMsg) {
 		a.snap.Outdated = m.outdated
 	case qServices:
 		a.snap.Services = m.services
+		a.log.stale = true // the service may have written more since
 	case qTaps:
 		a.snap.Taps = m.taps
 	case qDoctor:
@@ -235,6 +241,9 @@ func (a *App) apply(m resultMsg) {
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd := a.update(msg)
+	if a.tab == tabServices && !a.jobsOpen {
+		cmd = tea.Batch(cmd, a.wantLog())
+	}
 	if a.promptPending && a.mode == modeNormal {
 		a.promptPending = false
 		if a.proc != nil && a.drawer.prompt() {
@@ -257,6 +266,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.histErr = msg.err
 	case takeoverDoneMsg:
 		return a.takeoverDone(msg)
+	case logMsg:
+		a.gotLog(msg)
 	case completionsMsg:
 		if msg.err == nil {
 			a.comp = msg.comp // without them, only brewery's own commands complete

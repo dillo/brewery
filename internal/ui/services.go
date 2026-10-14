@@ -1,0 +1,175 @@
+package ui
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"strings"
+
+	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
+
+	"brewery/internal/brew"
+)
+
+// logTailBytes is how much of the end of a log the services preview reads.
+const logTailBytes = 16 << 10
+
+// logTail is the end of the log the services preview shows.
+type logTail struct {
+	path   string // the log shown, or being read
+	text   string
+	err    error
+	loaded bool // the read of path has come back
+	stale  bool // services were refreshed: read it again
+}
+
+// logMsg carries the end of a log file back to the App.
+type logMsg struct {
+	path, text string
+	err        error
+}
+
+// readLogTail returns the last lines of the file at path as plain text: a
+// log can hold colors and progress redraws that would garble the pane.
+func readLogTail(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		return "", err
+	}
+	off := max(info.Size()-logTailBytes, 0)
+	b := make([]byte, info.Size()-off)
+	if _, err := f.ReadAt(b, off); err != nil && !errors.Is(err, io.EOF) {
+		return "", err
+	}
+	s := strings.ToValidUTF8(string(b), "�")
+	if off > 0 {
+		if i := strings.IndexByte(s, '\n'); i >= 0 {
+			s = s[i+1:] // the first line was cut
+		}
+	}
+	lines := strings.Split(strings.TrimRight(ansi.Strip(s), "\r\n"), "\n")
+	for i, l := range lines {
+		l = strings.TrimSuffix(l, "\r")
+		if j := strings.LastIndexByte(l, '\r'); j >= 0 {
+			l = l[j+1:] // a redrawn line: keep what was drawn last
+		}
+		lines[i] = strings.ReplaceAll(l, "\t", "    ")
+	}
+	return strings.Join(lines, "\n"), nil
+}
+
+// selectedService is the service under the cursor, found by name.
+func (a *App) selectedService() (brew.Service, bool) {
+	row := a.services.table.SelectedRow()
+	if a.services.n == 0 || row == nil {
+		return brew.Service{}, false
+	}
+	for _, s := range a.snap.Services {
+		if s.Name == row[0] {
+			return s, true
+		}
+	}
+	return brew.Service{}, false
+}
+
+// wantLog reads the selected service's log if the preview doesn't have it
+// yet, or has an older copy from before the last refresh.
+func (a *App) wantLog() tea.Cmd {
+	s, ok := a.selectedService()
+	if !ok || s.Log == "" || (s.Log == a.log.path && !a.log.stale) {
+		return nil
+	}
+	if s.Log != a.log.path {
+		a.log = logTail{path: s.Log}
+	}
+	a.log.stale = false
+	read, path := a.readLog, s.Log
+	return func() tea.Msg {
+		text, err := read(path)
+		return logMsg{path, text, err}
+	}
+}
+
+// gotLog keeps a log read, unless the selection has moved to another log.
+func (a *App) gotLog(m logMsg) {
+	if m.path == a.log.path {
+		a.log.text, a.log.err, a.log.loaded = m.text, m.err, true
+	}
+}
+
+// tilde shortens a path in the home directory to start with ~.
+func tilde(path string) string {
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return path
+	}
+	if rest, ok := strings.CutPrefix(path, home+"/"); ok {
+		return "~/" + rest
+	}
+	return path
+}
+
+// serviceStatus is a service's status, with its exit code if it failed.
+func serviceStatus(s brew.Service) string {
+	if s.ExitCode != nil && *s.ExitCode != 0 {
+		return fmt.Sprintf("%s (exit %d)", s.Status, *s.ExitCode)
+	}
+	return s.Status
+}
+
+// servicePreview shows the selected service's details over as much of the
+// end of its log as fits a w×h pane.
+func (a *App) servicePreview(w, h int) (title, body string) {
+	st := a.st
+	s, ok := a.selectedService()
+	if !ok {
+		return "Preview", ""
+	}
+	style := st.Warn
+	switch s.Status {
+	case "started", "scheduled":
+		style = st.OK
+	case "error":
+		style = st.Err
+	case "none", "stopped":
+		style = st.Muted
+	}
+	head := style.Render(serviceStatus(s))
+	if s.PID > 0 {
+		head += st.Muted.Render(fmt.Sprintf(" · pid %d", s.PID))
+	}
+	errLog := ""
+	if s.ErrorLog != s.Log {
+		errLog = s.ErrorLog
+	}
+	top := head + "\n" + kv(st, "command", s.Command, "user", s.User, "file", tilde(s.File), "log", tilde(s.Log), "errors", tilde(errLog)) +
+		"\n" + st.Accent.Render("End of the log") + "\n"
+
+	var lines []string
+	switch {
+	case s.Log == "":
+		lines = []string{st.Muted.Render("brew knows no log for this service")}
+	case a.log.path != s.Log || !a.log.loaded:
+		lines = []string{st.Muted.Render("loading…")}
+	case errors.Is(a.log.err, fs.ErrNotExist):
+		lines = []string{st.Muted.Render("nothing logged yet")}
+	case a.log.err != nil:
+		lines = []string{st.Err.Render(a.log.err.Error())}
+	case a.log.text == "":
+		lines = []string{st.Muted.Render("the log is empty")}
+	default:
+		lines = strings.Split(a.log.text, "\n")
+	}
+	_, ih := paneInner(w, h)
+	room := max(ih-strings.Count(top, "\n"), 1)
+	lines = lines[max(len(lines)-room, 0):] // the newest lines, which pane would cut
+	return s.Name, top + strings.Join(lines, "\n")
+}

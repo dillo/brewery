@@ -171,17 +171,17 @@ func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
 func TestListTabKeepsSelectionAcrossRefresh(t *testing.T) {
 	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
 	lt.resize(120, 10)
-	lt.setRows([]table.Row{{"mysql", "", "", ""}, {"postgresql@16", "", "", ""}, {"redis", "", "", ""}})
+	lt.setRows([]table.Row{{"mysql", ""}, {"postgresql@16", ""}, {"redis", ""}})
 	lt.update(press("j"))
 	lt.update(press("j")) // redis
-	lt.setRows([]table.Row{{"nginx", "", "", ""}, {"postgresql@16", "", "", ""}, {"redis", "", "", ""}, {"valkey", "", "", ""}})
+	lt.setRows([]table.Row{{"nginx", ""}, {"postgresql@16", ""}, {"redis", ""}, {"valkey", ""}})
 	if got := lt.table.SelectedRow()[0]; got != "redis" {
 		t.Errorf("selection moved to %q after refresh, want redis", got)
 	}
 	if lt.cursor() != 2 {
 		t.Errorf("cursor() = %d, want 2", lt.cursor())
 	}
-	lt.setRows([]table.Row{{"nginx", "", "", ""}})
+	lt.setRows([]table.Row{{"nginx", ""}})
 	if lt.cursor() != 0 {
 		t.Errorf("when the item is gone the cursor stays in range, got %d", lt.cursor())
 	}

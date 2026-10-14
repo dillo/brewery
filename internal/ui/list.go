@@ -6,12 +6,14 @@ import (
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"brewery/internal/brew"
 	"brewery/internal/theme"
 )
 
-// listTab is a full-width table used by the Outdated, Services and Taps tabs.
+// listTab is a table used by the Outdated, Services and Taps tabs, full
+// width or beside a preview.
 type listTab struct {
 	st     theme.Styles
 	name   string
@@ -22,6 +24,10 @@ type listTab struct {
 	key    func(table.Row) string // identifies a row across refreshes
 	table  table.Model
 	w, h   int
+
+	// preview, if set, fills a pane beside the table with what it returns
+	// for a w×h pane.
+	preview func(w, h int) (title, body string)
 }
 
 func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) string, empty string) listTab {
@@ -54,17 +60,25 @@ func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	return cmd
 }
 
+// listWidth is the table pane's width: all of it, or 55% beside a preview.
+func (t *listTab) listWidth() int {
+	if t.preview == nil {
+		return t.w
+	}
+	return t.w * 55 / 100
+}
+
 func (t *listTab) resize(w, h int) {
 	t.w, t.h = w, h
-	iw, ih := paneInner(w, h)
+	iw, ih := paneInner(t.listWidth(), h)
 	sizeTable(&t.table, t.cols, iw, ih)
 }
 
 // view sizes the table each time because a failed refresh shares the pane
 // with a banner above it.
 func (t *listTab) view(err error) string {
-	w, h := t.w, t.h
-	iw, ih := paneInner(w, h)
+	w, h, listW := t.w, t.h, t.listWidth()
+	iw, ih := paneInner(listW, h)
 	switch {
 	case err != nil && t.n == 0:
 		return pane(t.st, t.name, errorBody(t.st, err), w, h, true)
@@ -79,7 +93,12 @@ func (t *listTab) view(err error) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(ih)
-	return pane(t.st, fmt.Sprintf("%s · %d", t.name, t.n), body+t.table.View(), w, h, true)
+	list := pane(t.st, fmt.Sprintf("%s · %d", t.name, t.n), body+t.table.View(), listW, h, true)
+	if t.preview == nil {
+		return list
+	}
+	title, preview := t.preview(w-listW, h)
+	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, title, preview, w-listW, h, false))
 }
 
 func outdatedRows(items []brew.Outdated) []table.Row {
@@ -97,11 +116,7 @@ func outdatedRows(items []brew.Outdated) []table.Row {
 func serviceRows(items []brew.Service) []table.Row {
 	rows := make([]table.Row, len(items))
 	for i, s := range items {
-		status := s.Status
-		if s.ExitCode != nil && *s.ExitCode != 0 {
-			status += " (exit " + strconv.Itoa(*s.ExitCode) + ")"
-		}
-		rows[i] = table.Row{s.Name, status, s.User, s.File}
+		rows[i] = table.Row{s.Name, serviceStatus(s)}
 	}
 	return rows
 }
@@ -120,6 +135,6 @@ func tapRows(items []brew.Tap) []table.Row {
 
 var (
 	outdatedCols = []col{{"NAME", 0}, {"INSTALLED", 18}, {"LATEST", 18}, {"TYPE", 7}, {"PINNED", 6}}
-	serviceCols  = []col{{"NAME", 20}, {"STATUS", 16}, {"USER", 10}, {"FILE", 0}}
+	serviceCols  = []col{{"NAME", 0}, {"STATUS", 16}}
 	tapCols      = []col{{"NAME", 24}, {"FORMULAE", 8}, {"CASKS", 6}, {"OFFICIAL", 8}, {"REMOTE", 0}}
 )

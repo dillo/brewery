@@ -181,11 +181,11 @@ func (a *App) askUpgradeAll() tea.Cmd {
 // serviceKey starts (s), stops (S, after asking) or restarts (R) the
 // selected service.
 func (a *App) serviceKey(k string) tea.Cmd {
-	i := a.services.cursor()
-	if i < 0 {
+	s, ok := a.selectedService()
+	if !ok {
 		return nil
 	}
-	name := a.snap.Services[i].Name
+	name := s.Name
 	verb := map[string]string{"s": "start", "S": "stop", "R": "restart"}[k]
 	act := action{title: verb + " " + name, args: []string{"services", verb, name}, refresh: []query{qServices}}
 	if verb != "stop" {
