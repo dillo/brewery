@@ -25,10 +25,11 @@ type listTab struct {
 	table  table.Model
 	w, h   int
 
-	all      []table.Row // every row, before the filter
-	idx      []int       // for each row shown, its index in all
-	match    string      // the "/" filter
-	matchCol int         // the column the filter looks in
+	all      []table.Row     // every row, before the filter
+	idx      []int           // for each row shown, its index in all
+	match    string          // the "/" filter
+	matchCol int             // the column the filter looks in
+	marked   map[string]bool // rows picked with space, by key
 
 	// preview, if set, fills a pane beside the table with what it returns
 	// for a w×h pane.
@@ -41,6 +42,13 @@ func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) st
 
 func (t *listTab) setRows(rows []table.Row) {
 	t.all = rows
+	pruneMarks(t.marked, func(yield func(string) bool) {
+		for _, r := range rows {
+			if !yield(t.key(r)) {
+				return
+			}
+		}
+	})
 	t.apply()
 }
 
@@ -50,7 +58,7 @@ func (t *listTab) apply() {
 	t.idx = t.idx[:0]
 	for i, r := range t.all {
 		if matches(r[t.matchCol], t.match) {
-			shown = append(shown, r)
+			shown = append(shown, markRow(r, t.marked[t.key(r)]))
 			t.idx = append(t.idx, i)
 		}
 	}
@@ -79,7 +87,7 @@ func (t *listTab) cursor() int {
 func firstCell(r table.Row) string { return r[0] }
 
 // outdatedKey identifies an Outdated row by name and type.
-func outdatedKey(r table.Row) string { return r[0] + "\x00" + r[3] }
+func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[3] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	var cmd tea.Cmd

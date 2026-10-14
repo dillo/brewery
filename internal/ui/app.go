@@ -461,11 +461,14 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		return a.quit()
 	case "esc":
-		if a.tab == tabInstalled && a.installed.pv.focus {
+		switch {
+		case a.tab == tabInstalled && a.installed.pv.focus:
 			a.installed.pv.focus = false // back to the list first
-			return nil
+		case a.marks() > 0 && !a.drawerShown():
+			a.clearMarks()
+		default:
+			a.drawer.open = false
 		}
-		a.drawer.open = false
 		return nil
 	case "o":
 		if a.drawer.job != nil {
@@ -645,6 +648,9 @@ func (a *App) statusBar() string {
 		if p, ok := a.installed.selected(); ok {
 			left += " › " + p.Name
 		}
+	}
+	if n := a.marks(); n > 0 && !a.jobsOpen {
+		left += fmt.Sprintf(" · %d marked", n)
 	}
 
 	var right []string

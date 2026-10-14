@@ -44,18 +44,21 @@ func (ix *Index) UsedBy(fullName string) []string {
 	return slices.Clone(ix.usedBy[fullName])
 }
 
-// Orphans lists the dependencies that removing fullName would leave
-// unneeded: packages installed as dependencies (not on request) that are
-// used only by fullName or by other such orphans. Sorted.
-func (ix *Index) Orphans(fullName string) []string {
-	p, ok := ix.byFull[fullName]
-	if !ok {
-		return nil
+// Orphans lists the dependencies that removing the given packages would
+// leave unneeded: packages installed as dependencies (not on request) that
+// are used only by those packages or by other such orphans. Sorted; nil
+// when there are none.
+func (ix *Index) Orphans(fullNames ...string) []string {
+	gone := map[string]bool{}
+	for _, n := range fullNames {
+		gone[n] = true
 	}
 	cand := map[string]bool{}
-	for _, d := range p.Deps {
-		if dp, ok := ix.byFull[d]; ok && !dp.OnRequest {
-			cand[d] = true
+	for _, n := range fullNames {
+		for _, d := range ix.byFull[n].Deps {
+			if dp, ok := ix.byFull[d]; ok && !dp.OnRequest && !gone[d] {
+				cand[d] = true
+			}
 		}
 	}
 	// Drop any candidate something else still needs, until nothing changes.
@@ -63,13 +66,16 @@ func (ix *Index) Orphans(fullName string) []string {
 		changed = false
 		for c := range cand {
 			for _, u := range ix.usedBy[c] {
-				if u != fullName && !cand[u] {
+				if !gone[u] && !cand[u] {
 					delete(cand, c)
 					changed = true
 					break
 				}
 			}
 		}
+	}
+	if len(cand) == 0 {
+		return nil
 	}
 	return slices.Sorted(maps.Keys(cand))
 }

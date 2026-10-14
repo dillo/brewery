@@ -44,9 +44,10 @@ type installedTab struct {
 	filter installedFilter
 	all    []brew.Package
 	ix     *state.Index
-	rows   []brew.Package // the filtered rows, in table order
-	match  string         // the "/" filter on names
-	pv     scroller       // the preview, which tab or enter focuses
+	rows   []brew.Package  // the filtered rows, in table order
+	match  string          // the "/" filter on names
+	pv     scroller        // the preview, which tab or enter focuses
+	marked map[string]bool // packages picked with space, by pkgKey
 	loaded bool
 	table  table.Model
 	w, h   int
@@ -58,6 +59,13 @@ func newInstalledTab(st theme.Styles) installedTab {
 
 func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
 	t.all, t.ix = pkgs, ix
+	pruneMarks(t.marked, func(yield func(string) bool) {
+		for _, p := range pkgs {
+			if !yield(pkgKey(p)) {
+				return
+			}
+		}
+	})
 	t.apply()
 }
 
@@ -91,7 +99,7 @@ func (t *installedTab) apply() {
 	})
 	rows := make([]table.Row, len(t.rows))
 	for i, p := range t.rows {
-		rows[i] = table.Row{p.Name, p.Version, p.Kind.String(), status(p)}
+		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, p.Kind.String(), status(p)}
 	}
 	before := t.selectedKey()
 	setRowsKeeping(&t.table, rows, installedKey)
@@ -104,7 +112,7 @@ func (t *installedTab) selectedKey() string {
 	if !ok {
 		return ""
 	}
-	return p.Name + "\x00" + p.Kind.String()
+	return pkgKey(p)
 }
 
 // followSelection starts the preview at the top when the selection has
@@ -117,7 +125,7 @@ func (t *installedTab) followSelection(before string) {
 
 // installedKey identifies an Installed row by name and type: a formula
 // and a cask can share a name.
-func installedKey(r table.Row) string { return r[0] + "\x00" + r[2] }
+func installedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[2] }
 
 func status(p brew.Package) string {
 	var s []string

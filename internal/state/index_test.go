@@ -136,3 +136,19 @@ func TestCaskDependencies(t *testing.T) {
 		t.Error("libusb isn't top-level while a cask needs it")
 	}
 }
+
+func TestOrphansOfSeveral(t *testing.T) {
+	// jq and git both need json-c; removing only one leaves it needed.
+	pkgs := append(slices.Clone(testPkgs),
+		brew.Package{Name: "jq", FullName: "jq", Kind: brew.KindFormula, OnRequest: true, Deps: []string{"json-c"}, DirectDeps: []string{"json-c"}})
+	ix := NewIndex(pkgs)
+	if got := ix.Orphans("git", "jq"); !reflect.DeepEqual(got, []string{"json-c", "pcre2"}) {
+		t.Errorf("Orphans(git, jq) = %v", got)
+	}
+	if got := ix.Orphans("git", "pcre2"); got != nil {
+		t.Errorf("json-c is still needed by jq: %v", got)
+	}
+	if got := NewIndex(testPkgs).Orphans("git", "pcre2"); !reflect.DeepEqual(got, []string{"json-c"}) {
+		t.Errorf("a package being removed isn't its own orphan: %v", got)
+	}
+}

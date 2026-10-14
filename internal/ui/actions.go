@@ -40,9 +40,17 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.run(action{title: "update", args: []string{"update"}, full: true}), true
 	case k == "c":
 		return a.askCleanup(), true
+	case k == "space" && (a.tab == tabInstalled || a.tab == tabOutdated):
+		return a.toggleMark(), true
 	case k == "u" && (a.tab == tabInstalled || a.tab == tabOutdated):
+		if a.marks() > 0 {
+			return a.upgradeMarked(), true
+		}
 		return a.upgradeSelected(), true
 	case k == "x" && a.tab == tabInstalled:
+		if a.marks() > 0 {
+			return a.askUninstallMarked(), true
+		}
 		return a.askUninstall(), true
 	case k == "p" && a.tab == tabInstalled:
 		return a.togglePin(), true
