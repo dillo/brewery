@@ -83,6 +83,10 @@ type App struct {
 	tabH          int    // height left for the tab when the drawer is shown
 	laidOut       [3]int // width, height and drawer state of the last layout
 
+	// brew asked a question while the command line was open; answer it
+	// once the line closes.
+	promptPending bool
+
 	drawer    drawer
 	home      homeTab
 	installed installedTab
@@ -216,6 +220,12 @@ func (a *App) apply(m resultMsg) {
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd := a.update(msg)
+	if a.promptPending && a.mode == modeNormal {
+		a.promptPending = false
+		if a.proc != nil && a.drawer.prompt() {
+			a.mode, a.drawer.open = modeInsert, true
+		}
+	}
 	a.layout()
 	return a, cmd
 }

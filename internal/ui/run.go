@@ -123,8 +123,11 @@ func (a *App) handleJob(msg tea.Msg) tea.Cmd {
 			return nil
 		}
 		a.drawer.write(m.data)
-		if a.mode != modeInsert && a.drawer.prompt() {
+		switch {
+		case a.mode == modeNormal && a.drawer.prompt():
 			a.mode, a.drawer.open = modeInsert, true // brew is asking: let the user answer
+		case a.mode == modeCommand && a.drawer.prompt():
+			a.promptPending = true // answer once the command line closes
 		}
 		return readOutput(a.proc, m.id, m.attempt)
 	case jobEOFMsg:

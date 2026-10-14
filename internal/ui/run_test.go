@@ -349,6 +349,28 @@ func TestPasswordPromptSwitchesToInsert(t *testing.T) {
 	resume(t, a, waiting)
 }
 
+func TestPromptWaitsForTheCommandLine(t *testing.T) {
+	p := newFakeProc(0, "==> Installing docker-desktop\r\n")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "upgrade docker-desktop", args: []string{"upgrade", "--cask", "docker-desktop"}}))
+	keys(t, a, ":")
+	typeText(t, a, "info")
+	p.out <- []byte("Password:")
+	waiting = resume(t, a, waiting)
+	if a.mode != modeCommand || a.cmd.value() != "info" {
+		t.Fatalf("a prompt must not take over the command line (mode %v, line %q)", a.mode, a.cmd.value())
+	}
+	if got := p.input(); got != "" {
+		t.Errorf("nothing typed at the prompt may reach brew, got %q", got)
+	}
+	keys(t, a, "esc")
+	if a.mode != modeInsert || !a.drawer.open {
+		t.Errorf("closing the line should answer the waiting prompt (mode %v, open %v)", a.mode, a.drawer.open)
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
 func TestBrewsOwnConfirmationSwitchesToInsert(t *testing.T) {
 	p := newFakeProc(0, "==> Upgrading fd\r\n  fd 10.5.0 -> 10.6.0\r\n==> Do you want to proceed with the upgrade? [y/n]\r\n")
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
