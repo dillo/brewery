@@ -291,7 +291,7 @@ func TestKeysReachActiveTab(t *testing.T) {
 
 func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	src := newFakeSource(t)
-	src.servicesErr = errors.New("brew services list --json: exit status 1")
+	src.servicesErr = errors.New("brew services info --all --json: exit status 1")
 	a := newTestApp(t, src)
 	drain(t, a, a.Init())
 
@@ -426,7 +426,7 @@ func TestViewFitsSmallTerminals(t *testing.T) {
 		for _, failing := range []bool{false, true} {
 			src := newFakeSource(t)
 			if failing {
-				src.servicesErr = errors.New("brew services list --json: exit status 1\nError: launchctl bootstrap failed for a very long and descriptive reason that will not fit")
+				src.servicesErr = errors.New("brew services info --all --json: exit status 1\nError: launchctl bootstrap failed for a very long and descriptive reason that will not fit")
 			}
 			a := newTestApp(t, src)
 			a.Update(tea.WindowSizeMsg{Width: size.w, Height: size.h})
@@ -478,7 +478,7 @@ func TestTabBarFitsWidth(t *testing.T) {
 
 func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	src := newFakeSource(t)
-	src.servicesErr = errors.New("brew services list --json: exit status 1\nError: launchctl failed")
+	src.servicesErr = errors.New("brew services info --all --json: exit status 1\nError: launchctl failed")
 	a := New(src, nil, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
 	a.now = func() time.Time { return testNow }
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})

@@ -87,7 +87,11 @@ func (a *App) selectedService() (brew.Service, bool) {
 // yet, or has an older copy from before the last refresh.
 func (a *App) wantLog() tea.Cmd {
 	s, ok := a.selectedService()
-	if !ok || s.Log == "" || (s.Log == a.log.path && !a.log.stale) {
+	if !ok || s.Log == "" {
+		a.log = logTail{} // nothing to show: coming back to a log reads it afresh
+		return nil
+	}
+	if s.Log == a.log.path && !a.log.stale {
 		return nil
 	}
 	if s.Log != a.log.path {

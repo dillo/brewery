@@ -251,3 +251,24 @@ func TestServiceActionsFollowTheName(t *testing.T) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
 }
+
+func TestServicesPreviewRereadsAfterAServiceWithoutALog(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	logs := &fakeLogs{text: map[string]string{"/opt/homebrew/var/log/postgresql@16.log": "x"}}
+	a.readLog = logs.read
+	a.snap.Services[1].Log = "" // redis
+	a.sync()
+	keys(t, a, "4", "j", "k") // postgresql@16, redis, postgresql@16
+	if n := logs.reads["/opt/homebrew/var/log/postgresql@16.log"]; n != 2 {
+		t.Errorf("coming back to a service reads its log again: %d reads", n)
+	}
+}
+
+func TestLogKeyWithoutAViewer(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	keys(t, a, "4", "l")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "the log viewer isn't available") {
+		t.Errorf("status bar %q", bar)
+	}
+}

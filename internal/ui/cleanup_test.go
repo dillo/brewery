@@ -1,10 +1,15 @@
 package ui
 
 import (
+	"errors"
+	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+	"time"
+
+	tea "charm.land/bubbletea/v2"
 
 	"brewery/internal/brew"
 )
@@ -64,5 +69,26 @@ func TestCleanupFromTheHomeTile(t *testing.T) {
 	keys(t, a, "l", "l", "l", "l", "enter")
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("enter on the Cleanup tile should ask: %+v", a.confirm)
+	}
+}
+
+func TestCleanupJobMeasuresAgain(t *testing.T) {
+	src := newCountingSource(t)
+	a := New(src, (&fakeStarter{}).start, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.tickEvery = 0
+	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	keys(t, a, "c", "y") // the fake cleanup finishes at once
+	if src.calls["cleanup"] != 1 || src.calls["installed"] != 0 {
+		t.Errorf("after a cleanup only the dry-runs run again: %v", src.calls)
+	}
+}
+
+func TestCleanupAfterTheDryRunsFailed(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.errs[qCleanup] = errors.New("brew cleanup --dry-run: exit status 1")
+	keys(t, a, "c")
+	if a.confirm != nil || !strings.Contains(stripANSI(a.statusBar()), "couldn't measure the cleanup · r retries") {
+		t.Errorf("no dialog without numbers: %+v %q", a.confirm, stripANSI(a.statusBar()))
 	}
 }

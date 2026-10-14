@@ -60,6 +60,10 @@ func TestClientCleanup(t *testing.T) {
 	if _, err := c.Cleanup(context.Background()); err == nil || !strings.Contains(err.Error(), "brew cleanup --dry-run --prune=all") {
 		t.Errorf("a failed dry-run is an error naming it: %v", err)
 	}
+	c = NewClient(fakeRunner{err: map[string]error{"cleanup --dry-run": errors.New("exit status 1")}})
+	if _, err := c.Cleanup(context.Background()); err == nil || !strings.Contains(err.Error(), "brew cleanup --dry-run: exit status 1") {
+		t.Errorf("a failed standard dry-run is an error naming it: %v", err)
+	}
 }
 
 func TestClientQueryErrorIncludesStderr(t *testing.T) {
