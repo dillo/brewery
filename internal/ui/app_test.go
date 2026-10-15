@@ -466,6 +466,11 @@ func TestStatusBarIsOneLine(t *testing.T) {
 	if out := stripANSI(a.statusBar()); !strings.Contains(out, "…") {
 		t.Errorf("a very narrow status bar should truncate the left side: %q", out)
 	}
+	a.flash = "a flash far too long to fit in a status bar this narrow"
+	a.Update(tea.WindowSizeMsg{Width: 20, Height: 24})
+	if out := strings.TrimRight(stripANSI(a.statusBar()), " "); !strings.HasSuffix(out, "…") {
+		t.Errorf("a status bar cut short should end with …: %q", out)
+	}
 }
 
 func TestTabBarFitsWidth(t *testing.T) {

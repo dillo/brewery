@@ -553,6 +553,11 @@ func (a *App) render() string {
 			body = a.taps.view(a.errs[qTaps])
 		}
 	}
+	drawer := a.drawerShown()
+	if bodyH == 0 && (a.confirm != nil || a.help) {
+		// The drawer fills a tiny window, but a question or help must show.
+		bodyH, drawer = a.bodyHeight(), false
+	}
 	body = clipLines(body, bodyH) // a tab too tall for a small window mustn't push the rest off it
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
@@ -560,8 +565,11 @@ func (a *App) render() string {
 	if a.help {
 		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
 	}
-	parts := []string{a.tabBar(), body}
-	if a.drawerShown() {
+	parts := []string{a.tabBar()}
+	if bodyH > 0 {
+		parts = append(parts, body) // when the drawer takes the whole body, the tab gets no line at all
+	}
+	if drawer {
 		parts = append(parts, a.drawer.view(a.width, a.bodyHeight()-bodyH, a.now(), a.frame, a.mode == modeInsert))
 	}
 	screen := clipLines(lipgloss.JoinVertical(lipgloss.Left, append(parts, a.statusBar())...), a.height)
@@ -724,6 +732,6 @@ func (a *App) statusBar() string {
 		left = ansi.Truncate(left, max(room-1-lipgloss.Width(r), 0), "…")
 	}
 	gap := max(room-lipgloss.Width(left)-lipgloss.Width(r), 1)
-	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "")
+	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "…") // … says something was cut
 	return st.StatusBar.Width(a.width).Render(line)
 }

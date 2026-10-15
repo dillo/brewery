@@ -242,11 +242,26 @@ func TestFrameFitsSmallWindows(t *testing.T) {
 		if h >= 10 && !strings.Contains(stripANSI(out), "working") {
 			t.Errorf("height %d: the drawer should show the job's output:\n%s", h, stripANSI(out))
 		}
+		if lines := strings.Split(stripANSI(out), "\n"); !strings.Contains(lines[len(lines)-1], "RUNNING") {
+			t.Errorf("height %d: the status bar must stay at the bottom:\n%s", h, stripANSI(out))
+		}
 	}
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{newFakeProc(0)}})
 	a.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
 	if a.drawer.rows != 6 {
 		t.Errorf("at 80x24 the drawer shows %d lines of output, want 6", a.drawer.rows)
+	}
+}
+
+func TestQuestionsShowInTinyWindows(t *testing.T) {
+	p := newFakeProc(0, "working")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	a.Update(tea.WindowSizeMsg{Width: 80, Height: 7}) // the drawer takes the whole body
+	settle(t, a, a.run(action{title: "upgrade fd", args: []string{"upgrade", "fd"}}))
+	a.Update(press("ctrl+c"))
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "Stop upgrade fd?") || lipgloss.Height(out) != 7 {
+		t.Errorf("the stop question must show, in 7 lines:\n%s", out)
 	}
 }
