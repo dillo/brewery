@@ -1,0 +1,45 @@
+{
+ "category": "cask_install",
+ "total_items": 18102,
+ "start_date": "2026-07-17",
+ "end_date": "2026-10-15",
+ "total_count": 5670700,
+ "items": [
+  {
+   "number": 1,
+   "cask": "codex",
+   "count": "345,161",
+   "percent": "6.09"
+  },
+  {
+   "number": 6,
+   "cask": "docker-desktop",
+   "count": "113,628",
+   "percent": "2"
+  },
+  {
+   "number": 27,
+   "cask": "firefox",
+   "count": "34,608",
+   "percent": "0.61"
+  },
+  {
+   "number": 115,
+   "cask": "font-jetbrains-mono",
+   "count": "9,220",
+   "percent": "0.16"
+  },
+  {
+   "number": 211,
+   "cask": "font-fira-code",
+   "count": "4,078",
+   "percent": "0.07"
+  },
+  {
+   "number": 725,
+   "cask": "0-ad",
+   "count": "743",
+   "percent": "0.01"
+  }
+ ]
+}

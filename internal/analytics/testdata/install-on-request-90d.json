@@ -1,0 +1,51 @@
+{
+ "category": "formula_install_on_request",
+ "total_items": 41764,
+ "start_date": "2026-07-17",
+ "end_date": "2026-10-15",
+ "total_count": 21911676,
+ "items": [
+  {
+   "number": 1,
+   "formula": "gh",
+   "count": "710,524",
+   "percent": "3.24"
+  },
+  {
+   "number": 7,
+   "formula": "git",
+   "count": "256,356",
+   "percent": "1.17"
+  },
+  {
+   "number": 23,
+   "formula": "ripgrep",
+   "count": "143,527",
+   "percent": "0.66"
+  },
+  {
+   "number": 49,
+   "formula": "wget",
+   "count": "81,374",
+   "percent": "0.37"
+  },
+  {
+   "number": 90,
+   "formula": "fd",
+   "count": "52,510",
+   "percent": "0.24"
+  },
+  {
+   "number": 524,
+   "formula": "python@3.15",
+   "count": "5,556",
+   "percent": "0.03"
+  },
+  {
+   "number": 29439,
+   "formula": "dagsommer/boks/boks",
+   "count": "1",
+   "percent": "0"
+  }
+ ]
+}
