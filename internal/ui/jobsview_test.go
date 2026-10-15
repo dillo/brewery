@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"brewery/internal/jobs"
+	"brewery/internal/theme"
 )
 
 // pastJobs are two finished jobs: a failed upgrade an hour ago and a pin
@@ -124,7 +125,7 @@ func TestEmptyJobsView(t *testing.T) {
 }
 
 func TestJobRows(t *testing.T) {
-	rows := jobRows(append(pastJobs(), jobs.Record{Title: "upgrade", Args: []string{"upgrade"}, State: jobs.Canceled,
+	rows := jobRows(testStyles, append(pastJobs(), jobs.Record{Title: "upgrade", Args: []string{"upgrade"}, State: jobs.Canceled,
 		Started: testNow.Add(-2 * time.Minute), Ended: testNow.Add(-time.Minute)}), testNow)
 	want := [][]string{
 		{"✗ exit 1", "brew upgrade fd", "08:30", "1:15"},
@@ -132,8 +133,11 @@ func TestJobRows(t *testing.T) {
 		{"stopped", "brew upgrade", "09:28", "1:00"},
 	}
 	for i, w := range want {
-		if strings.Join(rows[i], "|") != strings.Join(w, "|") {
+		if stripANSI(strings.Join(rows[i], "|")) != strings.Join(w, "|") {
 			t.Errorf("row %d = %q, want %q", i, rows[i], w)
 		}
+	}
+	if rows[0][0] != theme.Tint(testStyles.P.Red, "✗ exit 1") || rows[1][0] != theme.Tint(testStyles.P.Green, "✓ done") {
+		t.Errorf("statuses should be colored: %q, %q", rows[0][0], rows[1][0])
 	}
 }

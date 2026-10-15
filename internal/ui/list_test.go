@@ -47,11 +47,15 @@ func TestListTabEmptyAndError(t *testing.T) {
 
 func TestServiceAndTapRows(t *testing.T) {
 	snap := fixtureSnapshot(t)
-	if got := serviceRows(theme.Icons{}, snap.Services)[0]; got[0] != "postgresql@16" || got[1] != "error (exit 1)" {
-		t.Errorf("service row = %v", got)
+	rows := serviceRows(testStyles, snap.Services)
+	if got := rows[0]; got[0] != "postgresql@16" || stripANSI(got[1]) != "error (exit 1)" {
+		t.Errorf("service row = %q", got)
 	}
-	if got := serviceRows(theme.Icons{}, snap.Services)[1][1]; got != "started" {
-		t.Errorf("status without exit code = %q", got)
+	if got := rows[1][1]; got != theme.Tint(testStyles.P.Green, "started") {
+		t.Errorf("a started service should be green, without an exit code: %q", got)
+	}
+	if got := rows[0][1]; got != theme.Tint(testStyles.P.Red, "error (exit 1)") {
+		t.Errorf("a failed service should be red: %q", got)
 	}
 	if got := tapRows(snap.Taps)[0]; got[1] != "2" || got[2] != "1" || got[3] != "" {
 		t.Errorf("tap row = %v", got)
@@ -235,7 +239,7 @@ func TestIconsInRows(t *testing.T) {
 	if got := a.outdated.all[1][3]; got != theme.Nerd.Cask+" cask" {
 		t.Errorf("outdated TYPE with icons = %q", got)
 	}
-	if got := a.services.all[0][1]; got != theme.Nerd.Failed+" error (exit 1)" {
+	if got := stripANSI(a.services.all[0][1]); got != theme.Nerd.Failed+" error (exit 1)" {
 		t.Errorf("service status with icons = %q", got)
 	}
 	keys(t, a, "2", "j", "j", "j") // git, pinned
@@ -249,6 +253,22 @@ func TestIconsInRows(t *testing.T) {
 	a.UseIcons(false)
 	if got := a.outdated.all[1][3]; got != "cask" {
 		t.Errorf("icons off: %q", got)
+	}
+}
+
+func TestSelectedRowStaysHighlighted(t *testing.T) {
+	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
+	lt.resize(60, 10)
+	lt.setRows(serviceRows(testStyles, fixtureSnapshot(t).Services))
+	for _, line := range strings.Split(lt.table.View(), "\n") {
+		if !strings.Contains(line, "postgresql@16") {
+			continue
+		}
+		// One full reset, at the very end: anything earlier would end the
+		// highlight partway along the row.
+		if n := strings.Count(line, "\x1b[m"); n != 1 || !strings.HasSuffix(line, "\x1b[m") {
+			t.Errorf("the selected row resets %d times: %q", n, line)
+		}
 	}
 }
 

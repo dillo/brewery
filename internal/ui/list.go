@@ -181,10 +181,10 @@ func outdatedRows(ic theme.Icons, items []brew.Outdated) []table.Row {
 	return rows
 }
 
-func serviceRows(ic theme.Icons, items []brew.Service) []table.Row {
+func serviceRows(st theme.Styles, items []brew.Service) []table.Row {
 	rows := make([]table.Row, len(items))
 	for i, s := range items {
-		rows[i] = table.Row{s.Name, theme.With(serviceIcon(ic, s.Status), serviceStatus(s))}
+		rows[i] = table.Row{s.Name, theme.Tint(serviceColor(st, s.Status), theme.With(serviceIcon(st.Icons, s.Status), serviceStatus(s)))}
 	}
 	return rows
 }

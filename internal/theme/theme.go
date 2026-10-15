@@ -6,6 +6,7 @@ import (
 	"image/color"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Palette holds the Catppuccin color slots brewery uses.
@@ -71,7 +72,9 @@ func New(p Palette) Styles {
 
 		TableHeader: fg(p.Subtext0).Bold(true).Padding(0, 1).
 			BorderStyle(lipgloss.NormalBorder()).BorderBottom(true).BorderForeground(p.Surface1),
-		TableCell:     fg(p.Text).Padding(0, 1),
+		// No colors on cells: a cell's closing reset would cut the selected
+		// row's highlight short. Color inside a cell goes through Tint.
+		TableCell:     lipgloss.NewStyle().Padding(0, 1),
 		TableSelected: lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0).Bold(true),
 	}
 }
@@ -95,4 +98,10 @@ func (s Styles) Mode(mode string) lipgloss.Style {
 		c = s.P.Green
 	}
 	return lipgloss.NewStyle().Foreground(s.P.Crust).Background(c).Bold(true).Padding(0, 1)
+}
+
+// Tint colors s with c and then resets only the foreground, so text in a
+// table cell keeps the selected row's background and bold.
+func Tint(c color.Color, s string) string {
+	return ansi.NewStyle().ForegroundColor(c).String() + s + ansi.NewStyle().DefaultForegroundColor().String()
 }

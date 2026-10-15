@@ -177,7 +177,7 @@ func (a *App) UseIcons(on bool) {
 // there (newest first).
 func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
 	a.hist, a.history = &h, recs
-	a.jobs.setRows(jobRows(recs, a.now()))
+	a.jobs.setRows(jobRows(a.st, recs, a.now()))
 }
 
 // refresh re-runs every query: the JSON ones in parallel, then doctor and
@@ -255,7 +255,7 @@ func (a *App) sync() {
 	a.ix = state.NewIndex(a.snap.Packages)
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
-	a.services.setRows(serviceRows(a.st.Icons, a.snap.Services))
+	a.services.setRows(serviceRows(a.st, a.snap.Services))
 	a.taps.setRows(tapRows(a.snap.Taps))
 }
 

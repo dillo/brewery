@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"io"
 	"io/fs"
 	"os"
@@ -173,6 +174,20 @@ func (a *App) pagerDone(m pagerDoneMsg) {
 	if m.err != nil {
 		a.flash = a.st.Err.Render("✗ couldn't show the log: " + m.err.Error())
 	}
+}
+
+// serviceColor is the color of a service's state: green when it runs,
+// red when it failed, muted when it's off, yellow for anything else.
+func serviceColor(st theme.Styles, status string) color.Color {
+	switch status {
+	case "started", "scheduled":
+		return st.P.Green
+	case "error":
+		return st.P.Red
+	case "none", "stopped":
+		return st.P.Overlay0
+	}
+	return st.P.Yellow
 }
 
 // serviceIcon is the icon for a service in this state.

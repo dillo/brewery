@@ -215,7 +215,7 @@ func (a *App) record(j *jobs.Job, output string) tea.Cmd {
 	delete(a.acts, j.ID)
 	r := jobs.NewRecord(j, output)
 	a.history = append([]jobs.Record{r}, a.history[:min(len(a.history), jobs.Keep-1)]...)
-	a.jobs.setRows(jobRows(a.history, a.now()))
+	a.jobs.setRows(jobRows(a.st, a.history, a.now()))
 	if a.hist == nil {
 		return nil
 	}

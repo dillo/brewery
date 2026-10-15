@@ -40,3 +40,10 @@ func TestTabChipsAreDistinct(t *testing.T) {
 		seen[key] = name
 	}
 }
+
+func TestTintResetsOnlyTheForeground(t *testing.T) {
+	got := Tint(Macchiato.Green, "started")
+	if got != "\x1b[38;2;166;218;149mstarted\x1b[39m" {
+		t.Errorf("Tint = %q", got)
+	}
+}

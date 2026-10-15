@@ -9,6 +9,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"brewery/internal/jobs"
+	"brewery/internal/theme"
 )
 
 var jobCols = []col{{"STATUS", 9, 0}, {"COMMAND", 0, 20}, {"STARTED", 12, 5}, {"TOOK", 6, 0}}
@@ -16,17 +17,18 @@ var jobCols = []col{{"STATUS", 9, 0}, {"COMMAND", 0, 20}, {"STARTED", 12, 5}, {"
 // jobKey identifies a jobs row by its command and start time.
 func jobKey(r table.Row) string { return r[1] + "\x00" + r[2] }
 
-// jobRows lists finished jobs, newest first as the history keeps them.
-// Start times show the clock for today and the date before that.
-func jobRows(recs []jobs.Record, now time.Time) []table.Row {
+// jobRows lists finished jobs, newest first as the history keeps them,
+// their status colored. Start times show the clock for today and the date
+// before that.
+func jobRows(st theme.Styles, recs []jobs.Record, now time.Time) []table.Row {
 	rows := make([]table.Row, len(recs))
 	for i, r := range recs {
-		status := "✓ done"
+		status := theme.Tint(st.P.Green, "✓ done")
 		switch r.State {
 		case jobs.Failed:
-			status = fmt.Sprintf("✗ exit %d", r.ExitCode)
+			status = theme.Tint(st.P.Red, fmt.Sprintf("✗ exit %d", r.ExitCode))
 		case jobs.Canceled:
-			status = "stopped"
+			status = theme.Tint(st.P.Yellow, "stopped")
 		}
 		started := r.Started.In(now.Location())
 		when := started.Format("15:04")
@@ -41,7 +43,7 @@ func jobRows(recs []jobs.Record, now time.Time) []table.Row {
 // openJobs shows the jobs view over the current tab.
 func (a *App) openJobs() tea.Cmd {
 	a.jobsOpen = true
-	a.jobs.setRows(jobRows(a.history, a.now()))
+	a.jobs.setRows(jobRows(a.st, a.history, a.now()))
 	return nil
 }
 
