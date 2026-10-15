@@ -72,6 +72,43 @@ func TestLiveQueries(t *testing.T) {
 	}
 }
 
+// Reads brew's catalogue and asks about packages that may not be installed.
+func TestLiveCatalogue(t *testing.T) {
+	bin, err := Locate()
+	if err != nil {
+		t.Skip("brew not installed")
+	}
+	c := NewClient(ExecRunner{Bin: bin, Env: QueryEnv})
+	ctx := context.Background()
+	es, err := c.Catalogue(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	casks := 0
+	for _, e := range es {
+		if e.Kind == KindCask {
+			casks++
+			if strings.HasPrefix(e.Desc, "(") {
+				t.Errorf("display names left in %+v", e)
+			}
+		}
+	}
+	if len(es) < 5000 || casks < 2000 {
+		t.Errorf("only %d entries, %d casks", len(es), casks)
+	}
+	if _, err := c.NewSinceUpdate(ctx); err != nil {
+		t.Error(err)
+	}
+	wget, err := c.Details(ctx, "wget", KindFormula)
+	if err != nil || wget.Latest == "" || wget.License == "" || len(wget.Needs) == 0 {
+		t.Errorf("wget: %+v, %v", wget, err)
+	}
+	firefox, err := c.Details(ctx, "firefox", KindCask)
+	if err != nil || firefox.Kind != KindCask || firefox.Latest == "" {
+		t.Errorf("firefox: %+v, %v", firefox, err)
+	}
+}
+
 // Runs a read-only brew command through the pseudo-terminal runner.
 func TestLivePTY(t *testing.T) {
 	bin, err := Locate()

@@ -112,11 +112,21 @@ func (a *App) candidates(line string) (word string, cs []candidate) {
 }
 
 // argValues lists the values brewery knows for an argument kind from
-// brew's completions. Kinds that need brew's full catalogue (every
-// formula, not just installed ones) aren't known yet.
+// brew's completions. Any formula or cask comes from Discover's catalogue,
+// once it has been read.
 func (a *App) argValues(kind string) []candidate {
 	var cs []candidate
 	switch kind {
+	case "formulae_all", "casks_all":
+		want := brew.KindFormula
+		if kind == "casks_all" {
+			want = brew.KindCask
+		}
+		for _, e := range a.discover.cat {
+			if e.Kind == want {
+				cs = append(cs, candidate{e.Name, e.Desc})
+			}
+		}
 	case "formulae_installed", "casks_installed":
 		want := brew.KindFormula
 		if kind == "casks_installed" {

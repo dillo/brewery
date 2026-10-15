@@ -41,6 +41,8 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 			return a.services.update(home), true
 		case tabTaps:
 			return a.taps.update(home), true
+		case tabDiscover:
+			return a.discover.update(home), true
 		}
 		return nil, true
 	case "x":
@@ -91,6 +93,10 @@ func (a *App) selection() (name, url string, ok bool) {
 				url = strings.TrimSuffix(t.Remote, ".git")
 			}
 			return t.Name, url, true
+		}
+	case tabDiscover:
+		if r, ok := a.discover.selected(); ok {
+			return r.Name, a.discover.details[entryKey(r.Name, r.Kind)].Homepage, true
 		}
 	}
 	return "", "", false

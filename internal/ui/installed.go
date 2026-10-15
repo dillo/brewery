@@ -1,14 +1,11 @@
 package ui
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/brew"
 	"brewery/internal/state"
@@ -32,9 +29,6 @@ var views = [...]struct{ name, short, about string }{
 	filterApps: {"Apps", "Apps", "macOS apps (casks)."},
 	filterDeps: {"Dependencies", "Deps", "Installed because something else needed them."},
 }
-
-// viewBarHeight is the bar of views plus the line about the active one.
-const viewBarHeight = 2
 
 var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
 
@@ -243,43 +237,18 @@ func (t *installedTab) view(err error) string {
 	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, t.pv.focus))
 }
 
-// viewBar lists every view with its count, the active one highlighted,
-// and under it a line saying what the active view shows. Narrow panes get
-// the short names.
+// viewBar is the bar of Installed's views with their counts.
 func (t *installedTab) viewBar(w int) string {
-	bar := func(short bool) string {
-		var segs []string
-		for f, v := range views {
-			n := 0
-			for _, p := range t.all {
-				if t.shows(installedFilter(f), p) {
-					n++
-				}
+	segs := make([]viewSeg, len(views))
+	for f, v := range views {
+		segs[f] = viewSeg{name: v.name, short: v.short}
+		for _, p := range t.all {
+			if t.shows(installedFilter(f), p) {
+				segs[f].n++
 			}
-			name, style := v.name, t.st.View
-			if short {
-				name = v.short
-			}
-			if installedFilter(f) == t.filter {
-				style = t.st.ViewActive
-			}
-			segs = append(segs, style.Render(fmt.Sprintf("%s %d", name, n)))
 		}
-		return strings.Join(segs, " ")
 	}
-	b := bar(false)
-	if lipgloss.Width(b) > w {
-		b = bar(true)
-	}
-	// The keys always show, shortened before the description is: on narrow
-	// terminals the status bar has no room for hints.
-	about, keys := views[t.filter].about, "f/F to switch"
-	if len(about)+2+len(keys) > w {
-		keys = "f/F"
-		about = ansi.Truncate(about, max(w-2-len(keys), 0), "…")
-	}
-	gap := max(w-ansi.StringWidth(about)-len(keys), 1)
-	return b + "\n" + t.st.Muted.Render(about+strings.Repeat(" ", gap)+keys)
+	return viewBar(t.st, segs, int(t.filter), views[t.filter].about, w)
 }
 
 func (t *installedTab) preview(p brew.Package) string {

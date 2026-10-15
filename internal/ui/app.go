@@ -25,9 +25,10 @@ const (
 	tabOutdated
 	tabServices
 	tabTaps
+	tabDiscover
 )
 
-var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps"}
+var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps", "Discover"}
 
 // tabQueries is the query each tab's data comes from. Home shows doctor.
 var tabQueries = map[int]query{
@@ -47,6 +48,8 @@ const (
 // App is the root Bubble Tea model.
 type App struct {
 	src       Source
+	catalog   Catalog   // Discover's catalogue, or nil
+	analytics Analytics // Discover's install counts, or nil
 	start     Starter
 	cachePath string
 	st        theme.Styles
@@ -86,12 +89,15 @@ type App struct {
 	jobs     listTab       // the ":jobs" view
 	jobsOpen bool
 
-	mode     mode
-	cmd      cmdline         // the ":" prompt
-	filterIn textinput.Model // the "/" prompt
-	confirm  *confirmBox     // open confirmation, or nil
-	help     bool            // the ? overlay is open
-	flash    string          // one-off status message, cleared by the next key
+	detailsDelay time.Duration // how long the Discover cursor rests before brew is asked
+
+	mode       mode
+	cmd        cmdline         // the ":" prompt
+	filterIn   textinput.Model // the "/" prompt
+	confirm    *confirmBox     // open confirmation, or nil
+	installing discRow         // the row the open install dialog is for
+	help       bool            // the ? overlay is open
+	flash      string          // one-off status message, cleared by the next key
 
 	comp     brew.Completions // brew's commands, for completing the prompt
 	loadComp func(context.Context) (brew.Completions, error)
@@ -122,6 +128,7 @@ type App struct {
 	outdated  listTab
 	services  listTab
 	taps      listTab
+	discover  discoverTab
 }
 
 // New builds the App. src answers queries and start runs brew commands.
@@ -135,15 +142,17 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
-		readLog:   readLogTail,
-		drawer:    newDrawer(st),
-		cmd:       newCmdline(st),
-		filterIn:  newFilterInput(st),
-		installed: newInstalledTab(st),
-		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
-		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
-		taps:      newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
-		jobs:      newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		detailsDelay: detailsDelay,
+		readLog:      readLogTail,
+		drawer:       newDrawer(st),
+		cmd:          newCmdline(st),
+		filterIn:     newFilterInput(st),
+		installed:    newInstalledTab(st),
+		outdated:     newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
+		services:     newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
+		taps:         newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
+		jobs:         newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		discover:     newDiscoverTab(st),
 	}
 	// The history is read before the app starts, so the jobs view is never
 	// waiting for it.
@@ -151,6 +160,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
 	a.outdated.note = a.dataAge
+	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -183,7 +193,7 @@ func (a *App) UseIcons(on bool) {
 		ic = theme.Nerd
 	}
 	// Every part keeps its own copy of the styles.
-	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st} {
+	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st, &a.discover.st} {
 		st.Icons = ic
 	}
 	a.sync()
@@ -197,10 +207,10 @@ func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
 }
 
 // refresh re-runs every query: the JSON ones in parallel, then doctor and
-// cleanup's dry-runs.
+// cleanup's dry-runs. Discover's catalogue is read again if it was read.
 func (a *App) refresh() tea.Cmd {
 	a.doctorAfter = true
-	return a.request(jsonQueries...)
+	return tea.Batch(a.request(jsonQueries...), a.reloadCatalogue())
 }
 
 // request starts the given queries. A query that is already running is not
@@ -281,6 +291,7 @@ func (a *App) sync() {
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))
 	a.taps.setRows(tapRows(a.snap.Taps))
+	a.discover.setHave(a.snap.Packages)
 }
 
 func (a *App) apply(m resultMsg) {
@@ -315,6 +326,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if a.tab == tabServices && !a.jobsOpen {
 		cmd = tea.Batch(cmd, a.wantLog())
 	}
+	if a.tab == tabDiscover && !a.jobsOpen {
+		cmd = tea.Batch(cmd, a.wantDetails())
+	}
 	if a.promptPending && a.mode == modeNormal {
 		a.promptPending = false
 		if a.proc != nil && a.drawer.prompt() {
@@ -331,6 +345,16 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.width, a.height = msg.Width, msg.Height
 	case resultMsg:
 		return a.handleResult(msg)
+	case catalogueMsg:
+		return a.gotCatalogue(msg)
+	case cachedStatsMsg:
+		return a.gotCachedStats(msg)
+	case fetchedStatsMsg:
+		return a.gotStats(msg)
+	case detailsDueMsg:
+		return a.detailsDue(msg)
+	case detailsMsg:
+		a.gotDetails(msg)
 	case savedMsg:
 		a.saveErr = msg.err
 	case historySavedMsg:
@@ -403,6 +427,7 @@ func (a *App) layout() {
 	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs} {
 		t.resize(a.width, a.tabH)
 	}
+	a.discover.resize(a.width, a.tabH)
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -526,6 +551,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		switch {
 		case a.tab == tabInstalled && a.installed.pv.focus:
 			a.installed.pv.focus = false // back to the list first
+		case a.tab == tabDiscover && a.discover.pv.focus:
+			a.discover.pv.focus = false
 		case a.tab == tabServices && a.services.pvOpen && a.services.previewAlone():
 			a.services.pvOpen = false
 		case a.marks() > 0 && !a.drawerShown():
@@ -544,16 +571,16 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.typeIntoJob()
 		}
 		return nil
-	case "1", "2", "3", "4", "5":
-		a.tab = int(k[0] - '1')
-		return nil
+	case "1", "2", "3", "4", "5", "6":
+		return a.showTab(int(k[0] - '1'))
 	case "]":
-		a.tab = (a.tab + 1) % len(tabNames)
-		return nil
+		return a.showTab((a.tab + 1) % len(tabNames))
 	case "[":
-		a.tab = (a.tab + len(tabNames) - 1) % len(tabNames)
-		return nil
+		return a.showTab((a.tab + len(tabNames) - 1) % len(tabNames))
 	case "r":
+		if a.tab == tabDiscover {
+			return tea.Batch(a.refresh(), a.fetchStats(true))
+		}
 		return a.refresh()
 	}
 	if cmd, ok := a.actionKey(k); ok {
@@ -576,6 +603,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.services.update(msg)
 	case tabTaps:
 		return a.taps.update(msg)
+	case tabDiscover:
+		return a.discover.update(msg)
 	}
 	return nil
 }
@@ -607,6 +636,8 @@ func (a *App) render() string {
 			body = a.services.view(a.errs[qServices])
 		case tabTaps:
 			body = a.taps.view(a.errs[qTaps])
+		case tabDiscover:
+			body = a.discover.view()
 		}
 	}
 	drawer := a.drawerShown()
@@ -722,6 +753,10 @@ func (a *App) statusBar() string {
 	case a.tab == tabInstalled:
 		if p, ok := a.installed.selected(); ok {
 			left += " › " + p.Name
+		}
+	case a.tab == tabDiscover:
+		if r, ok := a.discover.selected(); ok {
+			left += " › " + r.Name
 		}
 	}
 	if n := a.marks(); n > 0 && !a.jobsOpen {

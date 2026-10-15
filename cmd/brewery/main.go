@@ -13,6 +13,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
 
+	"brewery/internal/analytics"
 	"brewery/internal/brew"
 	"brewery/internal/jobs"
 	"brewery/internal/state"
@@ -67,6 +68,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseHistory(hist, recs)
 	app.UseIcons(wantIcons(*noIcons, os.Getenv("BREWERY_NO_ICONS")))
 	app.UseCompletions(client.Completions)
+	app.UseCatalog(client)
+	// Discover's analytics are kept beside the snapshot.
+	app.UseAnalytics(analytics.NewStore(filepath.Join(filepath.Dir(cachePath), "analytics"), version))
 	// Full-screen commands get the real stderr: while the TUI runs,
 	// os.Stderr is the crash log.
 	realStderr := os.Stderr

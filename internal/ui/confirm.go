@@ -23,6 +23,7 @@ type confirmBox struct {
 	title   string
 	body    []string
 	choices []choice
+	tag     string // what the box is about, so news can update it while it's open
 }
 
 // answer maps a key press to a choice. esc always cancels; keys that are

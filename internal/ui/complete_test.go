@@ -15,6 +15,7 @@ import (
 // testCompletions is a small slice of what brew's fish script describes.
 var testCompletions = brew.Completions{Commands: []brew.Command{
 	{Name: "info", Desc: "Display brief statistics", Args: []string{"formulae_all", "casks_all"}},
+	{Name: "install", Desc: "Install a formula or cask", Args: []string{"formulae_all", "casks_all"}},
 	{Name: "pin", Desc: "Pin the specified package", Args: []string{"formulae_installed"}},
 	{Name: "services", Desc: "Manage background services", Subs: []brew.Command{
 		{Name: "start", Desc: "Start the service", Args: []string{"services"}, Flags: []brew.Flag{{Name: "--all", Desc: "Start all services"}}},
@@ -188,5 +189,24 @@ func TestPopupWindow(t *testing.T) {
 		if got := popupStart(tt.n, tt.sel, tt.rows); got != tt.start {
 			t.Errorf("popupStart(%d, %d, %d) = %d, want %d", tt.n, tt.sel, tt.rows, got, tt.start)
 		}
+	}
+}
+
+func TestCompletesFromTheCatalogue(t *testing.T) {
+	a := newCompletingApp(t, &fakeStarter{})
+	a.UseCatalog(newFakeCatalog(t))
+	_, load := a.Update(press(":")) // the catalogue is read when the line opens
+	for _, k := range "install rip" {
+		a.Update(press(string(k)))
+	}
+	if len(a.cmd.items) != 0 {
+		t.Fatalf("suggested %v before the catalogue came", candidateTexts(a.cmd.items))
+	}
+	drain(t, a, load)
+	if got := candidateTexts(a.cmd.items); got != "ripgrep" {
+		t.Errorf("once the catalogue came: %q, want ripgrep", got)
+	}
+	if _, cs := a.candidates("info fo"); candidateTexts(cs) != "font-fira-code font-jetbrains-mono fontbase" {
+		t.Errorf("info fo: %q", candidateTexts(cs))
 	}
 }
