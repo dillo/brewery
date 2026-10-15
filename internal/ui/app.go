@@ -25,9 +25,10 @@ const (
 	tabOutdated
 	tabServices
 	tabTaps
+	tabDiscover
 )
 
-var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps"}
+var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps", "Discover"}
 
 // tabQueries is the query each tab's data comes from. Home shows doctor.
 var tabQueries = map[int]query{
@@ -47,6 +48,7 @@ const (
 // App is the root Bubble Tea model.
 type App struct {
 	src       Source
+	catalog   Catalog // Discover's catalogue, or nil
 	start     Starter
 	cachePath string
 	st        theme.Styles
@@ -122,6 +124,7 @@ type App struct {
 	outdated  listTab
 	services  listTab
 	taps      listTab
+	discover  discoverTab
 }
 
 // New builds the App. src answers queries and start runs brew commands.
@@ -144,6 +147,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
 		taps:      newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
 		jobs:      newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		discover:  newDiscoverTab(st),
 	}
 	// The history is read before the app starts, so the jobs view is never
 	// waiting for it.
@@ -183,7 +187,7 @@ func (a *App) UseIcons(on bool) {
 		ic = theme.Nerd
 	}
 	// Every part keeps its own copy of the styles.
-	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st} {
+	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st, &a.discover.st} {
 		st.Icons = ic
 	}
 	a.sync()
@@ -197,10 +201,10 @@ func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
 }
 
 // refresh re-runs every query: the JSON ones in parallel, then doctor and
-// cleanup's dry-runs.
+// cleanup's dry-runs. Discover's catalogue is read again if it was read.
 func (a *App) refresh() tea.Cmd {
 	a.doctorAfter = true
-	return a.request(jsonQueries...)
+	return tea.Batch(a.request(jsonQueries...), a.reloadCatalogue())
 }
 
 // request starts the given queries. A query that is already running is not
@@ -281,6 +285,7 @@ func (a *App) sync() {
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))
 	a.taps.setRows(tapRows(a.snap.Taps))
+	a.discover.setHave(a.snap.Packages)
 }
 
 func (a *App) apply(m resultMsg) {
@@ -331,6 +336,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		a.width, a.height = msg.Width, msg.Height
 	case resultMsg:
 		return a.handleResult(msg)
+	case catalogueMsg:
+		a.gotCatalogue(msg)
 	case savedMsg:
 		a.saveErr = msg.err
 	case historySavedMsg:
@@ -403,6 +410,7 @@ func (a *App) layout() {
 	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs} {
 		t.resize(a.width, a.tabH)
 	}
+	a.discover.resize(a.width, a.tabH)
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -544,15 +552,12 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.typeIntoJob()
 		}
 		return nil
-	case "1", "2", "3", "4", "5":
-		a.tab = int(k[0] - '1')
-		return nil
+	case "1", "2", "3", "4", "5", "6":
+		return a.showTab(int(k[0] - '1'))
 	case "]":
-		a.tab = (a.tab + 1) % len(tabNames)
-		return nil
+		return a.showTab((a.tab + 1) % len(tabNames))
 	case "[":
-		a.tab = (a.tab + len(tabNames) - 1) % len(tabNames)
-		return nil
+		return a.showTab((a.tab + len(tabNames) - 1) % len(tabNames))
 	case "r":
 		return a.refresh()
 	}
@@ -576,6 +581,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.services.update(msg)
 	case tabTaps:
 		return a.taps.update(msg)
+	case tabDiscover:
+		return a.discover.update(msg)
 	}
 	return nil
 }
@@ -607,6 +614,8 @@ func (a *App) render() string {
 			body = a.services.view(a.errs[qServices])
 		case tabTaps:
 			body = a.taps.view(a.errs[qTaps])
+		case tabDiscover:
+			body = a.discover.view()
 		}
 	}
 	drawer := a.drawerShown()
@@ -722,6 +731,10 @@ func (a *App) statusBar() string {
 	case a.tab == tabInstalled:
 		if p, ok := a.installed.selected(); ok {
 			left += " › " + p.Name
+		}
+	case a.tab == tabDiscover:
+		if r, ok := a.discover.selected(); ok {
+			left += " › " + r.Name
 		}
 	}
 	if n := a.marks(); n > 0 && !a.jobsOpen {

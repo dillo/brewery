@@ -33,6 +33,8 @@ func (a *App) helpGroups() []helpGroup {
 		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l", "follow the log full screen"}}}
 	case a.tab == tabTaps:
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
+	case a.tab == tabDiscover:
+		here = helpGroup{"Discover", [][2]string{{"f F", "next or previous view"}, {"/", "search names and descriptions"}}}
 	}
 	groups := []helpGroup{here}
 	switch {
@@ -48,7 +50,7 @@ func (a *App) helpGroups() []helpGroup {
 		}})
 	}
 	return append(groups, helpGroup{"Everywhere", [][2]string{
-		{"1-5 [ ]", "switch tabs"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
+		{"1-6 [ ]", "switch tabs"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
 		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
 		{"ctrl+c", "stop the running job"}, {"q", "quit"},
 	}})

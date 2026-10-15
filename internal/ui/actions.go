@@ -333,6 +333,8 @@ func (a *App) actionHints() string {
 		return "s start · S stop · R restart · l log"
 	case tabTaps:
 		return "x untap"
+	case tabDiscover:
+		return "f/F view · / search"
 	}
-	return "1-5 tabs · r refresh · U update · c clean up"
+	return "1-6 tabs · r refresh · U update · c clean up"
 }

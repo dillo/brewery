@@ -48,6 +48,8 @@ func (a *App) filterTarget() filterable {
 		return &a.services
 	case tabTaps:
 		return &a.taps
+	case tabDiscover:
+		return &a.discover
 	}
 	return nil
 }
