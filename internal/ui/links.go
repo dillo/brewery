@@ -96,13 +96,20 @@ func (a *App) selection() (name, url string, ok bool) {
 	return "", "", false
 }
 
+// webPage reports whether url is a web address. Homepages come from tap
+// metadata, and macOS open would also launch a local file or app, or read
+// a leading "-" as an option, so nothing else is opened.
+func webPage(url string) bool {
+	return strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://")
+}
+
 // openHomepage opens the selected item's web page in the browser.
 func (a *App) openHomepage() tea.Cmd {
 	name, url, ok := a.selection()
 	switch {
 	case !ok:
 		return nil
-	case url == "":
+	case !webPage(url):
 		return a.note("no web page for " + name)
 	case a.opener == nil:
 		return a.note("opening web pages isn't available")

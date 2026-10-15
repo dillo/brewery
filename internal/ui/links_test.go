@@ -40,6 +40,35 @@ func TestGGGoesToTheTop(t *testing.T) {
 	}
 }
 
+func TestGXOpensOnlyWebPages(t *testing.T) {
+	// Homepages come from tap metadata; macOS open would launch a local
+	// file or read "-…" as an option.
+	for _, page := range []string{"file:///tmp/x.command", "-aTerminal", "javascript:alert(1)", "ftp://example.com", "HTTPS://example.com"} {
+		a, l := newLinksApp(t)
+		for i, p := range a.snap.Packages {
+			if p.Name == "fd" {
+				a.snap.Packages[i].Homepage = page
+			}
+		}
+		a.sync()
+		keys(t, a, "2", "j", "g", "x") // fd
+		if len(l.opened) != 0 || !strings.Contains(stripANSI(a.statusBar()), "no web page for fd") {
+			t.Errorf("%q: opened %q, bar %q", page, l.opened, stripANSI(a.statusBar()))
+		}
+	}
+	a, l := newLinksApp(t)
+	for i, p := range a.snap.Packages {
+		if p.Name == "fd" {
+			a.snap.Packages[i].Homepage = "http://example.com"
+		}
+	}
+	a.sync()
+	keys(t, a, "2", "j", "g", "x")
+	if !reflect.DeepEqual(l.opened, []string{"http://example.com"}) {
+		t.Errorf("plain http opens too: %q", l.opened)
+	}
+}
+
 func TestGXOpensTheHomepage(t *testing.T) {
 	a, l := newLinksApp(t)
 	keys(t, a, "2", "j", "g", "x") // fd
