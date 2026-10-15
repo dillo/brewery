@@ -116,3 +116,31 @@ func TestLinkErrorsShow(t *testing.T) {
 		t.Errorf("status bar %q", bar)
 	}
 }
+
+func TestBrewsQuestionForgetsAPendingG(t *testing.T) {
+	p := newFakeProc(0, "working\r\n")
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	l := &fakeLinks{}
+	a.UseOpener(l.open)
+	waiting := settle(t, a, a.run(action{title: "upgrade", args: []string{"upgrade"}}))
+	keys(t, a, "2", "g") // half of a gx…
+	p.out <- []byte("Password:")
+	waiting = resume(t, a, waiting) // …when brew asks
+	if a.mode != modeInsert {
+		t.Fatalf("brew's question switches to insert, mode %v", a.mode)
+	}
+	keys(t, a, "esc", "x")
+	if len(l.opened) != 0 {
+		t.Errorf("the g before the question was forgotten, so x isn't gx: opened %v", l.opened)
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
+func TestGGOnOutdated(t *testing.T) {
+	a, _ := newLinksApp(t)
+	keys(t, a, "3", "j", "g", "g", "u")
+	if a.outdated.cursor() != 0 {
+		t.Errorf("gg goes to the top of Outdated: cursor %d", a.outdated.cursor())
+	}
+}

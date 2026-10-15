@@ -318,7 +318,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if a.promptPending && a.mode == modeNormal {
 		a.promptPending = false
 		if a.proc != nil && a.drawer.prompt() {
-			a.mode, a.drawer.open = modeInsert, true
+			a.typeIntoJob()
 		}
 	}
 	a.layout()
@@ -338,6 +338,9 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case takeoverDoneMsg:
 		return a.takeoverDone(msg)
 	case quitNowMsg:
+		if a.proc == nil {
+			return nil // the job has stopped and brewery is already saving it on the way out
+		}
 		return a.quitNow()
 	case logMsg:
 		a.gotLog(msg)
@@ -432,6 +435,13 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.
 	return tea.Batch(again, sizes, tea.Sequence(saving, doctor))
+}
+
+// typeIntoJob switches to INSERT with the drawer open, so keys go to the
+// running job. A g pressed just before is forgotten: after INSERT, the next
+// key mustn't complete a gg or gx.
+func (a *App) typeIntoJob() {
+	a.mode, a.drawer.open, a.gPending = modeInsert, true, false
 }
 
 // handleKey routes a key press by mode first: an open confirmation gets
@@ -531,7 +541,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return nil
 	case "i":
 		if a.proc != nil {
-			a.mode, a.drawer.open = modeInsert, true
+			a.typeIntoJob()
 		}
 		return nil
 	case "1", "2", "3", "4", "5":

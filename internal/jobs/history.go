@@ -87,11 +87,11 @@ func DefaultHistoryDir() string {
 }
 
 // DefaultStateDir is $XDG_STATE_HOME/brewery, falling back to
-// ~/.local/state/brewery. Without a home directory it uses the temp
+// ~/.local/state/brewery when it's unset or not absolute. Without a home directory it uses the temp
 // directory rather than a path relative to wherever brewery started.
 func DefaultStateDir() string {
 	dir := os.Getenv("XDG_STATE_HOME")
-	if dir == "" {
+	if !filepath.IsAbs(dir) { // unset, or relative, which the XDG spec says to ignore
 		home, err := os.UserHomeDir()
 		if err != nil || home == "" {
 			home = os.TempDir()

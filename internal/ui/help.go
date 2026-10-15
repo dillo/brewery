@@ -35,7 +35,13 @@ func (a *App) helpGroups() []helpGroup {
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	}
 	groups := []helpGroup{here}
-	if a.jobsOpen || a.tab != tabHome {
+	switch {
+	case a.jobsOpen:
+		groups = append(groups, helpGroup{"Lists", [][2]string{
+			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
+			{"/", "filter by command"}, {"y", "copy the command"},
+		}})
+	case a.tab != tabHome:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by name"}, {"y", "copy the name"}, {"gx", "open the homepage"},

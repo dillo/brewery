@@ -55,3 +55,23 @@ func TestHelpHintAndSmallWindows(t *testing.T) {
 		}
 	}
 }
+
+func TestHelpInJobsSaysWhatYCopies(t *testing.T) {
+	a := newJobsViewApp(t, &fakeStarter{})
+	keys(t, a, ":")
+	typeText(t, a, "jobs")
+	keys(t, a, "enter", "?")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "copy the command") || strings.Contains(out, "open the homepage") {
+		t.Errorf("in :jobs, y copies the command and gx has nothing to open:\n%s", out)
+	}
+}
+
+func TestHelpClosesWithoutActing(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	keys(t, a, "2", "j", "?", "x") // x would ask to uninstall fd
+	if a.help || a.confirm != nil || len(fs.calls) != 0 {
+		t.Errorf("the key that closes help does nothing else: help %v, confirm %+v", a.help, a.confirm)
+	}
+}

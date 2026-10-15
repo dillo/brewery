@@ -226,3 +226,10 @@ func TestDefaultStateDir(t *testing.T) {
 		t.Errorf("without a home directory state goes in the temp directory, got %s", got)
 	}
 }
+
+func TestDefaultStateDirIgnoresARelativeXDG(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", "relative/state")
+	if got := DefaultStateDir(); !filepath.IsAbs(got) {
+		t.Errorf("a relative XDG_STATE_HOME is ignored, got %s", got)
+	}
+}

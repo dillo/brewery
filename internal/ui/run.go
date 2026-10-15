@@ -130,7 +130,7 @@ func (a *App) handleJob(msg tea.Msg) tea.Cmd {
 		a.drawer.write(m.data)
 		switch {
 		case a.mode == modeNormal && a.drawer.prompt():
-			a.mode, a.drawer.open = modeInsert, true // brew is asking: let the user answer
+			a.typeIntoJob() // brew is asking: let the user answer
 		case (a.mode == modeCommand || a.mode == modeFilter) && a.drawer.prompt():
 			a.promptPending = true // answer once the line being typed closes
 		}

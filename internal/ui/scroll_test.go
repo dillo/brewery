@@ -66,3 +66,14 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 		t.Errorf("coming back to git starts its preview at the top:\n%s", out)
 	}
 }
+
+func TestScrollerKAfterGMovesUpAtOnce(t *testing.T) {
+	var s scroller
+	body := numbered(10)
+	s.window(body, 4) // drawn once: the last screenful starts at line 7
+	s.scroll("G", 2)
+	s.scroll("k", 2)
+	if s.off != 5 {
+		t.Errorf("k after G should move up one line from the bottom: off %d, want 5", s.off)
+	}
+}

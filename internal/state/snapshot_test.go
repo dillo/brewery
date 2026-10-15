@@ -78,3 +78,10 @@ func TestSaveCleansUpWhenItCantReplace(t *testing.T) {
 		t.Errorf("temp file left behind: %v", left)
 	}
 }
+
+func TestDefaultCachePathIgnoresARelativeXDG(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", "relative/cache")
+	if got := DefaultCachePath(); !filepath.IsAbs(got) {
+		t.Errorf("a relative XDG_CACHE_HOME is ignored, got %s", got)
+	}
+}

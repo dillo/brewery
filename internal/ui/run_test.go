@@ -686,3 +686,12 @@ func TestStaleAttemptMessagesAreIgnored(t *testing.T) {
 	retry.exit()
 	resume(t, a, waiting)
 }
+
+func TestQuitTimerAfterTheJobStoppedDoesNothing(t *testing.T) {
+	a, _, _, _ := quitWithJob(t)
+	j := a.queue.Current()
+	a.Update(jobExitMsg{j.ID, j.Attempts, 130}) // stopped: brewery saves it, then quits
+	if _, cmd := a.Update(quitNowMsg{}); cmd != nil {
+		t.Error("a late grace timer mustn't quit before the save is done")
+	}
+}

@@ -157,3 +157,17 @@ func TestMarksOnVanishedRowsAreDropped(t *testing.T) {
 		t.Errorf("a mark on a removed package should go: %d", a.marks())
 	}
 }
+
+func TestUninstallSeveralListsHiddenMarks(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "j", "space") // fd
+	keys(t, a, "/")
+	typeText(t, a, "git")
+	keys(t, a, "enter", "space", "x") // git; fd is now hidden by the filter
+	if a.confirm == nil || a.confirm.title != "Uninstall 2 packages?" {
+		t.Fatalf("x should ask about both: %+v", a.confirm)
+	}
+	if out := stripANSI(a.render()); !strings.Contains(out, "fd, git") {
+		t.Errorf("the hidden mark is listed too:\n%s", out)
+	}
+}
