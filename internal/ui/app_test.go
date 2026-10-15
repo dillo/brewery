@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -118,6 +119,10 @@ type countingSource struct {
 	calls    map[string]int
 	onDoctor func()
 	block    bool
+	// dropAfter, once set, makes later Installed calls omit that package, as
+	// after an uninstall; sized records the package names each Sizes call got.
+	dropAfter string
+	sized     [][]string
 }
 
 func newCountingSource(t *testing.T) *countingSource {
@@ -130,7 +135,11 @@ func (c *countingSource) Installed(ctx context.Context) ([]brew.Package, error) 
 		<-ctx.Done()
 		return nil, ctx.Err()
 	}
-	return c.fakeSource.Installed(ctx)
+	pkgs, err := c.fakeSource.Installed(ctx)
+	if c.dropAfter != "" {
+		pkgs = slices.DeleteFunc(slices.Clone(pkgs), func(p brew.Package) bool { return p.Name == c.dropAfter })
+	}
+	return pkgs, err
 }
 func (c *countingSource) Outdated(ctx context.Context) ([]brew.Outdated, error) {
 	c.calls["outdated"]++
@@ -146,6 +155,11 @@ func (c *countingSource) Taps(ctx context.Context) ([]brew.Tap, error) {
 }
 func (c *countingSource) Sizes(ctx context.Context, pkgs []brew.Package) (map[string]int64, error) {
 	c.calls["sizes"]++
+	var names []string
+	for _, p := range pkgs {
+		names = append(names, p.Name)
+	}
+	c.sized = append(c.sized, names)
 	return c.fakeSource.Sizes(ctx, pkgs)
 }
 func (c *countingSource) Cleanup(ctx context.Context) (brew.Cleanup, error) {

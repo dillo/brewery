@@ -2,6 +2,7 @@ package ui
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -55,5 +56,34 @@ func TestSizesAreMeasuredAfterRefreshAndChanges(t *testing.T) {
 	keys(t, a, "x", "y") // uninstall fd
 	if src.calls["sizes"] != 2 {
 		t.Errorf("uninstalling measures again: %v", src.calls)
+	}
+}
+
+func TestSizesAreMeasuredFromTheFreshPackageList(t *testing.T) {
+	src := newCountingSource(t)
+	a := New(src, (&fakeStarter{}).start, state.Snapshot{}, filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.tickEvery = 0
+	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	drain(t, a, a.Init())
+	src.dropAfter, src.sized = "fd", nil // from now on brew no longer lists fd
+	keys(t, a, "2", "j", "x", "y")       // uninstall fd
+	if len(src.sized) != 1 {
+		t.Fatalf("one measurement after the uninstall, got %v", src.sized)
+	}
+	if len(src.sized[0]) == 0 || slices.Contains(src.sized[0], "fd") {
+		t.Errorf("sizes were measured for the old list: %v", src.sized[0])
+	}
+}
+
+func TestSizesRunAtOnceWhenRequestedAlone(t *testing.T) {
+	src := newCountingSource(t)
+	a := New(src, (&fakeStarter{}).start, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.tickEvery = 0
+	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	keys(t, a, "c", "y") // cleanup: no installed query to wait for
+	if src.calls["sizes"] != 1 || src.calls["installed"] != 0 || a.sizesAfterInstalled {
+		t.Errorf("sizes should run straight away: %v waiting=%v", src.calls, a.sizesAfterInstalled)
 	}
 }

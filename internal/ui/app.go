@@ -62,8 +62,12 @@ type App struct {
 	inflight    map[query]bool // queries running now
 	again       map[query]bool // requested while running: run once more when done
 	doctorAfter bool           // run doctor and cleanup's dry-runs when the JSON queries are done
-	dirty       bool           // a query succeeded since the last cache save
-	saveErr     error
+	// sizesAfterInstalled holds a sizes request made while the package list
+	// is being fetched: sizes run once that result is in, so they measure
+	// the fresh list, not the one from before the change.
+	sizesAfterInstalled bool
+	dirty               bool // a query succeeded since the last cache save
+	saveErr             error
 
 	queue     jobs.Queue
 	acts      map[int]action // what each job was asked to do, by job ID
@@ -191,12 +195,19 @@ func (a *App) refresh() tea.Cmd {
 
 // request starts the given queries. A query that is already running is not
 // started twice; it runs once more when the current run returns, so a
-// refresh asked for after a change is never lost.
+// refresh asked for after a change is never lost. Sizes asked for together
+// with the package list, or while it is running, wait for it (see
+// sizesAfterInstalled).
 func (a *App) request(qs ...query) tea.Cmd {
 	var cmds []tea.Cmd
+	listing := a.inflight[qInstalled] || slices.Contains(qs, qInstalled)
 	for _, q := range qs {
 		if a.inflight[q] {
 			a.again[q] = true
+			continue
+		}
+		if q == qSizes && listing {
+			a.sizesAfterInstalled = true
 			continue
 		}
 		a.inflight[q] = true
@@ -390,10 +401,14 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 		return nil // quitting: the query was cancelled, not broken
 	}
 	a.apply(m)
-	var again, saving, doctor tea.Cmd
+	var again, sizes, saving, doctor tea.Cmd
 	if a.again[m.q] {
 		a.again[m.q] = false
 		again = a.request(m.q)
+	}
+	if m.q == qInstalled && a.sizesAfterInstalled {
+		a.sizesAfterInstalled = false // the list is as fresh as it gets, even if the fetch failed
+		sizes = a.request(qSizes)
 	}
 	if a.dirty && !a.jsonBusy() {
 		a.dirty = false
@@ -406,7 +421,7 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	}
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.
-	return tea.Batch(again, tea.Sequence(saving, doctor))
+	return tea.Batch(again, sizes, tea.Sequence(saving, doctor))
 }
 
 // handleKey routes a key press by mode first: an open confirmation gets
