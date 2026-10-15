@@ -202,7 +202,7 @@ const skeletonRows = 8
 // skeleton is n placeholder rows, at most w wide, for a list whose first
 // results haven't come yet: the shape of what's coming, rather than a blank.
 func skeleton(st theme.Styles, w, n int) string {
-	lines := make([]string, min(n, skeletonRows))
+	lines := make([]string, max(0, min(n, skeletonRows)))
 	for i := range lines {
 		row := strings.Repeat("░", 8+i*5%7) + "   " + strings.Repeat("░", 6+i*3%4) + "   " + strings.Repeat("░", 4)
 		lines[i] = st.Muted.Render(ansi.Truncate(" "+row, w, ""))

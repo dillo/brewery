@@ -227,3 +227,18 @@ func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 		t.Errorf("skeleton is %dx%d, want at most 10 wide and 3 tall", lipgloss.Width(got), lipgloss.Height(got))
 	}
 }
+
+func TestSkeletonOnTinyPanes(t *testing.T) {
+	for _, n := range []int{-1, 0} {
+		if got := skeleton(testStyles, 10, n); got != "" {
+			t.Errorf("skeleton with %d rows = %q, want empty", n, got)
+		}
+	}
+	lt := newListTab(testStyles, "Taps", tapCols, firstCell, "none")
+	lt.resize(40, 3)
+	_ = lt.view(nil)
+	it := newInstalledTab(testStyles)
+	it.resize(40, 4)
+	it.setData(nil, state.NewIndex(nil))
+	_ = it.view(nil)
+}
