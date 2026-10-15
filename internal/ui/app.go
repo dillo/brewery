@@ -48,7 +48,8 @@ const (
 // App is the root Bubble Tea model.
 type App struct {
 	src       Source
-	catalog   Catalog // Discover's catalogue, or nil
+	catalog   Catalog   // Discover's catalogue, or nil
+	analytics Analytics // Discover's install counts, or nil
 	start     Starter
 	cachePath string
 	st        theme.Styles
@@ -155,6 +156,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
 	a.outdated.note = a.dataAge
+	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -338,6 +340,10 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		return a.handleResult(msg)
 	case catalogueMsg:
 		a.gotCatalogue(msg)
+	case cachedStatsMsg:
+		return a.gotCachedStats(msg)
+	case fetchedStatsMsg:
+		return a.gotStats(msg)
 	case savedMsg:
 		a.saveErr = msg.err
 	case historySavedMsg:
@@ -559,6 +565,9 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	case "[":
 		return a.showTab((a.tab + len(tabNames) - 1) % len(tabNames))
 	case "r":
+		if a.tab == tabDiscover {
+			return tea.Batch(a.refresh(), a.fetchStats(true))
+		}
 		return a.refresh()
 	}
 	if cmd, ok := a.actionKey(k); ok {

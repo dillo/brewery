@@ -34,7 +34,9 @@ func (a *App) helpGroups() []helpGroup {
 	case a.tab == tabTaps:
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	case a.tab == tabDiscover:
-		here = helpGroup{"Discover", [][2]string{{"f F", "next or previous view"}, {"/", "search names and descriptions"}}}
+		here = helpGroup{"Discover", [][2]string{
+			{"f F", "next or previous view"}, {"/", "search names and descriptions"}, {"r", "fetch the analytics again"},
+		}}
 	}
 	groups := []helpGroup{here}
 	switch {

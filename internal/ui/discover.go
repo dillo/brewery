@@ -3,10 +3,14 @@ package ui
 import (
 	"context"
 	"slices"
+	"strconv"
+	"strings"
+	"time"
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
+	"brewery/internal/analytics"
 	"brewery/internal/brew"
 	"brewery/internal/theme"
 )
@@ -41,13 +45,17 @@ func loadCatalogue(ctx context.Context, c Catalog) tea.Cmd {
 }
 
 // showTab switches to tab t. Discover reads the catalogue the first time
-// it opens.
+// it opens, and the analytics as wantStats says.
 func (a *App) showTab(t int) tea.Cmd {
 	a.tab = t
-	if t != tabDiscover || a.discover.loaded || a.discover.err != nil {
+	if t != tabDiscover {
 		return nil
 	}
-	return a.readCatalogue()
+	var cat tea.Cmd
+	if !a.discover.loaded && a.discover.err == nil {
+		cat = a.readCatalogue()
+	}
+	return tea.Batch(cat, a.wantStats())
 }
 
 // reloadCatalogue reads the catalogue again if Discover has read it (or
@@ -81,21 +89,48 @@ func (a *App) gotCatalogue(m catalogueMsg) {
 type discoverView int
 
 const (
-	discNew discoverView = iota
+	discTools discoverView = iota
+	discApps
+	discRising
+	discNew
+	discFonts
 	discAll
 )
 
 // discoverViews are Discover's views, in the order f steps through them.
 var discoverViews = [...]struct{ name, short, about string }{
-	discNew: {"New", "New", "Added to Homebrew since brew last updated."},
-	discAll: {"All", "All", "Everything brew can install. / searches names and descriptions."},
+	discTools:  {"Popular tools", "Tools", "The most-installed tools of the last 30 days."},
+	discApps:   {"Popular apps", "Apps", "The most-installed apps of the last 30 days."},
+	discRising: {"Rising", "Rising", "Growing fastest: the last 30 days against the 60 before."},
+	discNew:    {"New", "New", "Added to Homebrew since brew last updated."},
+	discFonts:  {"Fonts", "Fonts", "Fonts, the most installed first."},
+	discAll:    {"All", "All", "Everything brew can install. / searches names and descriptions."},
 }
+
+// ranked reports whether view v is ordered by the analytics.
+func (v discoverView) ranked() bool { return v != discNew && v != discAll }
+
+// Descriptions keep 20 columns while names and the rest give way.
+var (
+	rankedCols = []col{{"#", 3, 0}, {"NAME", 20, 12}, {"DESCRIPTION", 0, 20}, {"INSTALLS", 8, 0}}
+	plainCols  = []col{{"NAME", 20, 12}, {"TYPE", 9, 4}, {"DESCRIPTION", 0, 20}}
+)
 
 // discoverCols are each view's columns.
 var discoverCols = [...][]col{
-	discNew: {{"NAME", 24, 12}, {"TYPE", 9, 4}, {"DESCRIPTION", 0, 0}},
-	discAll: {{"NAME", 24, 12}, {"TYPE", 9, 4}, {"DESCRIPTION", 0, 0}},
+	discTools:  rankedCols,
+	discApps:   rankedCols,
+	discRising: {{"#", 3, 0}, {"NAME", 20, 12}, {"TYPE", 9, 4}, {"GROWTH", 6, 0}, {"DESCRIPTION", 0, 20}},
+	discNew:    plainCols,
+	discFonts:  rankedCols,
+	discAll:    plainCols,
 }
+
+// How many rows the Popular views and Rising show.
+const (
+	popularRows = 500
+	risingRows  = 50
+)
 
 // entryKey identifies a package by kind and name: a formula and a cask
 // can share a name.
@@ -104,6 +139,10 @@ func entryKey(name string, k brew.Kind) string { return k.String() + "/" + name 
 // discRow is one package in a Discover view.
 type discRow struct {
 	brew.Entry
+	rank     int     // its place in a ranked view, from 1; 0 for none
+	installs int     // in the last 30 days; 0 if not known
+	growth   float64 // Rising: how many times its installs grew
+	fresh    bool    // Rising: (almost) no installs before
 }
 
 // discoverTab lists packages you could install.
@@ -113,17 +152,39 @@ type discoverTab struct {
 	cat     []brew.Entry    // everything brew can install
 	added   []brew.Entry    // what brew's last update added, with descriptions
 	have    map[string]bool // installed packages, by entryKey
-	rows    []discRow       // the view's rows that pass the filter, in table order
-	match   string          // the "/" filter on names and descriptions
-	loaded  bool            // the catalogue has been read
+	byView  [len(discoverViews)][]discRow
+	rows    []discRow // the view's rows that pass the filter, in table order
+	match   string    // the "/" filter on names and descriptions
+	loaded  bool      // the catalogue has been read
 	loading bool
 	err     error // the last read failed
 	table   table.Model
 	w, h    int
+
+	stats     map[string]analytics.List // by list name
+	statsAt   map[string]time.Time      // when each list was fetched
+	statsRead bool                      // the kept copies have been read
+	fetching  bool
+	fetchErr  error  // the last fetch failed
+	triedOn   string // the day a fetch last started, as 2006-01-02
+	note      func() string
 }
 
 func newDiscoverTab(st theme.Styles) discoverTab {
-	return discoverTab{st: st, table: newTable(st, discoverCols[discNew])}
+	return discoverTab{
+		st: st, table: newTable(st, discoverCols[discTools]),
+		stats: map[string]analytics.List{}, statsAt: map[string]time.Time{},
+	}
+}
+
+// statsFrom reports whether every list was fetched on day.
+func (t *discoverTab) statsFrom(day string) bool {
+	for _, l := range analytics.Lists {
+		if at, ok := t.statsAt[l]; !ok || at.Format(time.DateOnly) != day {
+			return false
+		}
+	}
+	return true
 }
 
 // setCatalogue takes a fresh catalogue. What the last update added comes
@@ -138,7 +199,83 @@ func (t *discoverTab) setCatalogue(entries, added []brew.Entry) {
 		e.Desc = desc[entryKey(e.Name, e.Kind)]
 		t.added[i] = e
 	}
+	t.rebuild()
+}
+
+// rebuild works out every view's rows from the catalogue and the
+// analytics. Packages the catalogue doesn't have, such as ones from taps
+// you haven't tapped, are left out.
+func (t *discoverTab) rebuild() {
+	byKey := make(map[string]brew.Entry, len(t.cat))
+	all := make([]discRow, len(t.cat))
+	for i, e := range t.cat {
+		byKey[entryKey(e.Name, e.Kind)] = e
+		all[i] = discRow{Entry: e}
+	}
+	// top is list's packages of kind that keep accepts, at most n (all if
+	// n < 0), ranked by installs.
+	top := func(list string, kind brew.Kind, keep func(name string) bool, n int) []discRow {
+		var rows []discRow
+		for _, it := range t.stats[list].Items {
+			if e, ok := byKey[entryKey(it.Name, kind)]; ok && keep(it.Name) && len(rows) != n {
+				rows = append(rows, discRow{Entry: e, rank: len(rows) + 1, installs: it.Count})
+			}
+		}
+		return rows
+	}
+	font := func(name string) bool { return strings.HasPrefix(name, "font-") }
+	t.byView[discTools] = top(analytics.Tools30, brew.KindFormula, func(string) bool { return true }, popularRows)
+	t.byView[discApps] = top(analytics.Apps30, brew.KindCask, func(n string) bool { return !font(n) }, popularRows)
+	fonts := top(analytics.Apps30, brew.KindCask, font, -1)
+	ranked := make(map[string]bool, len(fonts))
+	for _, r := range fonts {
+		ranked[r.Name] = true
+	}
+	for _, e := range t.cat {
+		if e.Kind == brew.KindCask && font(e.Name) && !ranked[e.Name] {
+			fonts = append(fonts, discRow{Entry: e}) // no installs: after the ranked ones, by name
+		}
+	}
+	t.byView[discFonts] = fonts
+	t.byView[discRising] = t.rising(byKey)
+	t.byView[discNew] = make([]discRow, len(t.added))
+	for i, e := range t.added {
+		t.byView[discNew][i] = discRow{Entry: e}
+	}
+	t.byView[discAll] = all
 	t.apply()
+}
+
+// rising is the top risers among formulae and casks together. It needs
+// both the 30-day and the 90-day lists.
+func (t *discoverTab) rising(byKey map[string]brew.Entry) []discRow {
+	type riser struct {
+		analytics.Riser
+		e brew.Entry
+	}
+	var rs []riser
+	for _, src := range []struct {
+		d30, d90 string
+		kind     brew.Kind
+	}{{analytics.Tools30, analytics.Tools90, brew.KindFormula}, {analytics.Apps30, analytics.Apps90, brew.KindCask}} {
+		d30, ok30 := t.stats[src.d30]
+		d90, ok90 := t.stats[src.d90]
+		if !ok30 || !ok90 {
+			continue
+		}
+		for _, r := range analytics.Rising(d30, d90) {
+			if e, ok := byKey[entryKey(r.Name, src.kind)]; ok {
+				rs = append(rs, riser{r, e})
+			}
+		}
+	}
+	slices.SortStableFunc(rs, func(a, b riser) int { return analytics.Compare(a.Riser, b.Riser) })
+	rows := make([]discRow, min(len(rs), risingRows))
+	for i := range rows {
+		r := rs[i]
+		rows[i] = discRow{Entry: r.e, rank: i + 1, installs: r.Count, growth: r.Growth, fresh: r.New}
+	}
+	return rows
 }
 
 // setHave notes which packages are installed.
@@ -150,28 +287,10 @@ func (t *discoverTab) setHave(pkgs []brew.Package) {
 	t.apply()
 }
 
-// entries is every package view v lists, before the filter.
-func (t *discoverTab) entries(v discoverView) []brew.Entry {
-	if v == discNew {
-		return t.added
-	}
-	return t.cat
-}
-
-// source is every row view v lists, before the filter.
-func (t *discoverTab) source(v discoverView) []discRow {
-	es := t.entries(v)
-	rows := make([]discRow, len(es))
-	for i, e := range es {
-		rows[i] = discRow{Entry: e}
-	}
-	return rows
-}
-
 func (t *discoverTab) apply() {
 	before := t.selectedKey()
 	t.rows = t.rows[:0]
-	for _, r := range t.source(t.showing) {
+	for _, r := range t.byView[t.showing] {
 		if matches(r.Name+" "+r.Desc, t.match) {
 			t.rows = append(t.rows, r)
 		}
@@ -196,7 +315,15 @@ func (t *discoverTab) cells(r discRow) table.Row {
 	if have {
 		name = "✓ " + name
 	}
-	row := table.Row{name, kindCell(t.st.Icons, r.Kind), r.Desc}
+	var row table.Row
+	switch t.showing {
+	case discRising:
+		row = table.Row{rankCell(r.rank), name, kindCell(t.st.Icons, r.Kind), growthCell(r), r.Desc}
+	case discNew, discAll:
+		row = table.Row{name, kindCell(t.st.Icons, r.Kind), r.Desc}
+	default:
+		row = table.Row{rankCell(r.rank), name, r.Desc, shortCount(r.installs)}
+	}
 	if have {
 		for i := range row {
 			row[i] = theme.Tint(t.st.P.Overlay0, row[i])
@@ -274,6 +401,11 @@ func (t *discoverTab) view() string {
 	if t.match != "" {
 		title += " · /" + t.match
 	}
+	if t.note != nil && t.showing.ranked() {
+		if n := t.note(); n != "" {
+			title += " · " + n
+		}
+	}
 	switch {
 	case !t.loaded:
 		body += t.st.Muted.Render("loading…") + "\n" + skeleton(t.st, iw, ih-1)
@@ -290,17 +422,34 @@ func (t *discoverTab) view() string {
 
 // empty says why the current view has no rows.
 func (t *discoverTab) empty() string {
-	if t.showing == discNew {
+	switch {
+	case t.showing == discNew:
 		return "nothing new since brew last updated"
+	case t.showing == discAll:
+		return "brew's catalogue is empty"
+	case t.fetching:
+		return "fetching analytics from formulae.brew.sh…"
+	case t.fetchErr != nil:
+		return "couldn't reach formulae.brew.sh · r retries"
+	case len(t.stats) == 0:
+		return "no analytics yet · r fetches them"
 	}
-	return "brew's catalogue is empty"
+	return "nothing here yet"
+}
+
+// rankCell is a row's place in a ranked view, blank for none.
+func rankCell(n int) string {
+	if n == 0 {
+		return ""
+	}
+	return strconv.Itoa(n)
 }
 
 // viewBar is the bar of Discover's views with their counts.
 func (t *discoverTab) viewBar(w int) string {
 	segs := make([]viewSeg, len(discoverViews))
 	for v, d := range discoverViews {
-		segs[v] = viewSeg{name: d.name, short: d.short, n: len(t.entries(discoverView(v)))}
+		segs[v] = viewSeg{name: d.name, short: d.short, n: len(t.byView[v])}
 	}
 	return viewBar(t.st, segs, int(t.showing), discoverViews[t.showing].about, w)
 }

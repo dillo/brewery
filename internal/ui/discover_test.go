@@ -73,7 +73,7 @@ func TestDiscoverReadsTheCatalogueOnce(t *testing.T) {
 
 func TestDiscoverViews(t *testing.T) {
 	a, _ := newDiscoverApp(t)
-	keys(t, a, "6")
+	keys(t, a, "6", "f", "f", "f") // to New
 	out := stripANSI(a.render())
 	for _, want := range []string{"6 Discover", "New 2", "All 17", "Added to Homebrew since brew last updated."} {
 		if !strings.Contains(out, want) {
@@ -88,7 +88,7 @@ func TestDiscoverViews(t *testing.T) {
 		t.Errorf("codex's description is missing:\n%s", out)
 	}
 
-	keys(t, a, "f")
+	keys(t, a, "f", "f")
 	rows := discoverRows(a)
 	if len(rows) != 17 || rows[0] != "abcl" {
 		t.Fatalf("All shows %v", rows)
@@ -101,14 +101,14 @@ func TestDiscoverViews(t *testing.T) {
 		t.Errorf("the docker formula isn't installed, only the cask: %v", rows)
 	}
 	keys(t, a, "F")
-	if a.discover.showing != discNew {
-		t.Errorf("F goes back to New, got %d", a.discover.showing)
+	if a.discover.showing != discFonts {
+		t.Errorf("F goes back to Fonts, got %d", a.discover.showing)
 	}
 }
 
 func TestDiscoverFilterSearchesDescriptions(t *testing.T) {
 	a, _ := newDiscoverApp(t)
-	keys(t, a, "6", "f", "/", "r", "e", "t", "r", "i", "e", "v", "e", "r", "enter")
+	keys(t, a, "6", "F", "/", "r", "e", "t", "r", "i", "e", "v", "e", "r", "enter")
 	if got := discoverRows(a); len(got) != 1 || got[0] != "wget" {
 		t.Errorf("/retriever shows %v", got)
 	}
@@ -124,7 +124,7 @@ func TestDiscoverFilterSearchesDescriptions(t *testing.T) {
 func TestDiscoverEmptyAndFailed(t *testing.T) {
 	a, cat := newDiscoverApp(t)
 	cat.added = nil
-	keys(t, a, "6")
+	keys(t, a, "6", "f", "f", "f")
 	if out := stripANSI(a.render()); !strings.Contains(out, "nothing new since brew last updated") {
 		t.Errorf("an empty New isn't explained:\n%s", out)
 	}

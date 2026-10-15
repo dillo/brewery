@@ -334,7 +334,7 @@ func (a *App) actionHints() string {
 	case tabTaps:
 		return "x untap"
 	case tabDiscover:
-		return "f/F view · / search"
+		return "f/F view · / search · r refetch"
 	}
 	return "1-6 tabs · r refresh · U update · c clean up"
 }
