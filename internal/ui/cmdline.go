@@ -97,7 +97,7 @@ func (c *cmdline) view(w int) string {
 func (a *App) openCmdline() tea.Cmd {
 	a.mode = modeCommand
 	a.cmd.open()
-	return nil
+	return a.wantCatalogue() // for commands that take any package
 }
 
 // cmdKey handles a key in command mode: enter runs the line, esc cancels,

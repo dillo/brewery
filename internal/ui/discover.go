@@ -52,11 +52,15 @@ func (a *App) showTab(t int) tea.Cmd {
 	if t != tabDiscover {
 		return nil
 	}
-	var cat tea.Cmd
-	if !a.discover.loaded && a.discover.err == nil {
-		cat = a.readCatalogue()
+	return tea.Batch(a.wantCatalogue(), a.wantStats())
+}
+
+// wantCatalogue reads the catalogue unless it has been read (or tried).
+func (a *App) wantCatalogue() tea.Cmd {
+	if a.discover.loaded || a.discover.err != nil {
+		return nil
 	}
-	return tea.Batch(cat, a.wantStats())
+	return a.readCatalogue()
 }
 
 // reloadCatalogue reads the catalogue again if Discover has read it (or
@@ -84,6 +88,9 @@ func (a *App) gotCatalogue(m catalogueMsg) {
 	a.discover.err = m.err
 	if m.err == nil {
 		a.discover.setCatalogue(m.entries, m.added)
+	}
+	if a.mode == modeCommand {
+		a.suggest(false) // the line can now complete any package
 	}
 }
 
