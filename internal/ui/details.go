@@ -74,6 +74,10 @@ func (a *App) gotDetails(m detailsMsg) {
 	case a.ctx.Err() == nil: // quitting cancels the question: that's no failure
 		d.detailsErr[m.key] = m.err
 	}
+	// An install dialog open for the package can now say what comes along.
+	if r, ok := d.selected(); ok && a.confirm != nil && a.confirm.tag == installTag(m.key) {
+		a.confirm = a.installBox(r)
+	}
 }
 
 // missing is what installing the package with key would add: what it

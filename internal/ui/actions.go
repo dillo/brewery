@@ -66,6 +66,8 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.openLog(), true
 	case a.tab == tabTaps && k == "x":
 		return a.askUntap(), true
+	case a.tab == tabDiscover && k == "a":
+		return a.askInstall(), true
 	}
 	return nil, false
 }
@@ -337,7 +339,7 @@ func (a *App) actionHints() string {
 		if a.discover.pv.focus {
 			return "j/k scroll · tab back to the list"
 		}
-		return "f/F view · / search · tab preview · r refetch"
+		return "a install · f/F view · / search · tab preview · r refetch"
 	}
 	return "1-6 tabs · r refresh · U update · c clean up"
 }
