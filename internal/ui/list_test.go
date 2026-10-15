@@ -89,20 +89,30 @@ func tableWidth(tbl table.Model) int {
 	return n
 }
 
-func TestSizeTableShrinksFixedColumnsFromTheEnd(t *testing.T) {
+func TestSizeTableShrinksTheRoomiestColumnsFirst(t *testing.T) {
 	tbl := newTable(testStyles, installedCols)
 	sizeTable(&tbl, installedCols, 40, 10)
-	// fixed 16+7+10 plus NAME's minimum 8, plus 8 padding = 49: 9 too many.
-	// STATUS shrinks to its title (6), TYPE to its title (4), VERSION by 2.
+	// NAME wants 16, VERSION 16, TYPE 7, STATUS 10, plus 8 padding: 17 too
+	// many. VERSION gives way first (it has the most to spare), then STATUS
+	// and TYPE, each to its floor (8, 6, 4); NAME gives the last 2.
 	got := []int{}
 	for _, c := range tbl.Columns() {
 		got = append(got, c.Width)
 	}
-	if want := []int{8, 14, 4, 6}; fmt.Sprint(got) != fmt.Sprint(want) {
+	if want := []int{14, 8, 4, 6}; fmt.Sprint(got) != fmt.Sprint(want) {
 		t.Errorf("widths = %v, want %v", got, want)
 	}
 	if w := tableWidth(tbl); w > 40 {
 		t.Errorf("table is %d wide, want <= 40", w)
+	}
+	sizeTable(&tbl, installedCols, 50, 10)
+	got = got[:0]
+	for _, c := range tbl.Columns() {
+		got = append(got, c.Width)
+	}
+	// 7 too many: VERSION gives 6 and STATUS 1; NAME and TYPE keep theirs.
+	if want := []int{16, 10, 7, 9}; fmt.Sprint(got) != fmt.Sprint(want) {
+		t.Errorf("at 50, widths = %v, want %v", got, want)
 	}
 }
 

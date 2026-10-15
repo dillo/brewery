@@ -36,7 +36,7 @@ var views = [...]struct{ name, short, about string }{
 // viewBarHeight is the bar of views plus the line about the active one.
 const viewBarHeight = 2
 
-var installedCols = []col{{"NAME", 0}, {"VERSION", 16}, {"TYPE", 7}, {"STATUS", 10}}
+var installedCols = []col{{"NAME", 0, 16}, {"VERSION", 16, 8}, {"TYPE", 7, 4}, {"STATUS", 10, 6}}
 
 // installedTab lists installed packages with a details preview.
 type installedTab struct {

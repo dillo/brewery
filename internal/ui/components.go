@@ -40,9 +40,12 @@ func paneInner(w, h int) (int, int) {
 }
 
 // col describes a table column. Width 0 means "take the remaining space".
+// min is how far it gives way when the table is too narrow: a flexible
+// column keeps min (minFlex if 0) while fixed columns shrink, and a fixed
+// column shrinks no further than min (its title's width if 0).
 type col struct {
-	title string
-	width int
+	title      string
+	width, min int
 }
 
 // tableKeys is the table's built-in Vim-style navigation, minus the default
@@ -79,41 +82,61 @@ func newTable(st theme.Styles, cols []col) table.Model {
 // minFlex is the narrowest a flexible column may get.
 const minFlex = 8
 
-// sizeTable fits t into a w×h area, giving flexible columns the leftover
-// width. When the columns don't fit, fixed columns shrink from the last one
-// down to their title width, then trailing columns are hidden. A hidden
-// column keeps its slot with width 0, which the table skips: the table
-// indexes columns by row cell, so removing columns would make it panic on
-// rows that still carry every cell.
+// sizeTable fits t into a w×h area. When the columns don't fit, fixed
+// columns give way first, a cell at a time from whichever has the most to
+// spare (so a long VERSION shrinks before a short TYPE), then flexible
+// columns down to minFlex, and then trailing columns are hidden. Flexible
+// columns share whatever width is left. A hidden column keeps its slot with
+// width 0, which the table skips: the table indexes columns by row cell, so
+// removing columns would make it panic on rows that still carry every cell.
 func sizeTable(t *table.Model, cols []col, w, h int) {
 	widths := make([]int, len(cols))
+	floor := make([]int, len(cols))
 	for i, c := range cols {
-		widths[i] = c.width
+		switch {
+		case c.width == 0:
+			widths[i], floor[i] = max(c.min, minFlex), minFlex
+		case c.min > 0:
+			widths[i], floor[i] = c.width, min(c.min, c.width)
+		default:
+			widths[i], floor[i] = c.width, min(len(c.title), c.width)
+		}
 	}
 	shown := len(cols)
-	// used is the width of the shown columns with padding, and how many
-	// of them are flexible.
-	used := func() (fixed, flex int) {
+	// over is how much wider than w the shown columns are, with padding.
+	over := func() int {
+		n := 0
 		for i := range shown {
-			fixed += widths[i] + 2 // cell padding
-			if cols[i].width == 0 {
-				flex++
-			}
+			n += widths[i] + 2 // cell padding
 		}
-		return fixed, flex
+		return n - w
 	}
-	over := func() int { f, n := used(); return f + n*minFlex - w }
-
-	for i := len(cols) - 1; i >= 0 && over() > 0; i-- {
-		if cols[i].width > 0 {
-			widths[i] = max(widths[i]-over(), len(cols[i].title))
+	for _, flexible := range []bool{false, true} {
+		for over() > 0 {
+			give := -1
+			for i := range shown {
+				if (cols[i].width == 0) == flexible && widths[i] > floor[i] &&
+					(give < 0 || widths[i]-floor[i] > widths[give]-floor[give]) {
+					give = i
+				}
+			}
+			if give < 0 {
+				break
+			}
+			widths[give]--
 		}
 	}
 	for shown > 1 && over() > 0 {
 		shown--
 	}
 
-	fixed, flex := used()
+	flex := 0
+	for i := range shown {
+		if cols[i].width == 0 {
+			flex++
+		}
+	}
+	spare := max(-over(), 0)
 	tc := make([]table.Column, len(cols))
 	for i, c := range cols {
 		width := widths[i]
@@ -121,7 +144,7 @@ func sizeTable(t *table.Model, cols []col, w, h int) {
 		case i >= shown:
 			width = 0
 		case c.width == 0:
-			width = max((w-fixed)/max(flex, 1), minFlex)
+			width += spare / flex
 		}
 		tc[i] = table.Column{Title: c.title, Width: width}
 	}

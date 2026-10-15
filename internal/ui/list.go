@@ -180,7 +180,7 @@ func tapRows(items []brew.Tap) []table.Row {
 }
 
 var (
-	outdatedCols = []col{{"NAME", 0}, {"INSTALLED", 18}, {"LATEST", 18}, {"TYPE", 7}, {"PINNED", 6}}
-	serviceCols  = []col{{"NAME", 0}, {"STATUS", 16}}
-	tapCols      = []col{{"NAME", 24}, {"FORMULAE", 8}, {"CASKS", 6}, {"OFFICIAL", 8}, {"REMOTE", 0}}
+	outdatedCols = []col{{"NAME", 0, 16}, {"INSTALLED", 18, 8}, {"LATEST", 18, 8}, {"TYPE", 7, 4}, {"PINNED", 6, 0}}
+	serviceCols  = []col{{"NAME", 0, 16}, {"STATUS", 16, 10}}
+	tapCols      = []col{{"NAME", 24, 12}, {"FORMULAE", 8, 0}, {"CASKS", 6, 0}, {"OFFICIAL", 8, 0}, {"REMOTE", 0, 0}}
 )

@@ -11,7 +11,7 @@ import (
 	"brewery/internal/jobs"
 )
 
-var jobCols = []col{{"STATUS", 9}, {"COMMAND", 0}, {"STARTED", 12}, {"TOOK", 6}}
+var jobCols = []col{{"STATUS", 9, 0}, {"COMMAND", 0, 20}, {"STARTED", 12, 5}, {"TOOK", 6, 0}}
 
 // jobKey identifies a jobs row by its command and start time.
 func jobKey(r table.Row) string { return r[1] + "\x00" + r[2] }
