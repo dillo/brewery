@@ -33,6 +33,7 @@ type infoJSON struct {
 		Tap      string  `json:"tap"`
 		Desc     *string `json:"desc"`
 		Homepage string  `json:"homepage"`
+		License  *string `json:"license"`
 		Versions struct {
 			Stable string `json:"stable"`
 		} `json:"versions"`
@@ -82,7 +83,7 @@ func ParseInfo(b []byte) ([]Package, error) {
 	for _, f := range in.Formulae {
 		p := Package{
 			Name: f.Name, FullName: f.FullName, Kind: KindFormula, Tap: f.Tap,
-			Desc: deref(f.Desc), Homepage: f.Homepage, Latest: f.Versions.Stable,
+			Desc: deref(f.Desc), Homepage: f.Homepage, License: deref(f.License), Latest: f.Versions.Stable,
 			Pinned: f.Pinned, Outdated: f.Outdated, Deprecated: f.Deprecated,
 			Caveats: strings.TrimSpace(deref(f.Caveats)),
 		}

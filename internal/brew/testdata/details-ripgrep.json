@@ -1,0 +1,26 @@
+{
+  "formulae": [
+    {
+      "name": "ripgrep",
+      "full_name": "ripgrep",
+      "tap": "homebrew/core",
+      "desc": "Search tool like grep and The Silver Searcher",
+      "license": "Unlicense",
+      "homepage": "https://github.com/BurntSushi/ripgrep",
+      "versions": {
+        "stable": "15.2.0",
+        "head": "HEAD",
+        "bottle": true
+      },
+      "dependencies": [
+        "pcre2"
+      ],
+      "installed": [],
+      "pinned": false,
+      "outdated": false,
+      "deprecated": false,
+      "caveats": null
+    }
+  ],
+  "casks": []
+}

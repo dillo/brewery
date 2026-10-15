@@ -27,6 +27,7 @@ type Package struct {
 	Tap         string    `json:"tap"`
 	Desc        string    `json:"desc"`
 	Homepage    string    `json:"homepage"`
+	License     string    `json:"license"` // a formula's SPDX licence
 	Version     string    `json:"version"` // installed version
 	Latest      string    `json:"latest"`  // newest version known to brew
 	OnRequest   bool      `json:"on_request"`
