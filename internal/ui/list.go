@@ -6,7 +6,6 @@ import (
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 
 	"brewery/internal/brew"
 	"brewery/internal/theme"
@@ -34,6 +33,7 @@ type listTab struct {
 	// preview, if set, fills a pane beside the table with what it returns
 	// for a w×h pane.
 	preview func(w, h int) (title, body string)
+	pvOpen  bool // below previewMinWidth, the preview shows instead of the list
 }
 
 func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) string, empty string) listTab {
@@ -90,6 +90,10 @@ func firstCell(r table.Row) string { return r[0] }
 func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[3] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
+	if k := msg.String(); t.preview != nil && t.w < previewMinWidth && (k == "tab" || k == "enter") {
+		t.pvOpen = !t.pvOpen // narrow: the preview takes turns with the list
+		return nil
+	}
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
 	return cmd
@@ -104,25 +108,29 @@ func (t *listTab) title() string {
 	return s
 }
 
-// listWidth is the table pane's width: all of it, or 55% beside a preview.
-func (t *listTab) listWidth() int {
+// layout is how the table and any preview share the tab.
+func (t *listTab) layout() split {
 	if t.preview == nil {
-		return t.w
+		return split{listW: t.w, listH: t.h}
 	}
-	return t.w * 55 / 100
+	return splitFor(t.w, t.h, t.pvOpen)
 }
 
 func (t *listTab) resize(w, h int) {
 	t.w, t.h = w, h
-	iw, ih := paneInner(t.listWidth(), h)
+	sp := t.layout()
+	if sp.listW == 0 {
+		sp = splitFor(w, h, false) // the table keeps its size while the preview shows
+	}
+	iw, ih := paneInner(sp.listW, sp.listH)
 	sizeTable(&t.table, t.cols, iw, ih)
 }
 
 // view sizes the table each time because a failed refresh shares the pane
 // with a banner above it.
 func (t *listTab) view(err error) string {
-	w, h, listW := t.w, t.h, t.listWidth()
-	iw, ih := paneInner(listW, h)
+	w, h, sp := t.w, t.h, t.layout()
+	iw, ih := paneInner(sp.listW, sp.listH)
 	switch {
 	case err != nil && t.n == 0:
 		return pane(t.st, t.name, errorBody(t.st, err), w, h, true)
@@ -139,12 +147,12 @@ func (t *listTab) view(err error) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(ih)
-	list := pane(t.st, t.title(), body+t.table.View(), listW, h, true)
-	if t.preview == nil {
+	list := pane(t.st, t.title(), body+t.table.View(), sp.listW, sp.listH, true)
+	if sp.pvW == 0 {
 		return list
 	}
-	title, preview := t.preview(w-listW, h)
-	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, title, preview, w-listW, h, false))
+	title, preview := t.preview(sp.pvW, sp.pvH)
+	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, sp.listW == 0))
 }
 
 func outdatedRows(items []brew.Outdated) []table.Row {

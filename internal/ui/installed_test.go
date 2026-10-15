@@ -72,10 +72,10 @@ func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
 
 func TestInstalledViewBarFitsNarrowPanes(t *testing.T) {
 	it := newFixtureInstalled(t)
-	it.resize(80, 24) // a 44-column list pane
+	it.resize(44, 24) // narrow: a 44-column list pane, the preview hidden
 	out := it.view(nil)
-	if h, w := lipgloss.Height(out), lipgloss.Width(out); h != 24 || w != 80 {
-		t.Errorf("rendered %dx%d, want 80x24", w, h)
+	if h, w := lipgloss.Height(out), lipgloss.Width(out); h != 24 || w != 44 {
+		t.Errorf("rendered %dx%d, want 44x24", w, h)
 	}
 	plain := stripANSI(out)
 	for _, want := range []string{"Top 5", "All 7", "Apps 2", "Deps 2", "…  f/F"} {

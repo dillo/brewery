@@ -160,7 +160,8 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 		t.pv.focus = !t.pv.focus
 		return nil
 	case t.pv.focus && k != "f" && k != "F":
-		_, ih := paneInner(t.w-t.listWidth(), t.h)
+		sp := splitFor(t.w, t.h, true)
+		_, ih := paneInner(sp.pvW, sp.pvH)
 		t.pv.scroll(k, ih/2)
 		return nil
 	}
@@ -184,20 +185,23 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 // until it has been sized.
 func (t *installedTab) resize(w, h int) {
 	t.w, t.h = w, h
-	iw, ih := paneInner(t.listWidth(), h)
+	sp := splitFor(w, h, false)
+	iw, ih := paneInner(sp.listW, sp.listH)
 	sizeTable(&t.table, installedCols, iw, max(ih-viewBarHeight, 0))
 }
 
-func (t *installedTab) listWidth() int { return t.w * 55 / 100 }
+// listWidth is the list pane's width with the preview closed.
+func (t *installedTab) listWidth() int { return splitFor(t.w, t.h, false).listW }
 
 // view sizes the table each time because a failed refresh shares the list
 // pane with a banner above it.
 func (t *installedTab) view(err error) string {
-	w, h, listW := t.w, t.h, t.listWidth()
+	w, h := t.w, t.h
 	if err != nil && len(t.all) == 0 {
 		return pane(t.st, "Installed", errorBody(t.st, err), w, h, true)
 	}
-	iw, ih := paneInner(listW, h)
+	sp := splitFor(w, h, t.pv.focus)
+	iw, ih := paneInner(sp.listW, sp.listH)
 	body := t.viewBar(iw) + "\n"
 	ih -= viewBarHeight
 	if err != nil {
@@ -209,7 +213,7 @@ func (t *installedTab) view(err error) string {
 	if t.match != "" {
 		title += " · /" + t.match
 	}
-	list := pane(t.st, title, body+t.table.View(), listW, h, !t.pv.focus)
+	list := pane(t.st, title, body+t.table.View(), sp.listW, sp.listH, !t.pv.focus)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
@@ -218,12 +222,12 @@ func (t *installedTab) view(err error) string {
 	}
 	switch {
 	case ok:
-		_, ph := paneInner(w-listW, h)
+		_, ph := paneInner(sp.pvW, sp.pvH)
 		previewTitle, body = p.Name, t.pv.window(t.preview(p), ph)
 	case !t.loaded && err == nil:
 		body = t.st.Muted.Render("loading…")
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Top, list, pane(t.st, previewTitle, body, w-listW, h, t.pv.focus))
+	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, t.pv.focus))
 }
 
 // viewBar lists every view with its count, the active one highlighted,

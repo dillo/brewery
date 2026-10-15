@@ -472,6 +472,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		switch {
 		case a.tab == tabInstalled && a.installed.pv.focus:
 			a.installed.pv.focus = false // back to the list first
+		case a.tab == tabServices && a.services.pvOpen:
+			a.services.pvOpen = false
 		case a.marks() > 0 && !a.drawerShown():
 			a.clearMarks()
 		default:
