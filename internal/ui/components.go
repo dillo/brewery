@@ -42,7 +42,9 @@ func paneInner(w, h int) (int, int) {
 // col describes a table column. Width 0 means "take the remaining space".
 // min is how far it gives way when the table is too narrow: a flexible
 // column keeps min (minFlex if 0) while fixed columns shrink, and a fixed
-// column shrinks no further than min (its title's width if 0).
+// column shrinks no further than min (its title's width if 0). A fixed
+// column with a negative min is optional: it never shrinks, and is hidden
+// before a flexible column has to give way.
 type col struct {
 	title      string
 	width, min int
@@ -84,8 +86,9 @@ const minFlex = 8
 
 // sizeTable fits t into a w×h area. When the columns don't fit, fixed
 // columns give way first, a cell at a time from whichever has the most to
-// spare (so a long VERSION shrinks before a short TYPE), then flexible
-// columns down to minFlex, and then trailing columns are hidden. Flexible
+// spare (so a long VERSION shrinks before a short TYPE); then optional
+// columns are hidden, then flexible columns shrink down to minFlex, and
+// then trailing columns are hidden. Flexible
 // columns share whatever width is left. A hidden column keeps its slot with
 // width 0, which the table skips: the table indexes columns by row cell, so
 // removing columns would make it panic on rows that still carry every cell.
@@ -96,6 +99,8 @@ func sizeTable(t *table.Model, cols []col, w, h int) {
 		switch {
 		case c.width == 0:
 			widths[i], floor[i] = max(c.min, minFlex), minFlex
+		case c.min < 0:
+			widths[i], floor[i] = c.width, c.width // optional: shown whole or not at all
 		case c.min > 0:
 			widths[i], floor[i] = c.width, min(c.min, c.width)
 		default:
@@ -103,15 +108,23 @@ func sizeTable(t *table.Model, cols []col, w, h int) {
 		}
 	}
 	shown := len(cols)
+	hidden := make([]bool, len(cols))
 	// over is how much wider than w the shown columns are, with padding.
 	over := func() int {
 		n := 0
 		for i := range shown {
-			n += widths[i] + 2 // cell padding
+			if !hidden[i] {
+				n += widths[i] + 2 // cell padding
+			}
 		}
 		return n - w
 	}
 	for _, flexible := range []bool{false, true} {
+		if flexible {
+			for i := len(cols) - 1; i >= 0 && over() > 0; i-- {
+				hidden[i] = hidden[i] || cols[i].min < 0
+			}
+		}
 		for over() > 0 {
 			give := -1
 			for i := range shown {
@@ -141,7 +154,7 @@ func sizeTable(t *table.Model, cols []col, w, h int) {
 	for i, c := range cols {
 		width := widths[i]
 		switch {
-		case i >= shown:
+		case i >= shown || hidden[i]:
 			width = 0
 		case c.width == 0:
 			width += spare / flex
@@ -194,6 +207,20 @@ func kv(st theme.Styles, pairs ...string) string {
 		b.WriteString("\n")
 	}
 	return b.String()
+}
+
+// humanSize formats bytes the way brew does: 1024-based, one decimal,
+// "KB", "MB" and "GB".
+func humanSize(n int64) string {
+	switch {
+	case n >= 1<<30:
+		return fmt.Sprintf("%.1fGB", float64(n)/(1<<30))
+	case n >= 1<<20:
+		return fmt.Sprintf("%.1fMB", float64(n)/(1<<20))
+	case n >= 1<<10:
+		return fmt.Sprintf("%.1fKB", float64(n)/(1<<10))
+	}
+	return fmt.Sprintf("%dB", n)
 }
 
 // skeletonRows is how many placeholder rows a list shows at most.

@@ -12,7 +12,7 @@ import (
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache
 // files are ignored rather than half-loaded.
-const snapshotVersion = 2
+const snapshotVersion = 3
 
 // Snapshot is everything brewery knows about the installation at one time.
 type Snapshot struct {
@@ -25,6 +25,7 @@ type Snapshot struct {
 	DoctorRan  bool                 `json:"doctor_ran"`
 	Cleanup    brew.Cleanup         `json:"cleanup"`
 	CleanupRan bool                 `json:"cleanup_ran"`
+	Sizes      map[string]int64     `json:"sizes"` // bytes on disk, by Package.Key
 	FetchedAt  time.Time            `json:"fetched_at"`
 }
 

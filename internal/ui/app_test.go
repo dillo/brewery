@@ -37,6 +37,9 @@ func (f *fakeSource) Doctor(context.Context) ([]brew.DoctorWarning, error) {
 	}
 	return f.snap.Doctor, nil
 }
+func (f *fakeSource) Sizes(context.Context, []brew.Package) (map[string]int64, error) {
+	return f.snap.Sizes, nil
+}
 func (f *fakeSource) Cleanup(context.Context) (brew.Cleanup, error) {
 	if f.cleanupErr != nil {
 		return brew.Cleanup{}, f.cleanupErr
@@ -141,6 +144,10 @@ func (c *countingSource) Taps(ctx context.Context) ([]brew.Tap, error) {
 	c.calls["taps"]++
 	return c.fakeSource.Taps(ctx)
 }
+func (c *countingSource) Sizes(ctx context.Context, pkgs []brew.Package) (map[string]int64, error) {
+	c.calls["sizes"]++
+	return c.fakeSource.Sizes(ctx, pkgs)
+}
 func (c *countingSource) Cleanup(ctx context.Context) (brew.Cleanup, error) {
 	c.calls["cleanup"]++
 	return c.fakeSource.Cleanup(ctx)
@@ -218,7 +225,7 @@ func TestQuitCancelsRunningQueries(t *testing.T) {
 	src.block = true
 	a := newTestApp(t, src)
 	done := make(chan tea.Msg)
-	go func() { done <- fetch(a.ctx, src, qInstalled)() }()
+	go func() { done <- fetch(a.ctx, src, qInstalled, nil)() }()
 
 	_, cmd := a.Update(press("q"))
 	if _, ok := cmd().(tea.QuitMsg); !ok {

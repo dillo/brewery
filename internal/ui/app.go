@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"slices"
 	"strings"
 	"time"
 
@@ -153,6 +154,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	}
 	a.loaded[qDoctor] = snap.DoctorRan
 	a.loaded[qCleanup] = snap.CleanupRan
+	a.loaded[qSizes] = snap.Sizes != nil
 	a.sync()
 	return a
 }
@@ -198,7 +200,7 @@ func (a *App) request(qs ...query) tea.Cmd {
 			continue
 		}
 		a.inflight[q] = true
-		cmds = append(cmds, fetch(a.ctx, a.src, q))
+		cmds = append(cmds, fetch(a.ctx, a.src, q, slices.Clone(a.snap.Packages)))
 	}
 	return tea.Batch(cmds...)
 }
@@ -253,6 +255,7 @@ func (a *App) sync() {
 	a.services.loaded = a.loaded[qServices]
 	a.taps.loaded = a.loaded[qTaps]
 	a.ix = state.NewIndex(a.snap.Packages)
+	a.installed.sizes = a.snap.Sizes
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))
@@ -280,6 +283,8 @@ func (a *App) apply(m resultMsg) {
 		a.snap.Doctor, a.snap.DoctorRan = m.doctor, true
 	case qCleanup:
 		a.snap.Cleanup, a.snap.CleanupRan = m.cleanup, true
+	case qSizes:
+		a.snap.Sizes = m.sizes
 	}
 	a.sync()
 }
@@ -397,7 +402,7 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	}
 	if a.doctorAfter && !a.jsonBusy() {
 		a.doctorAfter = false
-		doctor = a.request(qDoctor, qCleanup)
+		doctor = a.request(qDoctor, qCleanup, qSizes)
 	}
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.

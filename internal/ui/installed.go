@@ -36,7 +36,7 @@ var views = [...]struct{ name, short, about string }{
 // viewBarHeight is the bar of views plus the line about the active one.
 const viewBarHeight = 2
 
-var installedCols = []col{{"NAME", 0, 16}, {"VERSION", 16, 8}, {"TYPE", 7, 4}, {"STATUS", 10, 6}}
+var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
 
 // installedTab lists installed packages with a details preview.
 type installedTab struct {
@@ -44,10 +44,11 @@ type installedTab struct {
 	filter installedFilter
 	all    []brew.Package
 	ix     *state.Index
-	rows   []brew.Package  // the filtered rows, in table order
-	match  string          // the "/" filter on names
-	pv     scroller        // the preview, which tab or enter focuses
-	marked map[string]bool // packages picked with space, by pkgKey
+	rows   []brew.Package   // the filtered rows, in table order
+	match  string           // the "/" filter on names
+	pv     scroller         // the preview, which tab or enter focuses
+	marked map[string]bool  // packages picked with space, by pkgKey
+	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
 	loaded bool
 	table  table.Model
 	w, h   int
@@ -99,7 +100,7 @@ func (t *installedTab) apply() {
 	})
 	rows := make([]table.Row, len(t.rows))
 	for i, p := range t.rows {
-		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, kindCell(t.st.Icons, p.Kind), status(t.st, p)}
+		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, kindCell(t.st.Icons, p.Kind), status(t.st, p), t.size(p)}
 	}
 	before := t.selectedKey()
 	setRowsKeeping(&t.table, rows, installedKey)
@@ -126,6 +127,14 @@ func (t *installedTab) followSelection(before string) {
 // installedKey identifies an Installed row by name and type: a formula
 // and a cask can share a name.
 func installedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[2] }
+
+// size is p's size on disk, or "" before it has been measured.
+func (t *installedTab) size(p brew.Package) string {
+	if n, ok := t.sizes[p.Key()]; ok {
+		return humanSize(n)
+	}
+	return ""
+}
 
 func status(st theme.Styles, p brew.Package) string {
 	var s []string
@@ -301,7 +310,7 @@ func (t *installedTab) preview(p brew.Package) string {
 	if p.Deprecated {
 		deprecated = st.Warn.Render("yes")
 	}
-	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "installed", how,
+	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "size", t.size(p), "installed", how,
 		"latest", latest, "pinned", pinned, "deprecated", deprecated, "homepage", p.Homepage))
 
 	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {

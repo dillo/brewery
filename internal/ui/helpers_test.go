@@ -49,6 +49,7 @@ func fixtureSnapshot(t *testing.T) state.Snapshot {
 		All:      brew.ParseCleanup(string(readFixture(t, "cleanup.txt"))),
 	}
 	s.CleanupRan = true
+	s.Sizes = map[string]int64{"formula/git": 52_480_000, "cask/docker-desktop": 2_362_232_012, "formula/fd": 3_100_000}
 	return s
 }
 

@@ -97,29 +97,31 @@ func tableWidth(tbl table.Model) int {
 }
 
 func TestSizeTableShrinksTheRoomiestColumnsFirst(t *testing.T) {
-	tbl := newTable(testStyles, installedCols)
-	sizeTable(&tbl, installedCols, 40, 10)
-	// NAME wants 16, VERSION 16, TYPE 7, STATUS 10, plus 8 padding: 17 too
-	// many. VERSION gives way first (it has the most to spare), then STATUS
-	// and TYPE, each to its floor (8, 6, 4); NAME gives the last 2.
-	got := []int{}
-	for _, c := range tbl.Columns() {
-		got = append(got, c.Width)
+	widths := func(w int) string {
+		tbl := newTable(testStyles, installedCols)
+		sizeTable(&tbl, installedCols, w, 10)
+		got := []int{}
+		for _, c := range tbl.Columns() {
+			got = append(got, c.Width)
+		}
+		if tw := tableWidth(tbl); tw > w {
+			t.Errorf("at %d the table is %d wide", w, tw)
+		}
+		return fmt.Sprint(got)
 	}
-	if want := []int{14, 8, 4, 6}; fmt.Sprint(got) != fmt.Sprint(want) {
-		t.Errorf("widths = %v, want %v", got, want)
-	}
-	if w := tableWidth(tbl); w > 40 {
-		t.Errorf("table is %d wide, want <= 40", w)
-	}
-	sizeTable(&tbl, installedCols, 50, 10)
-	got = got[:0]
-	for _, c := range tbl.Columns() {
-		got = append(got, c.Width)
-	}
-	// 7 too many: VERSION gives 6 and STATUS 1; NAME and TYPE keep theirs.
-	if want := []int{16, 10, 7, 9}; fmt.Sprint(got) != fmt.Sprint(want) {
-		t.Errorf("at 50, widths = %v, want %v", got, want)
+	// NAME wants 20; VERSION 16, TYPE 9, STATUS 10 and SIZE 8 (optional).
+	for _, tt := range []struct {
+		w    int
+		want string
+		why  string
+	}{
+		{62, "[20 10 6 8 8]", "VERSION gives way first, then STATUS and TYPE"},
+		{50, "[24 8 4 6 0]", "fixed columns at their floors, then SIZE goes before NAME gives way"},
+		{40, "[14 8 4 6 0]", "and only then does NAME shrink"},
+	} {
+		if got := widths(tt.w); got != tt.want {
+			t.Errorf("at %d: widths %s, want %s: %s", tt.w, got, tt.want, tt.why)
+		}
 	}
 }
 

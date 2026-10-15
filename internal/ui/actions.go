@@ -29,8 +29,12 @@ func kindArgs(verb string, kind brew.Kind, names ...string) []string {
 	return append(args, names...)
 }
 
-// packageQueries are re-run after anything that installs, removes or pins.
-var packageQueries = []query{qInstalled, qOutdated}
+// packageQueries are re-run after anything that installs, removes or pins;
+// diskQueries after anything that also changes what's on disk.
+var (
+	packageQueries = []query{qInstalled, qOutdated}
+	diskQueries    = []query{qInstalled, qOutdated, qSizes}
+)
 
 // actionKey handles the keys that ask brew to do something. ok is false
 // when k is not an action on the current tab.
@@ -100,7 +104,7 @@ func (a *App) upgradeSelected() tea.Cmd {
 		}
 		name, kind = o.Name, o.Kind
 	}
-	return a.run(action{title: "upgrade " + name, args: kindArgs("upgrade", kind, name), refresh: packageQueries})
+	return a.run(action{title: "upgrade " + name, args: kindArgs("upgrade", kind, name), refresh: diskQueries})
 }
 
 // askUninstall confirms uninstalling the selected package. If something
@@ -119,7 +123,7 @@ func (a *App) askUninstall() tea.Cmd {
 		}
 		return nil
 	}
-	refresh := append(slices.Clone(packageQueries), qServices) // its service goes too
+	refresh := append(slices.Clone(diskQueries), qServices) // its service goes too
 	one := action{title: "uninstall " + p.Name, args: kindArgs("uninstall", p.Kind, p.FullName), refresh: refresh}
 	box := &confirmBox{
 		title:   fmt.Sprintf("Uninstall %s %s?", p.Name, p.Version),
@@ -180,7 +184,7 @@ func (a *App) askUpgradeAll() tea.Cmd {
 	}
 	// This dialog is the confirmation, so brew 7 needn't ask again. The
 	// variable, unlike --no-ask, is ignored by older brews.
-	all := action{title: "upgrade all", args: []string{"upgrade"}, env: []string{"HOMEBREW_NO_ASK=1"}, refresh: packageQueries}
+	all := action{title: "upgrade all", args: []string{"upgrade"}, env: []string{"HOMEBREW_NO_ASK=1"}, refresh: diskQueries}
 	a.confirm = &confirmBox{
 		title: fmt.Sprintf("Upgrade all %d outdated?", n),
 		body:  body,
@@ -206,14 +210,14 @@ func (a *App) askCleanup() tea.Cmd {
 	}
 	box := &confirmBox{title: "Clean up Homebrew?"}
 	if cl.Standard.Size != "" {
-		std := action{title: "cleanup", args: []string{"cleanup"}, refresh: []query{qCleanup}}
+		std := action{title: "cleanup", args: []string{"cleanup"}, refresh: []query{qCleanup, qSizes}}
 		box.body = append(box.body, "The standard cleanup frees "+cl.Standard.Size+":", "  old versions, and downloads over 120 days old")
 		box.choices = append(box.choices, choice{"y", "standard", func() tea.Cmd { return a.run(std) }})
 	} else {
 		box.body = append(box.body, "The standard cleanup has nothing to remove.")
 	}
 	if cl.All.Items > cl.Standard.Items {
-		all := action{title: "cleanup --prune=all", args: []string{"cleanup", "--prune=all"}, refresh: []query{qCleanup}}
+		all := action{title: "cleanup --prune=all", args: []string{"cleanup", "--prune=all"}, refresh: []query{qCleanup, qSizes}}
 		box.body = append(box.body, "Clearing the download cache frees "+cl.All.Size+":", "  every download brew has kept")
 		box.choices = append(box.choices, choice{"a", "whole cache", func() tea.Cmd { return a.run(all) }})
 	}

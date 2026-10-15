@@ -19,6 +19,7 @@ type Source interface {
 	Taps(ctx context.Context) ([]brew.Tap, error)
 	Doctor(ctx context.Context) ([]brew.DoctorWarning, error)
 	Cleanup(ctx context.Context) (brew.Cleanup, error)
+	Sizes(ctx context.Context, pkgs []brew.Package) (map[string]int64, error)
 }
 
 var _ Source = (*brew.Client)(nil)
@@ -32,10 +33,11 @@ const (
 	qTaps
 	qDoctor
 	qCleanup
+	qSizes
 )
 
 // queryNames name each query in the status bar.
-var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup"}
+var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup", "sizes"}
 
 // resultMsg carries one query's result back to the App.
 type resultMsg struct {
@@ -46,16 +48,17 @@ type resultMsg struct {
 	taps     []brew.Tap
 	doctor   []brew.DoctorWarning
 	cleanup  brew.Cleanup
+	sizes    map[string]int64
 	err      error
 }
 
-// jsonQueries are the queries a full refresh runs in parallel; doctor and
-// cleanup's dry-runs follow once they have all returned.
+// jsonQueries are the queries a full refresh runs in parallel; doctor,
+// cleanup's dry-runs and the disk sizes follow once they have all returned.
 var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
 
 // fetch runs one query. ctx is the App's root context, so quitting stops
-// any brew process still running.
-func fetch(ctx context.Context, src Source, q query) tea.Cmd {
+// any brew process still running. Sizes are measured for pkgs.
+func fetch(ctx context.Context, src Source, q query, pkgs []brew.Package) tea.Cmd {
 	return func() tea.Msg {
 		m := resultMsg{q: q}
 		switch q {
@@ -71,6 +74,8 @@ func fetch(ctx context.Context, src Source, q query) tea.Cmd {
 			m.doctor, m.err = src.Doctor(ctx)
 		case qCleanup:
 			m.cleanup, m.err = src.Cleanup(ctx)
+		case qSizes:
+			m.sizes, m.err = src.Sizes(ctx, pkgs)
 		}
 		return m
 	}

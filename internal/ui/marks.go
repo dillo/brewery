@@ -119,7 +119,7 @@ func (a *App) upgradeMarked() tea.Cmd {
 	}
 	a.clearMarks()
 	return a.byKind(ts, func(kind brew.Kind, names []string) action {
-		return action{title: "upgrade " + strings.Join(names, " "), args: kindArgs("upgrade", kind, names...), refresh: packageQueries}
+		return action{title: "upgrade " + strings.Join(names, " "), args: kindArgs("upgrade", kind, names...), refresh: diskQueries}
 	})
 }
 
@@ -154,7 +154,7 @@ func (a *App) askUninstallMarked() tea.Cmd {
 		}
 		return nil
 	}
-	refresh := append(slices.Clone(packageQueries), qServices)
+	refresh := append(slices.Clone(diskQueries), qServices)
 	ts := make([]target, len(pkgs))
 	for i, p := range pkgs {
 		ts[i] = target{p.FullName, p.Kind}

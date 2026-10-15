@@ -14,7 +14,7 @@ func TestMarkAndUpgradeSeveral(t *testing.T) {
 	keys(t, a, "2", "space")           // docker-desktop; the cursor moves on to fd
 	keys(t, a, "j", "j", "j", "space") // lua-language-server
 	out := stripANSI(a.render())
-	if !strings.Contains(out, "● docker-desktop") || !strings.Contains(out, "● lua-language-server") {
+	if !strings.Contains(out, "● docker-desktop") || !strings.Contains(out, "● lua-language") {
 		t.Errorf("marked rows should show it:\n%s", out)
 	}
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "2 marked") {
