@@ -91,12 +91,13 @@ type App struct {
 
 	detailsDelay time.Duration // how long the Discover cursor rests before brew is asked
 
-	mode     mode
-	cmd      cmdline         // the ":" prompt
-	filterIn textinput.Model // the "/" prompt
-	confirm  *confirmBox     // open confirmation, or nil
-	help     bool            // the ? overlay is open
-	flash    string          // one-off status message, cleared by the next key
+	mode       mode
+	cmd        cmdline         // the ":" prompt
+	filterIn   textinput.Model // the "/" prompt
+	confirm    *confirmBox     // open confirmation, or nil
+	installing discRow         // the row the open install dialog is for
+	help       bool            // the ? overlay is open
+	flash      string          // one-off status message, cleared by the next key
 
 	comp     brew.Completions // brew's commands, for completing the prompt
 	loadComp func(context.Context) (brew.Completions, error)
@@ -345,7 +346,7 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case resultMsg:
 		return a.handleResult(msg)
 	case catalogueMsg:
-		a.gotCatalogue(msg)
+		return a.gotCatalogue(msg)
 	case cachedStatsMsg:
 		return a.gotCachedStats(msg)
 	case fetchedStatsMsg:

@@ -167,3 +167,24 @@ func TestDiscoverBeforeTheCatalogue(t *testing.T) {
 		t.Errorf("want a loading placeholder:\n%s", out)
 	}
 }
+
+func TestRefreshDuringReadIsNotDropped(t *testing.T) {
+	a, cat := newDiscoverApp(t)
+	_, first := a.Update(press("6")) // the first read is in flight
+	keys(t, a, "r")
+	drain(t, a, first)
+	if cat.calls != 2 {
+		t.Errorf("read the catalogue %d times, want 2", cat.calls)
+	}
+}
+
+func TestOpeningDuringReadReadsOnce(t *testing.T) {
+	a, cat := newDiscoverApp(t)
+	_, first := a.Update(press("6"))
+	keys(t, a, "1", "6")
+	a.wantCatalogue()
+	drain(t, a, first)
+	if cat.calls != 1 {
+		t.Errorf("read the catalogue %d times, want 1", cat.calls)
+	}
+}

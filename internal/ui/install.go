@@ -20,6 +20,7 @@ func (a *App) askInstall() tea.Cmd {
 	if a.discover.have[entryKey(r.Name, r.Kind)] {
 		return a.note(r.Name + " is already installed")
 	}
+	a.installing = r
 	a.confirm = a.installBox(r)
 	return nil
 }
@@ -45,6 +46,8 @@ func (a *App) installBox(r discRow) *confirmBox {
 		body = append(body, line)
 	}
 	switch missing, ok := a.discover.missing(key); {
+	case !ok && a.discover.detailsErr[key] != nil:
+		body = append(body, "couldn't check dependencies")
 	case !ok:
 		body = append(body, "checking dependencies…")
 	case len(missing) > 0:

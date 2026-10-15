@@ -66,6 +66,10 @@ func (a *App) wantCatalogue() tea.Cmd {
 // reloadCatalogue reads the catalogue again if Discover has read it (or
 // tried to): brew update can change it.
 func (a *App) reloadCatalogue() tea.Cmd {
+	if a.discover.loading {
+		a.discover.reloadAfter = true // read again once this read returns
+		return nil
+	}
 	if !a.discover.loaded && a.discover.err == nil {
 		return nil
 	}
@@ -80,10 +84,12 @@ func (a *App) readCatalogue() tea.Cmd {
 	return loadCatalogue(a.ctx, a.catalog)
 }
 
-func (a *App) gotCatalogue(m catalogueMsg) {
+func (a *App) gotCatalogue(m catalogueMsg) tea.Cmd {
 	a.discover.loading = false
+	again := a.discover.reloadAfter
+	a.discover.reloadAfter = false
 	if m.err != nil && a.ctx.Err() != nil {
-		return // quitting: the read was cancelled, not broken
+		return nil // quitting: the read was cancelled, not broken
 	}
 	a.discover.err = m.err
 	if m.err == nil {
@@ -92,6 +98,10 @@ func (a *App) gotCatalogue(m catalogueMsg) {
 	if a.mode == modeCommand {
 		a.suggest(false) // the line can now complete any package
 	}
+	if again {
+		return a.readCatalogue()
+	}
+	return nil
 }
 
 type discoverView int
@@ -165,9 +175,11 @@ type discoverTab struct {
 	match   string    // the "/" filter on names and descriptions
 	loaded  bool      // the catalogue has been read
 	loading bool
-	err     error // the last read failed
-	table   table.Model
-	w, h    int
+	// reloadAfter: a refresh came while a read was in flight, so read again.
+	reloadAfter bool
+	err         error // the last read failed
+	table       table.Model
+	w, h        int
 
 	pv         scroller                // the preview, which tab or enter focuses
 	details    map[string]brew.Details // what brew said about each package, by entryKey

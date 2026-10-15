@@ -75,8 +75,10 @@ func (a *App) gotDetails(m detailsMsg) {
 		d.detailsErr[m.key] = m.err
 	}
 	// An install dialog open for the package can now say what comes along.
-	if r, ok := d.selected(); ok && a.confirm != nil && a.confirm.tag == installTag(m.key) {
-		a.confirm = a.installBox(r)
+	// It is rebuilt for its own package, never the selected one: the cursor
+	// can move under an open dialog when the view's rows change.
+	if a.confirm != nil && a.confirm.tag == installTag(m.key) {
+		a.confirm = a.installBox(a.installing)
 	}
 }
 

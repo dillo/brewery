@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -121,5 +122,56 @@ func TestAlsoInstalls(t *testing.T) {
 		if got := alsoInstalls(c.names); got != c.want {
 			t.Errorf("got %q, want %q", got, c.want)
 		}
+	}
+}
+
+func TestInstallDialogStaysOnItsPackage(t *testing.T) {
+	a, fs, _, cat := newInstallApp(t)
+	selectDiscover(t, a, "python@3.15")
+	a.Update(press("j")) // to ripgrep; brew hasn't been asked yet
+	a.Update(press("a"))
+	// ripgrep leaves the view under the open dialog: the cursor lands elsewhere.
+	var rest []brew.Entry
+	for _, e := range cat.entries {
+		if e.Name != "ripgrep" {
+			rest = append(rest, e)
+		}
+	}
+	a.Update(catalogueMsg{entries: rest})
+	if r, ok := a.discover.selected(); ok && r.Name == "ripgrep" {
+		t.Fatalf("setup: the cursor is still on ripgrep")
+	}
+	a.Update(detailsMsg{key: entryKey("ripgrep", brew.KindFormula), d: ripgrep})
+	if got := confirmText(a); !strings.HasPrefix(got, "Install ripgrep 15.2.0?") {
+		t.Errorf("the dialog changed package:\n%s", got)
+	}
+	keys(t, a, "y")
+	if want := []string{"install", "ripgrep"}; !slices.Equal(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+}
+
+func TestInstallSaysWhenDependenciesCouldntBeChecked(t *testing.T) {
+	a, fs, _, cat := newInstallApp(t)
+	cat.detailsErr = errors.New("brew failed")
+	selectDiscover(t, a, "python@3.15")
+	a.Update(press("j"))
+	a.Update(press("a"))
+	if got := confirmText(a); !strings.Contains(got, "checking dependencies…") {
+		t.Fatalf("before the answer:\n%s", got)
+	}
+	drain(t, a, a.detailsDue(detailsDueMsg{key: entryKey("ripgrep", brew.KindFormula)}))
+	got := confirmText(a)
+	if !strings.Contains(got, "couldn't check dependencies") || strings.Contains(got, "checking") {
+		t.Errorf("after the failed answer:\n%s", got)
+	}
+	keys(t, a, "y")
+	if want := []string{"install", "ripgrep"}; !slices.Equal(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+	a.confirm = nil // open it again, now that brew has failed
+	keys(t, a, "a")
+	if got := confirmText(a); !strings.Contains(got, "couldn't check dependencies") {
+		t.Errorf("opened after the failure:\n%s", got)
 	}
 }
