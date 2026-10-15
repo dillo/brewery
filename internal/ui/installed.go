@@ -99,7 +99,7 @@ func (t *installedTab) apply() {
 	})
 	rows := make([]table.Row, len(t.rows))
 	for i, p := range t.rows {
-		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, p.Kind.String(), status(p)}
+		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, kindCell(t.st.Icons, p.Kind), status(t.st.Icons, p)}
 	}
 	before := t.selectedKey()
 	setRowsKeeping(&t.table, rows, installedKey)
@@ -127,10 +127,10 @@ func (t *installedTab) followSelection(before string) {
 // and a cask can share a name.
 func installedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[2] }
 
-func status(p brew.Package) string {
+func status(ic theme.Icons, p brew.Package) string {
 	var s []string
 	if p.Pinned {
-		s = append(s, "pinned")
+		s = append(s, theme.With(ic.Pinned, "pinned"))
 	}
 	if p.Outdated {
 		s = append(s, "↑")

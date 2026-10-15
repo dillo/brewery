@@ -10,13 +10,14 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"brewery/internal/state"
+	"brewery/internal/theme"
 )
 
 func TestListTabRendersRows(t *testing.T) {
 	snap := fixtureSnapshot(t)
 	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
 	lt.resize(120, 10)
-	lt.setRows(outdatedRows(snap.Outdated))
+	lt.setRows(outdatedRows(theme.Icons{}, snap.Outdated))
 	out := stripANSI(lt.view(nil))
 	for _, want := range []string{"Outdated · 2", "NAME", "lua-language-server", "3.19.1", "3.19.2", "4.95.0,242831", "cask"} {
 		if !strings.Contains(out, want) {
@@ -46,10 +47,10 @@ func TestListTabEmptyAndError(t *testing.T) {
 
 func TestServiceAndTapRows(t *testing.T) {
 	snap := fixtureSnapshot(t)
-	if got := serviceRows(snap.Services)[0]; got[0] != "postgresql@16" || got[1] != "error (exit 1)" {
+	if got := serviceRows(theme.Icons{}, snap.Services)[0]; got[0] != "postgresql@16" || got[1] != "error (exit 1)" {
 		t.Errorf("service row = %v", got)
 	}
-	if got := serviceRows(snap.Services)[1][1]; got != "started" {
+	if got := serviceRows(theme.Icons{}, snap.Services)[1][1]; got != "started" {
 		t.Errorf("status without exit code = %q", got)
 	}
 	if got := tapRows(snap.Taps)[0]; got[1] != "2" || got[2] != "1" || got[3] != "" {
@@ -128,7 +129,7 @@ func TestSizeTableDropsTrailingColumns(t *testing.T) {
 	if tbl.Columns()[0].Width < 8 {
 		t.Errorf("NAME width = %d, want >= 8", tbl.Columns()[0].Width)
 	}
-	setRows(&tbl, outdatedRows(fixtureSnapshot(t).Outdated)) // rows still carry every cell
+	setRows(&tbl, outdatedRows(theme.Icons{}, fixtureSnapshot(t).Outdated)) // rows still carry every cell
 	out := stripANSI(tbl.View())
 	if !strings.Contains(out, "lua-lan") || strings.Contains(out, "PINNED") || strings.Contains(out, "TYPE") {
 		t.Errorf("dropped columns should not render, rows should:\n%s", out)
@@ -161,7 +162,7 @@ func TestPaneClipsLongBodyAboveTheBorder(t *testing.T) {
 func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
 	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
 	lt.resize(120, 10)
-	lt.setRows(outdatedRows(fixtureSnapshot(t).Outdated))
+	lt.setRows(outdatedRows(theme.Icons{}, fixtureSnapshot(t).Outdated))
 	view := lt.view(errors.New("brew outdated --json=v2: exit status 1\nError: second line"))
 	out := stripANSI(view)
 	for _, want := range []string{"refresh failed · r to retry", "exit status 1", "lua-language-server", "docker-desktop"} {
@@ -225,6 +226,29 @@ func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 	}
 	if got := skeleton(testStyles, 10, 3); lipgloss.Width(got) > 10 || lipgloss.Height(got) != 3 {
 		t.Errorf("skeleton is %dx%d, want at most 10 wide and 3 tall", lipgloss.Width(got), lipgloss.Height(got))
+	}
+}
+
+func TestIconsInRows(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.UseIcons(true)
+	if got := a.outdated.all[1][3]; got != theme.Nerd.Cask+" cask" {
+		t.Errorf("outdated TYPE with icons = %q", got)
+	}
+	if got := a.services.all[0][1]; got != theme.Nerd.Failed+" error (exit 1)" {
+		t.Errorf("service status with icons = %q", got)
+	}
+	keys(t, a, "2", "j", "j", "j") // git, pinned
+	if p, _ := a.installed.selected(); p.Name != "git" {
+		t.Fatalf("selected %s", p.Name)
+	}
+	row := a.installed.table.SelectedRow()
+	if row[2] != theme.Nerd.Formula+" formula" || row[3] != theme.Nerd.Pinned+" pinned" {
+		t.Errorf("installed row with icons = %q", row)
+	}
+	a.UseIcons(false)
+	if got := a.outdated.all[1][3]; got != "cask" {
+		t.Errorf("icons off: %q", got)
 	}
 }
 

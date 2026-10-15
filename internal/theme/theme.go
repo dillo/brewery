@@ -42,6 +42,8 @@ type Styles struct {
 	StatusBar                    lipgloss.Style
 
 	TableHeader, TableCell, TableSelected lipgloss.Style
+
+	Icons Icons // none until the app turns them on
 }
 
 func New(p Palette) Styles {

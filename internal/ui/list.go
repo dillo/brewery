@@ -161,22 +161,30 @@ func (t *listTab) view(err error) string {
 	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, sp.listW == 0))
 }
 
-func outdatedRows(items []brew.Outdated) []table.Row {
+// kindCell is a package's TYPE cell: "formula" or "cask", after its icon.
+func kindCell(ic theme.Icons, k brew.Kind) string {
+	if k == brew.KindCask {
+		return theme.With(ic.Cask, k.String())
+	}
+	return theme.With(ic.Formula, k.String())
+}
+
+func outdatedRows(ic theme.Icons, items []brew.Outdated) []table.Row {
 	rows := make([]table.Row, len(items))
 	for i, o := range items {
 		pinned := ""
 		if o.Pinned {
-			pinned = "pinned"
+			pinned = theme.With(ic.Pinned, "pinned")
 		}
-		rows[i] = table.Row{o.Name, o.Installed, o.Current, o.Kind.String(), pinned}
+		rows[i] = table.Row{o.Name, o.Installed, o.Current, kindCell(ic, o.Kind), pinned}
 	}
 	return rows
 }
 
-func serviceRows(items []brew.Service) []table.Row {
+func serviceRows(ic theme.Icons, items []brew.Service) []table.Row {
 	rows := make([]table.Row, len(items))
 	for i, s := range items {
-		rows[i] = table.Row{s.Name, serviceStatus(s)}
+		rows[i] = table.Row{s.Name, theme.With(serviceIcon(ic, s.Status), serviceStatus(s))}
 	}
 	return rows
 }

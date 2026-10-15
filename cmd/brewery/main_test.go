@@ -36,3 +36,26 @@ func TestUnknownFlag(t *testing.T) {
 		t.Errorf("exit %d, want 2", code)
 	}
 }
+
+func TestWantIcons(t *testing.T) {
+	for _, tt := range []struct {
+		flag bool
+		env  string
+		want bool
+	}{
+		{false, "", true},
+		{true, "", false},
+		{false, "1", false},
+	} {
+		if got := wantIcons(tt.flag, tt.env); got != tt.want {
+			t.Errorf("wantIcons(%v, %q) = %v", tt.flag, tt.env, got)
+		}
+	}
+}
+
+func TestNoIconsFlagParses(t *testing.T) {
+	var out, errb bytes.Buffer
+	if code := run([]string{"--no-icons", "--version"}, &out, &errb); code != 0 {
+		t.Errorf("exit %d, stderr %q", code, errb.String())
+	}
+}

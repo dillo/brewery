@@ -159,6 +159,20 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 
 func (a *App) Init() tea.Cmd { return tea.Batch(a.refresh(), a.loadCompletions()) }
 
+// UseIcons turns Nerd Font icons on or off. They're off until this is
+// called, so tests and other callers get plain words.
+func (a *App) UseIcons(on bool) {
+	ic := theme.Icons{}
+	if on {
+		ic = theme.Nerd
+	}
+	// Every part keeps its own copy of the styles.
+	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st} {
+		st.Icons = ic
+	}
+	a.sync()
+}
+
 // UseHistory saves finished jobs to h, starting from the records already
 // there (newest first).
 func (a *App) UseHistory(h jobs.History, recs []jobs.Record) {
@@ -240,8 +254,8 @@ func (a *App) sync() {
 	a.taps.loaded = a.loaded[qTaps]
 	a.ix = state.NewIndex(a.snap.Packages)
 	a.installed.setData(a.snap.Packages, a.ix)
-	a.outdated.setRows(outdatedRows(a.snap.Outdated))
-	a.services.setRows(serviceRows(a.snap.Services))
+	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
+	a.services.setRows(serviceRows(a.st.Icons, a.snap.Services))
 	a.taps.setRows(tapRows(a.snap.Taps))
 }
 

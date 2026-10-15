@@ -22,6 +22,10 @@ import (
 // version is set at build time with -ldflags "-X main.version=...".
 var version = "dev"
 
+// wantIcons reports whether to draw Nerd Font icons: yes, unless
+// --no-icons was given or BREWERY_NO_ICONS is set to anything.
+func wantIcons(noIcons bool, env string) bool { return !noIcons && env == "" }
+
 // locateBrew is swapped out in tests.
 var locateBrew = brew.Locate
 
@@ -33,6 +37,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("brewery", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	showVersion := fs.Bool("version", false, "print the version and exit")
+	noIcons := fs.Bool("no-icons", false, "draw plain text instead of Nerd Font icons (or set BREWERY_NO_ICONS=1)")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -59,6 +64,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	hist := jobs.History{Dir: jobs.DefaultHistoryDir()}
 	recs, _ := hist.Load() // no history yet is fine
 	app.UseHistory(hist, recs)
+	app.UseIcons(wantIcons(*noIcons, os.Getenv("BREWERY_NO_ICONS")))
 	app.UseCompletions(client.Completions)
 	// Full-screen commands get the real stderr: while the TUI runs,
 	// os.Stderr is the crash log.

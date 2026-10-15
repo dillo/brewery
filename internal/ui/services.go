@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"brewery/internal/brew"
+	"brewery/internal/theme"
 )
 
 // logTailBytes is how much of the end of a log the services preview reads.
@@ -174,6 +175,17 @@ func (a *App) pagerDone(m pagerDoneMsg) {
 	}
 }
 
+// serviceIcon is the icon for a service in this state.
+func serviceIcon(ic theme.Icons, status string) string {
+	switch status {
+	case "started", "scheduled":
+		return ic.Started
+	case "error":
+		return ic.Failed
+	}
+	return ic.Stopped
+}
+
 // serviceStatus is a service's status, with its exit code if it failed.
 func serviceStatus(s brew.Service) string {
 	if s.ExitCode != nil && *s.ExitCode != 0 {
@@ -199,7 +211,7 @@ func (a *App) servicePreview(w, h int) (title, body string) {
 	case "none", "stopped":
 		style = st.Muted
 	}
-	head := style.Render(serviceStatus(s))
+	head := style.Render(theme.With(serviceIcon(st.Icons, s.Status), serviceStatus(s)))
 	if s.PID > 0 {
 		head += st.Muted.Render(fmt.Sprintf(" · pid %d", s.PID))
 	}
