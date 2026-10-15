@@ -112,7 +112,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 
 ## Later: Browse and Discover
 
-The aim is browsing, not just search: finding good formulae, apps and fonts you didn't know to look for. Not designed yet; when it is, it should cover:
+Designed in `2026-10-15-brewery-discover-design.md` (Plan 7), which replaces this sketch. The original notes:
 
 - **Popular:** the most-installed formulae, apps and fonts, from Homebrew's public install analytics on formulae.brew.sh (30, 90 and 365 days).
 - **Rising:** packages whose installs grew recently relative to the year.
