@@ -35,7 +35,8 @@ func (a *App) helpGroups() []helpGroup {
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	case a.tab == tabDiscover:
 		here = helpGroup{"Discover", [][2]string{
-			{"f F", "next or previous view"}, {"/", "search names and descriptions"}, {"r", "fetch the analytics again"},
+			{"f F", "next or previous view"}, {"/", "search names and descriptions"},
+			{"tab enter", "preview, then j/k scroll"}, {"r", "fetch the analytics again"},
 		}}
 	}
 	groups := []helpGroup{here}

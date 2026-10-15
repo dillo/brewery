@@ -96,7 +96,7 @@ func (a *App) selection() (name, url string, ok bool) {
 		}
 	case tabDiscover:
 		if r, ok := a.discover.selected(); ok {
-			return r.Name, "", true
+			return r.Name, a.discover.details[entryKey(r.Name, r.Kind)].Homepage, true
 		}
 	}
 	return "", "", false

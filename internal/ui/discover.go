@@ -20,6 +20,7 @@ import (
 type Catalog interface {
 	Catalogue(ctx context.Context) ([]brew.Entry, error)
 	NewSinceUpdate(ctx context.Context) ([]brew.Entry, error)
+	Details(ctx context.Context, name string, kind brew.Kind) (brew.Details, error)
 }
 
 var _ Catalog = (*brew.Client)(nil)
@@ -161,7 +162,14 @@ type discoverTab struct {
 	table   table.Model
 	w, h    int
 
+	pv         scroller                // the preview, which tab or enter focuses
+	details    map[string]brew.Details // what brew said about each package, by entryKey
+	detailsErr map[string]error        // why brew couldn't say, by entryKey
+	waiting    string                  // the package the cursor is resting on, before brew is asked
+	asking     string                  // the package brew is being asked about
+
 	stats     map[string]analytics.List // by list name
+	counts    map[string]map[string]int // each list's installs by name
 	statsAt   map[string]time.Time      // when each list was fetched
 	statsRead bool                      // the kept copies have been read
 	fetching  bool
@@ -174,6 +182,7 @@ func newDiscoverTab(st theme.Styles) discoverTab {
 	return discoverTab{
 		st: st, table: newTable(st, discoverCols[discTools]),
 		stats: map[string]analytics.List{}, statsAt: map[string]time.Time{},
+		details: map[string]brew.Details{}, detailsErr: map[string]error{},
 	}
 }
 
@@ -194,6 +203,8 @@ func (t *discoverTab) setCatalogue(entries, added []brew.Entry) {
 	for _, e := range entries {
 		desc[entryKey(e.Name, e.Kind)] = e.Desc
 	}
+	// brew update can bring new versions: ask brew again.
+	t.details, t.detailsErr = map[string]brew.Details{}, map[string]error{}
 	t.cat, t.added, t.loaded = entries, make([]brew.Entry, len(added)), true
 	for i, e := range added {
 		e.Desc = desc[entryKey(e.Name, e.Kind)]
@@ -243,6 +254,10 @@ func (t *discoverTab) rebuild() {
 		t.byView[discNew][i] = discRow{Entry: e}
 	}
 	t.byView[discAll] = all
+	t.counts = make(map[string]map[string]int, len(t.stats))
+	for name, l := range t.stats {
+		t.counts[name] = l.Counts()
+	}
 	t.apply()
 }
 
@@ -305,6 +320,15 @@ func (t *discoverTab) apply() {
 	if i := slices.IndexFunc(t.rows, func(r discRow) bool { return entryKey(r.Name, r.Kind) == before }); i >= 0 {
 		t.table.SetCursor(i)
 	}
+	t.followSelection(before)
+}
+
+// followSelection starts the preview at the top when the selection has
+// moved on from before.
+func (t *discoverTab) followSelection(before string) {
+	if t.selectedKey() != before {
+		t.pv.off = 0
+	}
 }
 
 // cells is r's row in the current view. Installed packages are marked
@@ -358,7 +382,18 @@ func (t *discoverTab) setMatch(m string) {
 }
 
 func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	if k := msg.String(); k == "f" || k == "F" {
+	k := msg.String()
+	switch {
+	case k == "tab" || (k == "enter" && !t.pv.focus):
+		t.pv.focus = !t.pv.focus
+		return nil
+	case t.pv.focus && k != "f" && k != "F":
+		sp := splitFor(t.w, t.h, true)
+		_, ih := paneInner(sp.pvW, sp.pvH)
+		t.pv.scroll(k, ih/2)
+		return nil
+	}
+	if k == "f" || k == "F" {
 		step := discoverView(1)
 		if k == "F" {
 			step = discoverView(len(discoverViews) - 1)
@@ -367,14 +402,17 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 		t.apply()
 		return nil
 	}
+	before := t.selectedKey()
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
+	t.followSelection(before)
 	return cmd
 }
 
-// size fits the table to the pane, under the bar of views.
+// size fits the table to the list pane, under the bar of views.
 func (t *discoverTab) size() {
-	iw, ih := paneInner(t.w, t.h)
+	sp := splitFor(t.w, t.h, false)
+	iw, ih := paneInner(sp.listW, sp.listH)
 	sizeTable(&t.table, discoverCols[t.showing], iw, max(ih-viewBarHeight, 0))
 }
 
@@ -390,7 +428,11 @@ func (t *discoverTab) view() string {
 	if t.err != nil && !t.loaded {
 		return pane(t.st, "Discover", errorBody(t.st, t.err), w, h, true)
 	}
-	iw, ih := paneInner(w, h)
+	sp := splitFor(w, h, t.pv.focus)
+	if !t.loaded {
+		sp = split{listW: w, listH: h} // nothing to preview yet
+	}
+	iw, ih := paneInner(sp.listW, sp.listH)
 	body := t.viewBar(iw) + "\n"
 	ih -= viewBarHeight
 	if t.err != nil {
@@ -417,7 +459,16 @@ func (t *discoverTab) view() string {
 		t.table.SetHeight(max(ih, 0))
 		body += t.table.View()
 	}
-	return pane(t.st, title, body, w, h, true)
+	list := pane(t.st, title, body, sp.listW, sp.listH, !t.pv.focus)
+	if sp.pvW == 0 {
+		return list
+	}
+	previewTitle, preview := "Preview", t.st.Muted.Render("nothing in this view")
+	if r, ok := t.selected(); ok {
+		_, ph := paneInner(sp.pvW, sp.pvH)
+		previewTitle, preview = r.Name, t.pv.window(t.preview(r), ph)
+	}
+	return sp.join(list, pane(t.st, previewTitle, preview, sp.pvW, sp.pvH, t.pv.focus))
 }
 
 // empty says why the current view has no rows.

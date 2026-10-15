@@ -89,6 +89,8 @@ type App struct {
 	jobs     listTab       // the ":jobs" view
 	jobsOpen bool
 
+	detailsDelay time.Duration // how long the Discover cursor rests before brew is asked
+
 	mode     mode
 	cmd      cmdline         // the ":" prompt
 	filterIn textinput.Model // the "/" prompt
@@ -139,16 +141,17 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
-		readLog:   readLogTail,
-		drawer:    newDrawer(st),
-		cmd:       newCmdline(st),
-		filterIn:  newFilterInput(st),
-		installed: newInstalledTab(st),
-		outdated:  newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
-		services:  newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
-		taps:      newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
-		jobs:      newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
-		discover:  newDiscoverTab(st),
+		detailsDelay: detailsDelay,
+		readLog:      readLogTail,
+		drawer:       newDrawer(st),
+		cmd:          newCmdline(st),
+		filterIn:     newFilterInput(st),
+		installed:    newInstalledTab(st),
+		outdated:     newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
+		services:     newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
+		taps:         newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
+		jobs:         newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		discover:     newDiscoverTab(st),
 	}
 	// The history is read before the app starts, so the jobs view is never
 	// waiting for it.
@@ -322,6 +325,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if a.tab == tabServices && !a.jobsOpen {
 		cmd = tea.Batch(cmd, a.wantLog())
 	}
+	if a.tab == tabDiscover && !a.jobsOpen {
+		cmd = tea.Batch(cmd, a.wantDetails())
+	}
 	if a.promptPending && a.mode == modeNormal {
 		a.promptPending = false
 		if a.proc != nil && a.drawer.prompt() {
@@ -344,6 +350,10 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		return a.gotCachedStats(msg)
 	case fetchedStatsMsg:
 		return a.gotStats(msg)
+	case detailsDueMsg:
+		return a.detailsDue(msg)
+	case detailsMsg:
+		a.gotDetails(msg)
 	case savedMsg:
 		a.saveErr = msg.err
 	case historySavedMsg:
@@ -540,6 +550,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		switch {
 		case a.tab == tabInstalled && a.installed.pv.focus:
 			a.installed.pv.focus = false // back to the list first
+		case a.tab == tabDiscover && a.discover.pv.focus:
+			a.discover.pv.focus = false
 		case a.tab == tabServices && a.services.pvOpen && a.services.previewAlone():
 			a.services.pvOpen = false
 		case a.marks() > 0 && !a.drawerShown():

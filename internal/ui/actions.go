@@ -334,7 +334,10 @@ func (a *App) actionHints() string {
 	case tabTaps:
 		return "x untap"
 	case tabDiscover:
-		return "f/F view · / search · r refetch"
+		if a.discover.pv.focus {
+			return "j/k scroll · tab back to the list"
+		}
+		return "f/F view · / search · tab preview · r refetch"
 	}
 	return "1-6 tabs · r refresh · U update · c clean up"
 }

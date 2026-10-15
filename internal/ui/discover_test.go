@@ -10,11 +10,16 @@ import (
 )
 
 // fakeCatalog serves the catalogue fixture; added is what brew's last
-// update brought in. calls counts catalogue reads.
+// update brought in. calls counts catalogue reads. details answers
+// questions about one package by name (a bare entry if it isn't there),
+// detailsErr makes them fail, and asked records each package asked about.
 type fakeCatalog struct {
 	entries, added []brew.Entry
 	err            error
 	calls          int
+	details        map[string]brew.Details
+	detailsErr     error
+	asked          []string
 }
 
 func newFakeCatalog(t *testing.T) *fakeCatalog {
@@ -31,6 +36,17 @@ func (f *fakeCatalog) Catalogue(context.Context) ([]brew.Entry, error) {
 
 func (f *fakeCatalog) NewSinceUpdate(context.Context) ([]brew.Entry, error) { return f.added, nil }
 
+func (f *fakeCatalog) Details(_ context.Context, name string, kind brew.Kind) (brew.Details, error) {
+	f.asked = append(f.asked, name)
+	if f.detailsErr != nil {
+		return brew.Details{}, f.detailsErr
+	}
+	if d, ok := f.details[name]; ok {
+		return d, nil
+	}
+	return brew.Details{Package: brew.Package{Name: name, Kind: kind}}, nil
+}
+
 // newDiscoverApp is an app with packages loaded and a catalogue to read,
 // still on Home.
 func newDiscoverApp(t *testing.T) (*App, *fakeCatalog) {
@@ -38,6 +54,7 @@ func newDiscoverApp(t *testing.T) (*App, *fakeCatalog) {
 	a := newTestApp(t, newFakeSource(t))
 	cat := newFakeCatalog(t)
 	a.UseCatalog(cat)
+	a.detailsDelay = 0
 	drain(t, a, a.Init())
 	return a, cat
 }
