@@ -27,7 +27,7 @@ Mockups are in `.superpowers/brainstorm/33153-1791860435/content/` (`layout.html
 
 | v1: "See + Maintain" | Later |
 |---|---|
-| Tabs: Home, Installed, Outdated, Services, Taps | Search/Discover (catalog search + install), Disk breakdown, Brewfile/bundle |
+| Tabs: Home, Installed, Outdated, Services, Taps | Browse and Discover (see below), Disk breakdown, Brewfile/bundle |
 | Preview: info, dependency tree, used-by, caveats, size, on-request vs. dependency | Changelogs, analytics |
 | Actions: upgrade, uninstall (orphan warning), pin/unpin, services start/stop/restart, cleanup (shows space freed), update, doctor | Install from Search, tap/untap UI, autoremove wizard |
 | `:` runs any brew command with completion | Context-aware suggestions |
@@ -109,6 +109,19 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - CI: GitHub Actions running `go test ./...` and `golangci-lint` on macOS (with the release, Plan 7, once the GitHub repo exists).
 
 **Shipping:** goreleaser builds darwin arm64/amd64 binaries and publishes a formula to `<user>/homebrew-tap`. The `homebrew` alias belongs in the user's dotfiles only.
+
+## Later: Browse and Discover
+
+The aim is browsing, not just search: finding good formulae, apps and fonts you didn't know to look for. Not designed yet; when it is, it should cover:
+
+- **Popular:** the most-installed formulae, apps and fonts, from Homebrew's public install analytics on formulae.brew.sh (30, 90 and 365 days).
+- **Rising:** packages whose installs grew recently relative to the year.
+- **New to Homebrew:** recently added formulae and casks.
+- **Related to yours:** popular packages commonly installed alongside what you already have.
+- **Fonts and apps** browsed on their own (fonts are casks named `font-…`).
+- **Search** over the whole catalogue (names and descriptions, from brew's local API data, no network), which also lets `:install` complete from it.
+- **A preview pane** and **install from the list** (asking first), plus `gx` and `y`.
+- Analytics need the network: fetch in the background, cache, and show the last data when offline.
 
 ## Open items
 
