@@ -7,6 +7,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Runs the real brew, read-only, to catch output-format drift.
@@ -44,6 +45,9 @@ func TestLiveQueries(t *testing.T) {
 	}
 	if measured < len(pkgs)/2 {
 		t.Errorf("only %d of %d packages have a size", measured, len(pkgs))
+	}
+	if at, err := c.DataUpdated(ctx); err != nil || at.After(time.Now()) {
+		t.Errorf("brew's data updated %v, %v", at, err)
 	}
 	if _, err := c.Outdated(ctx); err != nil {
 		t.Error(err)

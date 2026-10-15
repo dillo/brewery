@@ -4,6 +4,7 @@ package ui
 
 import (
 	"context"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -20,6 +21,7 @@ type Source interface {
 	Doctor(ctx context.Context) ([]brew.DoctorWarning, error)
 	Cleanup(ctx context.Context) (brew.Cleanup, error)
 	Sizes(ctx context.Context, pkgs []brew.Package) (map[string]int64, error)
+	DataUpdated(ctx context.Context) (time.Time, error)
 }
 
 var _ Source = (*brew.Client)(nil)
@@ -49,6 +51,7 @@ type resultMsg struct {
 	doctor   []brew.DoctorWarning
 	cleanup  brew.Cleanup
 	sizes    map[string]int64
+	dataAt   time.Time // with outdated: when brew last fetched package data, if known
 	err      error
 }
 
@@ -66,6 +69,9 @@ func fetch(ctx context.Context, src Source, q query, pkgs []brew.Package) tea.Cm
 			m.packages, m.err = src.Installed(ctx)
 		case qOutdated:
 			m.outdated, m.err = src.Outdated(ctx)
+			if m.err == nil {
+				m.dataAt, _ = src.DataUpdated(ctx) // only a hint: no time is fine
+			}
 		case qServices:
 			m.services, m.err = src.Services(ctx)
 		case qTaps:

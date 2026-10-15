@@ -34,6 +34,8 @@ type listTab struct {
 	// for a w×h pane.
 	preview func(w, h int) (title, body string)
 	pvOpen  bool // when the list would stand alone, the preview shows instead of it
+
+	note func() string // if set and not "", added to the title
 }
 
 func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) string, empty string) listTab {
@@ -105,6 +107,11 @@ func (t *listTab) title() string {
 	if t.match != "" {
 		s += " · /" + t.match
 	}
+	if t.note != nil {
+		if n := t.note(); n != "" {
+			s += " · " + n
+		}
+	}
 	return s
 }
 
@@ -145,7 +152,7 @@ func (t *listTab) view(err error) string {
 	case t.n == 0 && len(t.all) > 0:
 		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, true)
 	case t.n == 0:
-		return pane(t.st, t.name, t.st.OK.Render(t.empty), w, h, true)
+		return pane(t.st, t.title(), t.st.OK.Render(t.empty), w, h, true) // "up to date" says as of when
 	}
 	body := ""
 	if err != nil {

@@ -3,7 +3,9 @@ package brew
 import (
 	"context"
 	"errors"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -121,5 +123,34 @@ func TestClientDoctorTimeout(t *testing.T) {
 	_, err := c.Doctor(context.Background())
 	if err == nil || !strings.Contains(err.Error(), "timed out") {
 		t.Errorf("want timeout error, got %v", err)
+	}
+}
+
+func TestClientDataUpdated(t *testing.T) {
+	cache, repo := t.TempDir(), t.TempDir()
+	older, newer := time.Date(2026, 10, 1, 9, 0, 0, 0, time.UTC), time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC)
+	for path, at := range map[string]time.Time{
+		filepath.Join(cache, "api", "formula_names.txt"): newer,
+		filepath.Join(repo, ".git", "FETCH_HEAD"):        older,
+	} {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(path, at, at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	c := NewClient(fakeRunner{out: map[string][]byte{"--cache": []byte(cache + "\n"), "--repository": []byte(repo + "\n")}})
+	got, err := c.DataUpdated(context.Background())
+	if err != nil || !got.Equal(newer) {
+		t.Errorf("got %v, %v; want the newest file's time %v", got, err, newer)
+	}
+
+	c = NewClient(fakeRunner{out: map[string][]byte{"--cache": []byte(t.TempDir()), "--repository": []byte(t.TempDir())}})
+	if _, err := c.DataUpdated(context.Background()); err == nil {
+		t.Error("with none of the files, it's an error")
 	}
 }

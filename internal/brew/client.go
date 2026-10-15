@@ -199,3 +199,42 @@ func (c *Client) Doctor(ctx context.Context) ([]DoctorWarning, error) {
 	}
 	return warnings, nil
 }
+
+// dataFiles are files brew rewrites when it fetches new package data, by
+// path under its cache or its repository. Which exist depends on brew's
+// version and whether it reads the API or a tapped homebrew/core.
+var dataFiles = []struct {
+	inCache bool
+	path    string
+}{
+	{true, "api/formula_names.txt"},
+	{true, "api/formula.jws.json"},
+	{false, ".git/FETCH_HEAD"},
+}
+
+// DataUpdated is when brew last fetched package data (brew update, or its
+// auto-update): the newest of its data files.
+func (c *Client) DataUpdated(ctx context.Context) (time.Time, error) {
+	cache, err := c.query(ctx, "--cache")
+	if err != nil {
+		return time.Time{}, err
+	}
+	repo, err := c.query(ctx, "--repository")
+	if err != nil {
+		return time.Time{}, err
+	}
+	var newest time.Time
+	for _, f := range dataFiles {
+		dir := strings.TrimSpace(string(repo))
+		if f.inCache {
+			dir = strings.TrimSpace(string(cache))
+		}
+		if info, err := os.Stat(filepath.Join(dir, f.path)); err == nil && info.ModTime().After(newest) {
+			newest = info.ModTime()
+		}
+	}
+	if newest.IsZero() {
+		return time.Time{}, errors.New("found none of brew's data files")
+	}
+	return newest, nil
+}

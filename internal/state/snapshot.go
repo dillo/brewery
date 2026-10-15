@@ -25,7 +25,8 @@ type Snapshot struct {
 	DoctorRan  bool                 `json:"doctor_ran"`
 	Cleanup    brew.Cleanup         `json:"cleanup"`
 	CleanupRan bool                 `json:"cleanup_ran"`
-	Sizes      map[string]int64     `json:"sizes"` // bytes on disk, by Package.Key
+	Sizes      map[string]int64     `json:"sizes"`   // bytes on disk, by Package.Key
+	DataAt     time.Time            `json:"data_at"` // when brew last fetched package data
 	FetchedAt  time.Time            `json:"fetched_at"`
 }
 

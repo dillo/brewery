@@ -150,6 +150,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.jobs.loaded = true
 	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
+	a.outdated.note = a.dataAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -164,6 +165,15 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 }
 
 func (a *App) Init() tea.Cmd { return tea.Batch(a.refresh(), a.loadCompletions()) }
+
+// dataAge says how old brew's package data is, which is what Outdated is
+// measured against, or "" if that isn't known.
+func (a *App) dataAge() string {
+	if a.snap.DataAt.IsZero() {
+		return ""
+	}
+	return "brew's data from " + ago(a.now(), a.snap.DataAt)
+}
 
 // UseIcons turns Nerd Font icons on or off. They're off until this is
 // called, so tests and other callers get plain words.
@@ -284,7 +294,7 @@ func (a *App) apply(m resultMsg) {
 	case qInstalled:
 		a.snap.Packages = m.packages
 	case qOutdated:
-		a.snap.Outdated = m.outdated
+		a.snap.Outdated, a.snap.DataAt = m.outdated, m.dataAt
 	case qServices:
 		a.snap.Services = m.services
 		a.log.stale = true // the service may have written more since

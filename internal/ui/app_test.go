@@ -38,6 +38,9 @@ func (f *fakeSource) Doctor(context.Context) ([]brew.DoctorWarning, error) {
 	}
 	return f.snap.Doctor, nil
 }
+func (f *fakeSource) DataUpdated(context.Context) (time.Time, error) {
+	return testNow.Add(-6 * time.Hour), nil
+}
 func (f *fakeSource) Sizes(context.Context, []brew.Package) (map[string]int64, error) {
 	return f.snap.Sizes, nil
 }
