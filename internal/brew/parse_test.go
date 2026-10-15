@@ -74,7 +74,8 @@ func TestParseInfoCaskDependencies(t *testing.T) {
 	  {"name": "libusb", "full_name": "libusb", "installed": [{"version": "1.0", "runtime_dependencies": [{"full_name": "libffi", "declared_directly": true}]}]},
 	  {"name": "libffi", "full_name": "libffi", "installed": [{"version": "3.5"}]}
 	], "casks": [
-	  {"token": "a", "full_token": "a", "depends_on": {"formula": ["libusb"], "macos": {">=": ["14"]}}},
+	  {"token": "a", "full_token": "a", "depends_on": {"formula": ["libusb"], "macos": {">=": ["14"]}},
+	   "artifacts": [{"app": ["A.app"], "target": "/Applications/A.app"}, {"uninstall": [{"quit": "a"}]}, "odd", {"target": 7}, {"font": ["A.ttf"], "target": "/Users/x/Library/Fonts/A.ttf"}]},
 	  {"token": "b", "full_token": "b", "depends_on": {"cask": ["a"]}},
 	  {"token": "c", "full_token": "c", "depends_on": {}}
 	]}`
@@ -89,6 +90,9 @@ func TestParseInfoCaskDependencies(t *testing.T) {
 		{"a", []string{"libusb", "libffi"}, []string{"libusb"}},
 		{"b", []string{"a", "libusb", "libffi"}, []string{"a"}},
 		{"c", nil, nil},
+	}
+	if a := byName(pkgs, "a"); !reflect.DeepEqual(a.Targets, []string{"/Applications/A.app", "/Users/x/Library/Fonts/A.ttf"}) {
+		t.Errorf("a's targets = %v: only artifacts with a target count", a.Targets)
 	}
 	for _, tt := range tests {
 		p := byName(pkgs, tt.name)

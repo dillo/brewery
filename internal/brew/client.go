@@ -89,6 +89,7 @@ func (e *QueryError) Unwrap() error { return e.Err }
 type Client struct {
 	r       Runner
 	Timeout time.Duration
+	Prefix  string // where brew is installed (/opt/homebrew): Cellar and Caskroom are in it
 }
 
 func NewClient(r Runner) *Client {

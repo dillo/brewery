@@ -68,6 +68,7 @@ type infoJSON struct {
 			Formula []string `json:"formula"`
 			Cask    []string `json:"cask"`
 		} `json:"depends_on"`
+		Artifacts []json.RawMessage `json:"artifacts"` // read one by one: their shapes vary
 	} `json:"casks"`
 }
 
@@ -113,6 +114,14 @@ func ParseInfo(b []byte) ([]Package, error) {
 			p.InstalledAt = time.Unix(*c.InstalledTime, 0)
 		}
 		p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
+		for _, raw := range c.Artifacts {
+			var a struct {
+				Target string `json:"target"`
+			}
+			if json.Unmarshal(raw, &a) == nil && a.Target != "" {
+				p.Targets = append(p.Targets, a.Target) // where brew put an app, a font, a binary…
+			}
+		}
 		pkgs = append(pkgs, p)
 	}
 	caskDeps(pkgs)

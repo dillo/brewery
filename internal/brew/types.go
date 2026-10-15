@@ -37,7 +37,11 @@ type Package struct {
 	InstalledAt time.Time `json:"installed_at"`
 	Deps        []string  `json:"deps"`        // all runtime deps (transitive), full names
 	DirectDeps  []string  `json:"direct_deps"` // runtime deps declared directly
+	Targets     []string  `json:"targets"`     // a cask's installed files: apps, fonts…
 }
+
+// Key identifies a package: a formula and a cask can share a name.
+func (p Package) Key() string { return p.Kind.String() + "/" + p.FullName }
 
 // Outdated is one row of `brew outdated --json=v2`.
 type Outdated struct {

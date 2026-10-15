@@ -17,6 +17,7 @@ func TestLiveQueries(t *testing.T) {
 		t.Skip("brew not installed")
 	}
 	c := NewClient(ExecRunner{Bin: bin, Env: QueryEnv})
+	c.Prefix = PrefixOf(bin)
 	ctx := context.Background()
 
 	pkgs, err := c.Installed(ctx)
@@ -30,6 +31,19 @@ func TestLiveQueries(t *testing.T) {
 		if p.Name == "" || p.Version == "" {
 			t.Errorf("incomplete package: %+v", p)
 		}
+	}
+	sizes, err := c.Sizes(ctx, pkgs)
+	if err != nil {
+		t.Error(err)
+	}
+	measured := 0
+	for _, n := range sizes {
+		if n > 0 {
+			measured++
+		}
+	}
+	if measured < len(pkgs)/2 {
+		t.Errorf("only %d of %d packages have a size", measured, len(pkgs))
 	}
 	if _, err := c.Outdated(ctx); err != nil {
 		t.Error(err)
