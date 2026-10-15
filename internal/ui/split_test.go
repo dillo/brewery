@@ -78,3 +78,41 @@ func TestServicesPreviewTakesTurnsWhenNarrow(t *testing.T) {
 		t.Errorf("esc goes back to the list:\n%s", out)
 	}
 }
+
+func TestServicesPreviewTakesTurnsWhenShort(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	a.Update(tea.WindowSizeMsg{Width: 80, Height: 14})
+	keys(t, a, "4")
+	if s := splitFor(a.services.w, a.services.h, false); s.pvW != 0 {
+		t.Fatalf("test needs a short tab, got %dx%d: %+v", a.services.w, a.services.h, s)
+	}
+	if out := stripANSI(a.render()); strings.Contains(out, "End of the log") || !strings.Contains(out, "STATUS") {
+		t.Errorf("a short tab shows only the list:\n%s", out)
+	}
+	keys(t, a, "enter")
+	if out := stripANSI(a.render()); !strings.Contains(out, "End of the log") || strings.Contains(out, "STATUS") {
+		t.Errorf("enter shows the preview instead of the list:\n%s", out)
+	}
+	keys(t, a, "esc")
+	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
+		t.Errorf("esc goes back to the list:\n%s", out)
+	}
+}
+
+func TestStalePreviewFlagDoesNotSwallowEsc(t *testing.T) {
+	p := newFakeProc(0)
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
+	keys(t, a, "4")
+	a.services.pvOpen = true // left over from a narrower layout
+	if !a.drawer.open {
+		t.Fatal("the drawer should be open")
+	}
+	keys(t, a, "esc")
+	if a.drawer.open {
+		t.Error("esc hides the drawer; the stale flag must not take it")
+	}
+	p.exit()
+	resume(t, a, waiting)
+}

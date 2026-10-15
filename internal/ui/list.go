@@ -33,7 +33,7 @@ type listTab struct {
 	// preview, if set, fills a pane beside the table with what it returns
 	// for a w×h pane.
 	preview func(w, h int) (title, body string)
-	pvOpen  bool // below previewMinWidth, the preview shows instead of the list
+	pvOpen  bool // when the list would stand alone, the preview shows instead of it
 }
 
 func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) string, empty string) listTab {
@@ -90,8 +90,8 @@ func firstCell(r table.Row) string { return r[0] }
 func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[3] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	if k := msg.String(); t.preview != nil && t.w < previewMinWidth && (k == "tab" || k == "enter") {
-		t.pvOpen = !t.pvOpen // narrow: the preview takes turns with the list
+	if k := msg.String(); t.previewAlone() && (k == "tab" || k == "enter") {
+		t.pvOpen = !t.pvOpen // the list stands alone: the preview takes turns with it
 		return nil
 	}
 	var cmd tea.Cmd
@@ -114,6 +114,12 @@ func (t *listTab) layout() split {
 		return split{listW: t.w, listH: t.h}
 	}
 	return splitFor(t.w, t.h, t.pvOpen)
+}
+
+// previewAlone reports whether the tab has a preview that the layout
+// doesn't show beside or under the list, so it takes turns with the list.
+func (t *listTab) previewAlone() bool {
+	return t.preview != nil && splitFor(t.w, t.h, false).pvW == 0
 }
 
 func (t *listTab) resize(w, h int) {
