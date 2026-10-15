@@ -67,7 +67,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Doctor:** runs lazily once the JSON queries finish. Each `Warning:` block becomes one item. If parsing fails, the raw text is shown.
 - **Targeted refresh after jobs:** upgrade or uninstall re-runs info + outdated. A services action re-runs services. `r` refreshes everything.
 - **`brew update`** runs only when you ask, with `U`. The Outdated tab shows how old the data is, based on the modification time of brew's repository data. Actions launched from a pane set `HOMEBREW_NO_AUTO_UPDATE=1`. Commands typed at `:` run unchanged.
-- **Disk sizes:** brew's JSON has none, so brewery measures `Cellar/<name>` and `Caskroom/<name>` in the background for visible rows, and caches the results.
+- **Disk sizes:** brew's JSON has none, so brewery measures every package in the background after each refresh (and after upgrades, uninstalls and cleanups), and caches the results: a formula's kegs in `Cellar/<name>`, and a cask's `Caskroom/<name>` plus the files it installed (its app in /Applications, fonts, …), as brew's JSON lists them.
 - **Query failure or 30s timeout:** that tab shows an inline error with the command and stderr. Other tabs keep working.
 
 ## 3. Running commands (approved)
@@ -89,7 +89,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Outdated:** current → latest, multi-select upgrade.
 - **Services:** name and status. The preview beside them shows the status and pid, the command, user, plist and log paths, and as much of the end of the log as fits. `l` follows the log full screen in `less +F`.
 - **Taps:** name, formula and cask counts, remote, official or not. `x` untaps.
-- **Theme:** semantic tokens (`accent`, `warn`, `err`, `muted`, …) → Catppuccin Macchiato. Other flavors later only need a new palette file. Nerd Font icons with an ASCII fallback (`--no-icons` or automatic detection).
+- **Theme:** semantic tokens (`accent`, `warn`, `err`, `muted`, …) → Catppuccin Macchiato. Other flavors later only need a new palette file. Nerd Font icons by default; `--no-icons` or `BREWERY_NO_ICONS=1` gives plain text (terminals don't report their font, so there's no automatic detection).
 - **Responsive layout:** below 100 columns the preview stacks under the list. Below 60 columns the preview hides and `Enter` toggles it.
 
 ## 5. Errors, testing and shipping (approved)
@@ -104,9 +104,9 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 **Testing:**
 - `brew`: golden tests against fixture JSON captured from real brew output, plus `make test-live`, which runs the real brew read-only.
 - `state`: table tests for reverse deps, orphans and leaves.
-- `ui`: tests that send key messages and check model state, plus `teatest` snapshot tests of `View()` with a fake brew interface.
+- `ui`: tests that send key messages and check model state, plus `teatest` snapshot tests of `View()` with a fake brew interface (with the release, Plan 7).
 - `jobs`: run a fake script under the PTY that prints `\r` progress, asks `Password:`, then exits 1.
-- CI: GitHub Actions running `go test ./...` and `golangci-lint` on macOS.
+- CI: GitHub Actions running `go test ./...` and `golangci-lint` on macOS (with the release, Plan 7, once the GitHub repo exists).
 
 **Shipping:** goreleaser builds darwin arm64/amd64 binaries and publishes a formula to `<user>/homebrew-tap`. The `homebrew` alias belongs in the user's dotfiles only.
 
