@@ -1,0 +1,20 @@
+==> Formulae
+abcl: Armed Bear Common Lisp: a full implementation of Common Lisp
+docker: Pack, ship and run any application as a lightweight container
+fd: Simple, fast and user-friendly alternative to find
+gh: GitHub command-line tool
+git: Distributed revision control system
+pcre2: Perl compatible regular expressions library with a new API
+python@3.15: Interpreted, interactive, object-oriented programming language
+ripgrep: Search tool like grep and The Silver Searcher
+wget: Internet file retriever
+
+==> Casks
+0-ad: (0 A.D.) Real-time strategy game
+ape: (ApE (A Plasmid Editor)) Software for DNA sequence analysis and annotation
+codex: (Codex) OpenAI's coding agent that runs in your terminal
+docker-desktop: (Docker Desktop, Docker Community Edition, Docker CE) App to build and share containerised applications and microservices
+firefox: (Mozilla Firefox) Web browser
+font-fira-code: (Fira Code) [no description]
+font-jetbrains-mono: (JetBrains Mono) [no description]
+fontbase: (FontBase) Font manager

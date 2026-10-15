@@ -43,6 +43,13 @@ type Package struct {
 // Key identifies a package: a formula and a cask can share a name.
 func (p Package) Key() string { return p.Kind.String() + "/" + p.FullName }
 
+// Entry is one package in brew's catalogue: anything it can install.
+type Entry struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+	Kind Kind   `json:"kind"`
+}
+
 // Outdated is one row of `brew outdated --json=v2`.
 type Outdated struct {
 	Name      string `json:"name"`
