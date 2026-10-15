@@ -213,7 +213,11 @@ func (t *installedTab) view(err error) string {
 	if t.match != "" {
 		title += " · /" + t.match
 	}
-	list := pane(t.st, title, body+t.table.View(), sp.listW, sp.listH, !t.pv.focus)
+	rows := t.table.View()
+	if !t.loaded && len(t.all) == 0 {
+		rows = skeleton(t.st, iw, ih) // nothing yet: show the shape of what's coming
+	}
+	list := pane(t.st, title, body+rows, sp.listW, sp.listH, !t.pv.focus)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")

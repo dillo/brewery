@@ -141,7 +141,7 @@ func (t *listTab) view(err error) string {
 	case err != nil && t.n == 0:
 		return pane(t.st, t.name, errorBody(t.st, err), w, h, true)
 	case t.n == 0 && !t.loaded:
-		return pane(t.st, t.name, t.st.Muted.Render("loading…"), w, h, true)
+		return pane(t.st, t.name, t.st.Muted.Render("loading…")+"\n"+skeleton(t.st, iw, ih-1), w, h, true)
 	case t.n == 0 && len(t.all) > 0:
 		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, true)
 	case t.n == 0:

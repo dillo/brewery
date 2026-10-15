@@ -8,6 +8,8 @@ import (
 
 	"charm.land/bubbles/v2/table"
 	"charm.land/lipgloss/v2"
+
+	"brewery/internal/state"
 )
 
 func TestListTabRendersRows(t *testing.T) {
@@ -198,5 +200,30 @@ func TestListTabKeepsSelectionAcrossRefresh(t *testing.T) {
 	lt.setRows(nil)
 	if lt.cursor() != -1 {
 		t.Errorf("cursor() on an empty table = %d, want -1", lt.cursor())
+	}
+}
+
+func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
+	lt := newListTab(testStyles, "Taps", tapCols, firstCell, "none")
+	lt.resize(60, 20)
+	out := stripANSI(lt.view(nil))
+	n := 0
+	for _, l := range strings.Split(out, "\n") {
+		if strings.Contains(l, "░") {
+			n++
+		}
+	}
+	if n != skeletonRows {
+		t.Errorf("want %d placeholder rows, got %d:\n%s", skeletonRows, n, out)
+	}
+	it := newInstalledTab(testStyles)
+	it.resize(140, 6)
+	it.setData(nil, state.NewIndex(nil))
+	out = stripANSI(it.view(nil))
+	if !strings.Contains(out, "░░░░") || lipgloss.Height(it.view(nil)) != 6 {
+		t.Errorf("Installed shows placeholders too, within its height:\n%s", out)
+	}
+	if got := skeleton(testStyles, 10, 3); lipgloss.Width(got) > 10 || lipgloss.Height(got) != 3 {
+		t.Errorf("skeleton is %dx%d, want at most 10 wide and 3 tall", lipgloss.Width(got), lipgloss.Height(got))
 	}
 }
