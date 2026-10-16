@@ -530,7 +530,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.filterKey(msg)
 	}
 	if k == "g" || k == "/" {
-		if a.tab == tabServices && !a.jobsOpen && a.services.previewShown() {
+		if a.servicesPreviewAlone() {
 			return nil // they'd move or filter the list hidden behind the preview
 		}
 	}
@@ -602,7 +602,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 		return a.refresh()
 	}
-	if a.tab == tabServices && !a.jobsOpen && a.services.previewShown() {
+	if a.servicesPreviewAlone() {
 		// The list is hidden behind the preview: its keys would act on rows
 		// you can't see. tab and enter go back to it.
 		if k == "tab" || k == "enter" {
@@ -852,4 +852,9 @@ func (a *App) statusBar() string {
 	gap := max(room-lipgloss.Width(left)-lipgloss.Width(r), 1)
 	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "…") // … says something was cut
 	return st.StatusBar.Width(a.width).Render(line)
+}
+
+// servicesPreviewAlone reports whether the Services preview fills the screen, hiding the list.
+func (a *App) servicesPreviewAlone() bool {
+	return a.tab == tabServices && !a.jobsOpen && a.services.previewShown()
 }

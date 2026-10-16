@@ -89,7 +89,7 @@ Measured on the user's machine (138 formulae, 11 casks, 23 leaves):
 - **Outdated:** current → latest, multi-select upgrade.
 - **Services:** name and status. The preview beside them shows the status and pid, the command, user, plist and log paths, and as much of the end of the log as fits. `l` follows the log full screen in `less +F`.
 - **Taps:** name, formula and cask counts, remote, official or not. `x` untaps.
-- **Theme:** semantic tokens (`accent`, `warn`, `err`, `muted`, …) → Catppuccin Macchiato. Other flavors later only need a new palette file. Nerd Font icons by default; `--no-icons` or `BREWERY_NO_ICONS=1` gives plain text (terminals don't report their font, so there's no automatic detection).
+- **Theme:** semantic tokens (`accent`, `warn`, `err`, `muted`, …) → Catppuccin Macchiato. Other flavors later only need a new palette file. Nerd Font icons by default; `--no-icons` or setting `BREWERY_NO_ICONS` to any value gives plain text (terminals don't report their font, so there's no automatic detection).
 - **Responsive layout:** below 100 columns the preview stacks under the list. Below 60 columns the preview hides and `Enter` toggles it.
 
 ## 5. Errors, testing and shipping (approved)
