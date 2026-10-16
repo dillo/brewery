@@ -1,0 +1,60 @@
+# GoReleaser builds brewery's release and writes its cask to dillo/homebrew-tap.
+# Check it with `goreleaser check`; build it locally with `make snapshot`.
+version: 2
+
+project_name: brewery
+
+before:
+  hooks:
+    - go mod tidy -diff
+
+builds:
+  - main: ./cmd/brewery
+    binary: brewery
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin]
+    goarch: [arm64, amd64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: dillo
+    name: brewery
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+homebrew_casks:
+  - name: brewery
+    binaries: [brewery]
+    homepage: https://github.com/dillo/brewery
+    description: Terminal dashboard for Homebrew
+    repository:
+      owner: dillo
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    # brewery isn't signed by Apple: clear the quarantine flag macOS puts on
+    # downloads, or Gatekeeper blocks the binary. postflight_steps is
+    # Homebrew's current form; GoReleaser's hooks still write the deprecated
+    # postflight block (until v2.19), so it's written here directly.
+    custom_block: |
+      postflight_steps do
+        run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "brewery"], chdir: "."
+      end

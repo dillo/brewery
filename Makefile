@@ -1,4 +1,4 @@
-.PHONY: build test test-live lint run
+.PHONY: build test test-live lint snapshot run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -12,6 +12,10 @@ test-live:
 # golangci-lint v2: brew install golangci-lint
 lint:
 	golangci-lint run ./...
+
+# Builds the release locally into dist/ without publishing: brew install goreleaser
+snapshot:
+	goreleaser release --snapshot --clean
 
 run: build
 	./brewery
