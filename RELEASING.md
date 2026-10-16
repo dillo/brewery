@@ -13,7 +13,9 @@ publishing anything.
    `dillo/homebrew-tap`. The tap can start empty.
 2. Create a fine-grained personal access token with **Contents: read and
    write** on `dillo/homebrew-tap` only. In `dillo/brewery`, add it as the
-   Actions secret `HOMEBREW_TAP_GITHUB_TOKEN`.
+   Actions secret `HOMEBREW_TAP_GITHUB_TOKEN`. Fine-grained tokens expire:
+   when it does, a tag still makes the GitHub release but no cask, so renew
+   the token and re-run the Release workflow.
 3. Push the code, and check that the CI workflow passes:
 
    ```sh

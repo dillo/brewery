@@ -26,7 +26,7 @@ Then run `brewery`.
 2. **Installed** — everything installed, with a preview of each package
 3. **Outdated** — what has a newer version
 4. **Services** — `brew services`, with each service's log
-5. **Taps**
+5. **Taps** — the taps you've added; `x` untaps one
 6. **Discover** — popular and rising packages from Homebrew's analytics, what's
    new, and the whole catalogue to search
 
@@ -37,8 +37,10 @@ Press `?` anywhere for the keys that work there.
 | Key | What it does |
 |---|---|
 | `1`–`6`, `[` `]` | switch tabs |
+| `h` `l` | move between Home's tiles; `enter` opens one |
 | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move in a list |
 | `/` | filter the list |
+| `f` `F` | next or previous view (Installed, Discover) |
 | `u` | upgrade (Installed, Outdated) |
 | `A` | upgrade all (Outdated) |
 | `x` | uninstall (Installed), untap (Taps) |
