@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
@@ -87,11 +88,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseOpener(func(url string) error { return exec.Command("open", url).Run() }) // macOS's open
 	app.UseClipboard(clipboard.WriteAll)
 
-	crash, crashErr := startCrashLog(filepath.Join(jobs.DefaultStateDir(), "crash.log"))
+	crash, crashErr := startCrashLog(jobs.DefaultStateDir())
 	_, err = tea.NewProgram(app).Run()
-	if crashErr == nil && crash.stop() {
-		fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", crash.path)
-		return 1
+	if crashErr == nil {
+		if path := crash.stop(time.Now()); path != "" {
+			fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", path)
+			return 1
+		}
+		for _, path := range crash.earlier {
+			fmt.Fprintf(stderr, "brewery crashed last time. What happened is in %s; please include it when reporting this.\n", path)
+		}
 	}
 	if err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)
