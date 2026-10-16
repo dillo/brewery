@@ -7,7 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // choice is one answer to a confirmation: the key that picks it, a label,

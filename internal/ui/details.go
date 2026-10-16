@@ -7,8 +7,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/analytics"
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/analytics"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // detailsDelay is how long the cursor rests on a package before Discover

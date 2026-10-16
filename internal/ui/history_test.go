@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // newHistoryApp is newJobApp with its job history kept in a temp dir.

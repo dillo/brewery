@@ -58,7 +58,7 @@ type Store struct {
 // NewStore keeps copies in dir and names brewery's version in each request.
 // A download gives up after 30 seconds.
 func NewStore(dir, version string) Store {
-	return Store{Dir: dir, Client: &http.Client{Timeout: 30 * time.Second}, UserAgent: "brewery/" + version, Base: BaseURL}
+	return Store{Dir: dir, Client: &http.Client{Timeout: 30 * time.Second}, UserAgent: "github.com/dillo/brewery/" + version, Base: BaseURL}
 }
 
 // path is where the copy of list is kept.

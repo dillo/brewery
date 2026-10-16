@@ -7,7 +7,7 @@ import (
 	"slices"
 	"sort"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // Index answers dependency questions about a set of installed packages.

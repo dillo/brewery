@@ -15,11 +15,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
 
-	"brewery/internal/analytics"
-	"brewery/internal/brew"
-	"brewery/internal/jobs"
-	"brewery/internal/state"
-	"brewery/internal/ui"
+	"github.com/dillo/brewery/internal/analytics"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/ui"
 )
 
 // version is set at build time with -ldflags "-X main.version=...".

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache

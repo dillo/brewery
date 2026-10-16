@@ -8,8 +8,8 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 func newFixtureInstalled(t *testing.T) installedTab {

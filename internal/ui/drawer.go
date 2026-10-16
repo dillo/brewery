@@ -11,8 +11,8 @@ import (
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/vt"
 
-	"brewery/internal/jobs"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // promptRe matches a terminal line that is waiting for the user: a

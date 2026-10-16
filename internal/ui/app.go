@@ -14,10 +14,10 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"brewery/internal/brew"
-	"brewery/internal/jobs"
-	"brewery/internal/state"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 const (

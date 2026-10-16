@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // fakeLinks records the pages opened and the text copied.

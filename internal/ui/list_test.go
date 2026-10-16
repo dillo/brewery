@@ -10,9 +10,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 func TestListTabRendersRows(t *testing.T) {

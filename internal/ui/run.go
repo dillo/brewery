@@ -8,8 +8,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // Proc is a running brew command. *brew.Proc satisfies it; tests use a fake.

@@ -7,7 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // filterable is a list the "/" filter can narrow. Each list keeps its own

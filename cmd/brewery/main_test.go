@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 func TestVersionFlag(t *testing.T) {

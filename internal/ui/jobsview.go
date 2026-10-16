@@ -8,8 +8,8 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/jobs"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 var jobCols = []col{{"STATUS", 9, 0}, {"COMMAND", 0, 20}, {"STARTED", 12, 5}, {"TOOK", 6, 0}}

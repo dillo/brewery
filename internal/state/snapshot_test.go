@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 func TestSaveLoadRoundTrip(t *testing.T) {

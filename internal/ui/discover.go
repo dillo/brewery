@@ -12,9 +12,9 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/analytics"
-	"brewery/internal/brew"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/analytics"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // Catalog is brew's catalogue of everything it can install, for Discover.
