@@ -1,0 +1,2607 @@
+{
+ "category": "formula_install_on_request",
+ "total_items": 433,
+ "start_date": "2026-07-18",
+ "end_date": "2026-10-16",
+ "total_count": 21914652,
+ "items": [
+  {
+   "number": 1,
+   "formula": "gh",
+   "count": "708,671",
+   "percent": "3.23"
+  },
+  {
+   "number": 2,
+   "formula": "node",
+   "count": "554,884",
+   "percent": "2.53"
+  },
+  {
+   "number": 3,
+   "formula": "uv",
+   "count": "553,925",
+   "percent": "2.53"
+  },
+  {
+   "number": 4,
+   "formula": "awscli",
+   "count": "495,462",
+   "percent": "2.26"
+  },
+  {
+   "number": 5,
+   "formula": "ffmpeg",
+   "count": "449,319",
+   "percent": "2.05"
+  },
+  {
+   "number": 6,
+   "formula": "cmake",
+   "count": "300,983",
+   "percent": "1.37"
+  },
+  {
+   "number": 7,
+   "formula": "go",
+   "count": "255,451",
+   "percent": "1.17"
+  },
+  {
+   "number": 8,
+   "formula": "git",
+   "count": "253,517",
+   "percent": "1.16"
+  },
+  {
+   "number": 9,
+   "formula": "pkgconf",
+   "count": "243,472",
+   "percent": "1.11"
+  },
+  {
+   "number": 10,
+   "formula": "pipx",
+   "count": "225,614",
+   "percent": "1.03"
+  },
+  {
+   "number": 11,
+   "formula": "python@3.14",
+   "count": "194,222",
+   "percent": "0.89"
+  },
+  {
+   "number": 12,
+   "formula": "poppler",
+   "count": "188,993",
+   "percent": "0.86"
+  },
+  {
+   "number": 13,
+   "formula": "coreutils",
+   "count": "188,314",
+   "percent": "0.86"
+  },
+  {
+   "number": 14,
+   "formula": "anomalyco/tap/opencode",
+   "count": "186,603",
+   "percent": "0.85"
+  },
+  {
+   "number": 15,
+   "formula": "jq",
+   "count": "185,916",
+   "percent": "0.85"
+  },
+  {
+   "number": 16,
+   "formula": "openssl@3",
+   "count": "180,411",
+   "percent": "0.82"
+  },
+  {
+   "number": 17,
+   "formula": "mise",
+   "count": "174,585",
+   "percent": "0.80"
+  },
+  {
+   "number": 18,
+   "formula": "imagemagick",
+   "count": "155,143",
+   "percent": "0.71"
+  },
+  {
+   "number": 19,
+   "formula": "xcbeautify",
+   "count": "152,262",
+   "percent": "0.69"
+  },
+  {
+   "number": 20,
+   "formula": "pnpm",
+   "count": "149,758",
+   "percent": "0.68"
+  },
+  {
+   "number": 21,
+   "formula": "fzf",
+   "count": "146,201",
+   "percent": "0.67"
+  },
+  {
+   "number": 22,
+   "formula": "yq",
+   "count": "144,951",
+   "percent": "0.66"
+  },
+  {
+   "number": 23,
+   "formula": "docker",
+   "count": "141,706",
+   "percent": "0.65"
+  },
+  {
+   "number": 24,
+   "formula": "ollama",
+   "count": "141,170",
+   "percent": "0.64"
+  },
+  {
+   "number": 25,
+   "formula": "ripgrep",
+   "count": "140,055",
+   "percent": "0.64"
+  },
+  {
+   "number": 26,
+   "formula": "tmux",
+   "count": "137,673",
+   "percent": "0.63"
+  },
+  {
+   "number": 27,
+   "formula": "pyenv",
+   "count": "134,123",
+   "percent": "0.61"
+  },
+  {
+   "number": 28,
+   "formula": "hello",
+   "count": "133,248",
+   "percent": "0.61"
+  },
+  {
+   "number": 29,
+   "formula": "python@3.12",
+   "count": "130,108",
+   "percent": "0.59"
+  },
+  {
+   "number": 30,
+   "formula": "mole",
+   "count": "123,025",
+   "percent": "0.56"
+  },
+  {
+   "number": 31,
+   "formula": "yt-dlp",
+   "count": "120,752",
+   "percent": "0.55"
+  },
+  {
+   "number": 32,
+   "formula": "pandoc",
+   "count": "113,562",
+   "percent": "0.52"
+  },
+  {
+   "number": 33,
+   "formula": "nvm",
+   "count": "112,754",
+   "percent": "0.51"
+  },
+  {
+   "number": 34,
+   "formula": "protobuf",
+   "count": "110,876",
+   "percent": "0.51"
+  },
+  {
+   "number": 35,
+   "formula": "just",
+   "count": "109,436",
+   "percent": "0.50"
+  },
+  {
+   "number": 36,
+   "formula": "kubernetes-cli",
+   "count": "103,329",
+   "percent": "0.47"
+  },
+  {
+   "number": 37,
+   "formula": "gnupg",
+   "count": "102,602",
+   "percent": "0.47"
+  },
+  {
+   "number": 38,
+   "formula": "python@3.13",
+   "count": "100,696",
+   "percent": "0.46"
+  },
+  {
+   "number": 39,
+   "formula": "xz",
+   "count": "100,600",
+   "percent": "0.46"
+  },
+  {
+   "number": 40,
+   "formula": "neovim",
+   "count": "98,568",
+   "percent": "0.45"
+  },
+  {
+   "number": 41,
+   "formula": "glab",
+   "count": "96,343",
+   "percent": "0.44"
+  },
+  {
+   "number": 42,
+   "formula": "ninja",
+   "count": "90,131",
+   "percent": "0.41"
+  },
+  {
+   "number": 43,
+   "formula": "python@3.11",
+   "count": "87,110",
+   "percent": "0.40"
+  },
+  {
+   "number": 44,
+   "formula": "opencode",
+   "count": "86,384",
+   "percent": "0.39"
+  },
+  {
+   "number": 45,
+   "formula": "rust",
+   "count": "85,814",
+   "percent": "0.39"
+  },
+  {
+   "number": 46,
+   "formula": "helm",
+   "count": "84,256",
+   "percent": "0.38"
+  },
+  {
+   "number": 47,
+   "formula": "cloudflared",
+   "count": "82,671",
+   "percent": "0.38"
+  },
+  {
+   "number": 48,
+   "formula": "ccache",
+   "count": "82,324",
+   "percent": "0.38"
+  },
+  {
+   "number": 49,
+   "formula": "wget",
+   "count": "81,910",
+   "percent": "0.37"
+  },
+  {
+   "number": 50,
+   "formula": "swiftlint",
+   "count": "79,478",
+   "percent": "0.36"
+  },
+  {
+   "number": 51,
+   "formula": "xcodegen",
+   "count": "79,091",
+   "percent": "0.36"
+  },
+  {
+   "number": 52,
+   "formula": "graphviz",
+   "count": "77,734",
+   "percent": "0.35"
+  },
+  {
+   "number": 53,
+   "formula": "redis",
+   "count": "76,302",
+   "percent": "0.35"
+  },
+  {
+   "number": 54,
+   "formula": "openjdk",
+   "count": "75,486",
+   "percent": "0.34"
+  },
+  {
+   "number": 55,
+   "formula": "lazygit",
+   "count": "74,516",
+   "percent": "0.34"
+  },
+  {
+   "number": 56,
+   "formula": "azure-cli",
+   "count": "73,985",
+   "percent": "0.34"
+  },
+  {
+   "number": 57,
+   "formula": "openjdk@17",
+   "count": "72,603",
+   "percent": "0.33"
+  },
+  {
+   "number": 58,
+   "formula": "bash",
+   "count": "72,406",
+   "percent": "0.33"
+  },
+  {
+   "number": 59,
+   "formula": "htop",
+   "count": "70,808",
+   "percent": "0.32"
+  },
+  {
+   "number": 60,
+   "formula": "openjdk@21",
+   "count": "70,173",
+   "percent": "0.32"
+  },
+  {
+   "number": 61,
+   "formula": "gcc",
+   "count": "69,418",
+   "percent": "0.32"
+  },
+  {
+   "number": 62,
+   "formula": "docker-compose",
+   "count": "69,410",
+   "percent": "0.32"
+  },
+  {
+   "number": 63,
+   "formula": "gnu-tar",
+   "count": "68,662",
+   "percent": "0.31"
+  },
+  {
+   "number": 64,
+   "formula": "harfbuzz",
+   "count": "66,830",
+   "percent": "0.30"
+  },
+  {
+   "number": 65,
+   "formula": "shellcheck",
+   "count": "65,855",
+   "percent": "0.30"
+  },
+  {
+   "number": 66,
+   "formula": "llama.cpp",
+   "count": "65,696",
+   "percent": "0.30"
+  },
+  {
+   "number": 67,
+   "formula": "kubeconform",
+   "count": "65,119",
+   "percent": "0.30"
+  },
+  {
+   "number": 68,
+   "formula": "cocoapods",
+   "count": "64,753",
+   "percent": "0.30"
+  },
+  {
+   "number": 69,
+   "formula": "glib",
+   "count": "64,540",
+   "percent": "0.29"
+  },
+  {
+   "number": 70,
+   "formula": "tesseract",
+   "count": "64,373",
+   "percent": "0.29"
+  },
+  {
+   "number": 71,
+   "formula": "nmap",
+   "count": "63,974",
+   "percent": "0.29"
+  },
+  {
+   "number": 72,
+   "formula": "node@22",
+   "count": "63,058",
+   "percent": "0.29"
+  },
+  {
+   "number": 73,
+   "formula": "can1357/tap/omp",
+   "count": "62,658",
+   "percent": "0.29"
+  },
+  {
+   "number": 74,
+   "formula": "llvm",
+   "count": "61,750",
+   "percent": "0.28"
+  },
+  {
+   "number": 75,
+   "formula": "herdr",
+   "count": "61,289",
+   "percent": "0.28"
+  },
+  {
+   "number": 76,
+   "formula": "git-lfs",
+   "count": "59,900",
+   "percent": "0.27"
+  },
+  {
+   "number": 77,
+   "formula": "zsh",
+   "count": "59,737",
+   "percent": "0.27"
+  },
+  {
+   "number": 78,
+   "formula": "wix/brew/applesimutils",
+   "count": "59,079",
+   "percent": "0.27"
+  },
+  {
+   "number": 79,
+   "formula": "php",
+   "count": "58,857",
+   "percent": "0.27"
+  },
+  {
+   "number": 80,
+   "formula": "qemu",
+   "count": "58,395",
+   "percent": "0.27"
+  },
+  {
+   "number": 81,
+   "formula": "python@3.10",
+   "count": "58,354",
+   "percent": "0.27"
+  },
+  {
+   "number": 82,
+   "formula": "libpq",
+   "count": "58,342",
+   "percent": "0.27"
+  },
+  {
+   "number": 83,
+   "formula": "xclogparser",
+   "count": "57,752",
+   "percent": "0.26"
+  },
+  {
+   "number": 84,
+   "formula": "rclone",
+   "count": "55,952",
+   "percent": "0.26"
+  },
+  {
+   "number": 85,
+   "formula": "lcov",
+   "count": "55,842",
+   "percent": "0.25"
+  },
+  {
+   "number": 86,
+   "formula": "ruby",
+   "count": "54,892",
+   "percent": "0.25"
+  },
+  {
+   "number": 87,
+   "formula": "mint",
+   "count": "54,199",
+   "percent": "0.25"
+  },
+  {
+   "number": 88,
+   "formula": "fd",
+   "count": "52,787",
+   "percent": "0.24"
+  },
+  {
+   "number": 89,
+   "formula": "actionlint",
+   "count": "52,605",
+   "percent": "0.24"
+  },
+  {
+   "number": 90,
+   "formula": "facebook/fb/idb-companion",
+   "count": "52,524",
+   "percent": "0.24"
+  },
+  {
+   "number": 91,
+   "formula": "curl",
+   "count": "52,041",
+   "percent": "0.24"
+  },
+  {
+   "number": 92,
+   "formula": "ca-certificates",
+   "count": "51,996",
+   "percent": "0.24"
+  },
+  {
+   "number": 93,
+   "formula": "mkcert",
+   "count": "50,150",
+   "percent": "0.23"
+  },
+  {
+   "number": 94,
+   "formula": "maven",
+   "count": "50,074",
+   "percent": "0.23"
+  },
+  {
+   "number": 95,
+   "formula": "rtk",
+   "count": "50,014",
+   "percent": "0.23"
+  },
+  {
+   "number": 96,
+   "formula": "node@24",
+   "count": "48,145",
+   "percent": "0.22"
+  },
+  {
+   "number": 97,
+   "formula": "mysql",
+   "count": "46,897",
+   "percent": "0.21"
+  },
+  {
+   "number": 98,
+   "formula": "powershell",
+   "count": "46,831",
+   "percent": "0.21"
+  },
+  {
+   "number": 99,
+   "formula": "hashicorp/tap/terraform",
+   "count": "46,712",
+   "percent": "0.21"
+  },
+  {
+   "number": 100,
+   "formula": "ansible",
+   "count": "46,010",
+   "percent": "0.21"
+  },
+  {
+   "number": 101,
+   "formula": "colima",
+   "count": "45,236",
+   "percent": "0.21"
+  },
+  {
+   "number": 102,
+   "formula": "flyctl",
+   "count": "44,462",
+   "percent": "0.20"
+  },
+  {
+   "number": 103,
+   "formula": "vim",
+   "count": "44,310",
+   "percent": "0.20"
+  },
+  {
+   "number": 104,
+   "formula": "fastfetch",
+   "count": "44,163",
+   "percent": "0.20"
+  },
+  {
+   "number": 105,
+   "formula": "postgresql@16",
+   "count": "44,067",
+   "percent": "0.20"
+  },
+  {
+   "number": 106,
+   "formula": "gradle",
+   "count": "43,739",
+   "percent": "0.20"
+  },
+  {
+   "number": 107,
+   "formula": "rsync",
+   "count": "42,032",
+   "percent": "0.19"
+  },
+  {
+   "number": 108,
+   "formula": "postgresql@18",
+   "count": "41,823",
+   "percent": "0.19"
+  },
+  {
+   "number": 109,
+   "formula": "tree",
+   "count": "41,004",
+   "percent": "0.19"
+  },
+  {
+   "number": 110,
+   "formula": "watchman",
+   "count": "40,333",
+   "percent": "0.18"
+  },
+  {
+   "number": 111,
+   "formula": "starship",
+   "count": "39,869",
+   "percent": "0.18"
+  },
+  {
+   "number": 112,
+   "formula": "postgresql@17",
+   "count": "38,761",
+   "percent": "0.18"
+  },
+  {
+   "number": 113,
+   "formula": "tailscale",
+   "count": "36,799",
+   "percent": "0.17"
+  },
+  {
+   "number": 114,
+   "formula": "automake",
+   "count": "36,349",
+   "percent": "0.17"
+  },
+  {
+   "number": 115,
+   "formula": "direnv",
+   "count": "36,128",
+   "percent": "0.16"
+  },
+  {
+   "number": 116,
+   "formula": "pango",
+   "count": "36,003",
+   "percent": "0.16"
+  },
+  {
+   "number": 117,
+   "formula": "atuin",
+   "count": "35,822",
+   "percent": "0.16"
+  },
+  {
+   "number": 118,
+   "formula": "zoxide",
+   "count": "35,593",
+   "percent": "0.16"
+  },
+  {
+   "number": 119,
+   "formula": "gitleaks",
+   "count": "35,320",
+   "percent": "0.16"
+  },
+  {
+   "number": 120,
+   "formula": "xctesthtmlreport",
+   "count": "34,921",
+   "percent": "0.16"
+  },
+  {
+   "number": 121,
+   "formula": "podman",
+   "count": "34,866",
+   "percent": "0.16"
+  },
+  {
+   "number": 122,
+   "formula": "librsvg",
+   "count": "34,845",
+   "percent": "0.16"
+  },
+  {
+   "number": 123,
+   "formula": "ghostscript",
+   "count": "34,605",
+   "percent": "0.16"
+  },
+  {
+   "number": 124,
+   "formula": "eza",
+   "count": "34,537",
+   "percent": "0.16"
+  },
+  {
+   "number": 125,
+   "formula": "libomp",
+   "count": "33,878",
+   "percent": "0.15"
+  },
+  {
+   "number": 126,
+   "formula": "oras",
+   "count": "33,739",
+   "percent": "0.15"
+  },
+  {
+   "number": 127,
+   "formula": "golangci-lint",
+   "count": "33,057",
+   "percent": "0.15"
+  },
+  {
+   "number": 128,
+   "formula": "trivy",
+   "count": "32,364",
+   "percent": "0.15"
+  },
+  {
+   "number": 129,
+   "formula": "bat",
+   "count": "32,362",
+   "percent": "0.15"
+  },
+  {
+   "number": 130,
+   "formula": "exiftool",
+   "count": "32,012",
+   "percent": "0.15"
+  },
+  {
+   "number": 131,
+   "formula": "sonic",
+   "count": "31,901",
+   "percent": "0.15"
+  },
+  {
+   "number": 132,
+   "formula": "chezmoi",
+   "count": "31,622",
+   "percent": "0.14"
+  },
+  {
+   "number": 133,
+   "formula": "sevenzip",
+   "count": "30,766",
+   "percent": "0.14"
+  },
+  {
+   "number": 134,
+   "formula": "aria2",
+   "count": "30,719",
+   "percent": "0.14"
+  },
+  {
+   "number": 135,
+   "formula": "ruff",
+   "count": "30,148",
+   "percent": "0.14"
+  },
+  {
+   "number": 136,
+   "formula": "docker-buildx",
+   "count": "30,021",
+   "percent": "0.14"
+  },
+  {
+   "number": 137,
+   "formula": "deno",
+   "count": "29,736",
+   "percent": "0.14"
+  },
+  {
+   "number": 138,
+   "formula": "kustomize",
+   "count": "29,726",
+   "percent": "0.14"
+  },
+  {
+   "number": 139,
+   "formula": "supabase/tap/supabase",
+   "count": "29,422",
+   "percent": "0.13"
+  },
+  {
+   "number": 140,
+   "formula": "pre-commit",
+   "count": "28,848",
+   "percent": "0.13"
+  },
+  {
+   "number": 141,
+   "formula": "ast-grep",
+   "count": "28,843",
+   "percent": "0.13"
+  },
+  {
+   "number": 142,
+   "formula": "libtool",
+   "count": "28,689",
+   "percent": "0.13"
+  },
+  {
+   "number": 143,
+   "formula": "k9s",
+   "count": "28,631",
+   "percent": "0.13"
+  },
+  {
+   "number": 144,
+   "formula": "lua",
+   "count": "28,565",
+   "percent": "0.13"
+  },
+  {
+   "number": 145,
+   "formula": "scrcpy",
+   "count": "28,022",
+   "percent": "0.13"
+  },
+  {
+   "number": 146,
+   "formula": "unbound",
+   "count": "27,688",
+   "percent": "0.13"
+  },
+  {
+   "number": 147,
+   "formula": "whisper-cpp",
+   "count": "27,628",
+   "percent": "0.13"
+  },
+  {
+   "number": 148,
+   "formula": "bats-core",
+   "count": "27,563",
+   "percent": "0.13"
+  },
+  {
+   "number": 149,
+   "formula": "tilt",
+   "count": "27,062",
+   "percent": "0.12"
+  },
+  {
+   "number": 150,
+   "formula": "openssl@3.5",
+   "count": "27,061",
+   "percent": "0.12"
+  },
+  {
+   "number": 151,
+   "formula": "argocd",
+   "count": "26,989",
+   "percent": "0.12"
+  },
+  {
+   "number": 152,
+   "formula": "cliclick",
+   "count": "26,615",
+   "percent": "0.12"
+  },
+  {
+   "number": 153,
+   "formula": "xcresultparser",
+   "count": "26,520",
+   "percent": "0.12"
+  },
+  {
+   "number": 154,
+   "formula": "rustup",
+   "count": "26,433",
+   "percent": "0.12"
+  },
+  {
+   "number": 155,
+   "formula": "zstd",
+   "count": "26,133",
+   "percent": "0.12"
+  },
+  {
+   "number": 156,
+   "formula": "jsonnet",
+   "count": "25,703",
+   "percent": "0.12"
+  },
+  {
+   "number": 157,
+   "formula": "dotnet",
+   "count": "25,506",
+   "percent": "0.12"
+  },
+  {
+   "number": 158,
+   "formula": "fluxcd/tap/flux",
+   "count": "25,466",
+   "percent": "0.12"
+  },
+  {
+   "number": 159,
+   "formula": "hf",
+   "count": "25,196",
+   "percent": "0.11"
+  },
+  {
+   "number": 160,
+   "formula": "boost",
+   "count": "25,022",
+   "percent": "0.11"
+  },
+  {
+   "number": 161,
+   "formula": "fastlane",
+   "count": "24,614",
+   "percent": "0.11"
+  },
+  {
+   "number": 162,
+   "formula": "azcopy",
+   "count": "24,472",
+   "percent": "0.11"
+  },
+  {
+   "number": 163,
+   "formula": "pi-coding-agent",
+   "count": "24,184",
+   "percent": "0.11"
+  },
+  {
+   "number": 164,
+   "formula": "license-eye",
+   "count": "24,180",
+   "percent": "0.11"
+  },
+  {
+   "number": 165,
+   "formula": "shfmt",
+   "count": "24,085",
+   "percent": "0.11"
+  },
+  {
+   "number": 166,
+   "formula": "nss",
+   "count": "23,601",
+   "percent": "0.11"
+  },
+  {
+   "number": 167,
+   "formula": "qpdf",
+   "count": "23,574",
+   "percent": "0.11"
+  },
+  {
+   "number": 168,
+   "formula": "vale",
+   "count": "23,566",
+   "percent": "0.11"
+  },
+  {
+   "number": 169,
+   "formula": "ffmpeg-full",
+   "count": "23,544",
+   "percent": "0.11"
+  },
+  {
+   "number": 170,
+   "formula": "yazi",
+   "count": "23,042",
+   "percent": "0.11"
+  },
+  {
+   "number": 171,
+   "formula": "git-filter-repo",
+   "count": "22,622",
+   "percent": "0.10"
+  },
+  {
+   "number": 172,
+   "formula": "composer",
+   "count": "22,536",
+   "percent": "0.10"
+  },
+  {
+   "number": 173,
+   "formula": "mpv",
+   "count": "22,457",
+   "percent": "0.10"
+  },
+  {
+   "number": 174,
+   "formula": "anomalyco/tap/opencode-v2",
+   "count": "22,335",
+   "percent": "0.10"
+  },
+  {
+   "number": 175,
+   "formula": "python-yq",
+   "count": "22,234",
+   "percent": "0.10"
+  },
+  {
+   "number": 176,
+   "formula": "libimobiledevice",
+   "count": "22,197",
+   "percent": "0.10"
+  },
+  {
+   "number": 177,
+   "formula": "p7zip",
+   "count": "22,118",
+   "percent": "0.10"
+  },
+  {
+   "number": 178,
+   "formula": "hugo",
+   "count": "22,064",
+   "percent": "0.10"
+  },
+  {
+   "number": 179,
+   "formula": "sourcekitten",
+   "count": "22,048",
+   "percent": "0.10"
+  },
+  {
+   "number": 180,
+   "formula": "git-delta",
+   "count": "21,895",
+   "percent": "0.10"
+  },
+  {
+   "number": 181,
+   "formula": "opentofu",
+   "count": "21,664",
+   "percent": "0.10"
+  },
+  {
+   "number": 182,
+   "formula": "virtualenv",
+   "count": "21,662",
+   "percent": "0.10"
+  },
+  {
+   "number": 183,
+   "formula": "xcodes",
+   "count": "21,499",
+   "percent": "0.10"
+  },
+  {
+   "number": 184,
+   "formula": "asdf",
+   "count": "21,498",
+   "percent": "0.10"
+  },
+  {
+   "number": 185,
+   "formula": "mysql-client",
+   "count": "21,489",
+   "percent": "0.10"
+  },
+  {
+   "number": 186,
+   "formula": "k3d",
+   "count": "21,308",
+   "percent": "0.10"
+  },
+  {
+   "number": 187,
+   "formula": "tree-sitter-cli",
+   "count": "21,191",
+   "percent": "0.10"
+  },
+  {
+   "number": 188,
+   "formula": "cairo",
+   "count": "21,131",
+   "percent": "0.10"
+  },
+  {
+   "number": 189,
+   "formula": "btop",
+   "count": "21,131",
+   "percent": "0.10"
+  },
+  {
+   "number": 190,
+   "formula": "postgresql@14",
+   "count": "21,063",
+   "percent": "0.10"
+  },
+  {
+   "number": 191,
+   "formula": "watch",
+   "count": "20,886",
+   "percent": "0.10"
+  },
+  {
+   "number": 192,
+   "formula": "fish",
+   "count": "20,829",
+   "percent": "0.10"
+  },
+  {
+   "number": 193,
+   "formula": "nginx",
+   "count": "20,659",
+   "percent": "0.09"
+  },
+  {
+   "number": 194,
+   "formula": "tcl-tk",
+   "count": "20,555",
+   "percent": "0.09"
+  },
+  {
+   "number": 195,
+   "formula": "age",
+   "count": "20,467",
+   "percent": "0.09"
+  },
+  {
+   "number": 196,
+   "formula": "summarize",
+   "count": "20,460",
+   "percent": "0.09"
+  },
+  {
+   "number": 197,
+   "formula": "jfrog-cli",
+   "count": "20,350",
+   "percent": "0.09"
+  },
+  {
+   "number": 198,
+   "formula": "ddev/ddev/ddev",
+   "count": "20,224",
+   "percent": "0.09"
+  },
+  {
+   "number": 199,
+   "formula": "wimlib",
+   "count": "20,113",
+   "percent": "0.09"
+  },
+  {
+   "number": 200,
+   "formula": "openssl@4",
+   "count": "19,921",
+   "percent": "0.09"
+  },
+  {
+   "number": 201,
+   "formula": "gemini-cli",
+   "count": "19,708",
+   "percent": "0.09"
+  },
+  {
+   "number": 202,
+   "formula": "aom",
+   "count": "19,486",
+   "percent": "0.09"
+  },
+  {
+   "number": 203,
+   "formula": "glow",
+   "count": "19,466",
+   "percent": "0.09"
+  },
+  {
+   "number": 204,
+   "formula": "railway",
+   "count": "19,460",
+   "percent": "0.09"
+  },
+  {
+   "number": 205,
+   "formula": "python-tk@3.14",
+   "count": "19,311",
+   "percent": "0.09"
+  },
+  {
+   "number": 206,
+   "formula": "stripe/stripe-cli/stripe",
+   "count": "19,310",
+   "percent": "0.09"
+  },
+  {
+   "number": 207,
+   "formula": "swiftformat",
+   "count": "19,237",
+   "percent": "0.09"
+  },
+  {
+   "number": 208,
+   "formula": "expat",
+   "count": "18,975",
+   "percent": "0.09"
+  },
+  {
+   "number": 209,
+   "formula": "sqlite",
+   "count": "18,835",
+   "percent": "0.09"
+  },
+  {
+   "number": 210,
+   "formula": "libxml2",
+   "count": "18,777",
+   "percent": "0.09"
+  },
+  {
+   "number": 211,
+   "formula": "libtiff",
+   "count": "18,735",
+   "percent": "0.09"
+  },
+  {
+   "number": 212,
+   "formula": "bun",
+   "count": "18,358",
+   "percent": "0.08"
+  },
+  {
+   "number": 213,
+   "formula": "oven-sh/bun/bun",
+   "count": "18,165",
+   "percent": "0.08"
+  },
+  {
+   "number": 214,
+   "formula": "iperf3",
+   "count": "18,035",
+   "percent": "0.08"
+  },
+  {
+   "number": 215,
+   "formula": "libheif",
+   "count": "17,991",
+   "percent": "0.08"
+  },
+  {
+   "number": 216,
+   "formula": "pipenv",
+   "count": "17,960",
+   "percent": "0.08"
+  },
+  {
+   "number": 217,
+   "formula": "go-task",
+   "count": "17,845",
+   "percent": "0.08"
+  },
+  {
+   "number": 218,
+   "formula": "ruby-build",
+   "count": "17,792",
+   "percent": "0.08"
+  },
+  {
+   "number": 219,
+   "formula": "gnu-sed",
+   "count": "17,243",
+   "percent": "0.08"
+  },
+  {
+   "number": 220,
+   "formula": "binutils",
+   "count": "17,215",
+   "percent": "0.08"
+  },
+  {
+   "number": 221,
+   "formula": "openjdk@11",
+   "count": "17,112",
+   "percent": "0.08"
+  },
+  {
+   "number": 222,
+   "formula": "semgrep",
+   "count": "17,024",
+   "percent": "0.08"
+  },
+  {
+   "number": 223,
+   "formula": "jpeg-xl",
+   "count": "17,006",
+   "percent": "0.08"
+  },
+  {
+   "number": 224,
+   "formula": "caddy",
+   "count": "16,906",
+   "percent": "0.08"
+  },
+  {
+   "number": 225,
+   "formula": "sdl2-compat",
+   "count": "16,743",
+   "percent": "0.08"
+  },
+  {
+   "number": 226,
+   "formula": "bats-core/bats-core/bats-support",
+   "count": "16,687",
+   "percent": "0.08"
+  },
+  {
+   "number": 227,
+   "formula": "bats-core/bats-core/bats-file",
+   "count": "16,670",
+   "percent": "0.08"
+  },
+  {
+   "number": 228,
+   "formula": "gnutls",
+   "count": "16,457",
+   "percent": "0.08"
+  },
+  {
+   "number": 229,
+   "formula": "gentleman-programming/tap/gentle-ai",
+   "count": "16,440",
+   "percent": "0.08"
+  },
+  {
+   "number": 230,
+   "formula": "vips",
+   "count": "16,406",
+   "percent": "0.07"
+  },
+  {
+   "number": 231,
+   "formula": "multica-ai/tap/multica",
+   "count": "16,381",
+   "percent": "0.07"
+  },
+  {
+   "number": 232,
+   "formula": "libffi",
+   "count": "16,374",
+   "percent": "0.07"
+  },
+  {
+   "number": 233,
+   "formula": "bazelisk",
+   "count": "16,302",
+   "percent": "0.07"
+  },
+  {
+   "number": 234,
+   "formula": "fnm",
+   "count": "16,234",
+   "percent": "0.07"
+  },
+  {
+   "number": 235,
+   "formula": "libssh2",
+   "count": "16,222",
+   "percent": "0.07"
+  },
+  {
+   "number": 236,
+   "formula": "trufflehog",
+   "count": "16,215",
+   "percent": "0.07"
+  },
+  {
+   "number": 237,
+   "formula": "sccache",
+   "count": "16,149",
+   "percent": "0.07"
+  },
+  {
+   "number": 238,
+   "formula": "metalbear-co/mirrord/mirrord",
+   "count": "16,083",
+   "percent": "0.07"
+  },
+  {
+   "number": 239,
+   "formula": "vercel",
+   "count": "15,976",
+   "percent": "0.07"
+  },
+  {
+   "number": 240,
+   "formula": "telnet",
+   "count": "15,932",
+   "percent": "0.07"
+  },
+  {
+   "number": 241,
+   "formula": "postgresql@15",
+   "count": "15,821",
+   "percent": "0.07"
+  },
+  {
+   "number": 242,
+   "formula": "gettext",
+   "count": "15,781",
+   "percent": "0.07"
+  },
+  {
+   "number": 243,
+   "formula": "whisper.cpp",
+   "count": "15,633",
+   "percent": "0.07"
+  },
+  {
+   "number": 244,
+   "formula": "libpng",
+   "count": "15,541",
+   "percent": "0.07"
+  },
+  {
+   "number": 245,
+   "formula": "bats-core/bats-core/bats-assert",
+   "count": "15,408",
+   "percent": "0.07"
+  },
+  {
+   "number": 246,
+   "formula": "oh-my-posh",
+   "count": "15,347",
+   "percent": "0.07"
+  },
+  {
+   "number": 247,
+   "formula": "glfw",
+   "count": "15,276",
+   "percent": "0.07"
+  },
+  {
+   "number": 248,
+   "formula": "node@20",
+   "count": "15,218",
+   "percent": "0.07"
+  },
+  {
+   "number": 249,
+   "formula": "mosh",
+   "count": "15,185",
+   "percent": "0.07"
+  },
+  {
+   "number": 250,
+   "formula": "tfenv",
+   "count": "15,157",
+   "percent": "0.07"
+  },
+  {
+   "number": 251,
+   "formula": "ocrmypdf",
+   "count": "14,939",
+   "percent": "0.07"
+  },
+  {
+   "number": 252,
+   "formula": "unar",
+   "count": "14,898",
+   "percent": "0.07"
+  },
+  {
+   "number": 253,
+   "formula": "sops",
+   "count": "14,841",
+   "percent": "0.07"
+  },
+  {
+   "number": 254,
+   "formula": "jupyterlab",
+   "count": "14,791",
+   "percent": "0.07"
+  },
+  {
+   "number": 255,
+   "formula": "getsentry/tools/sentry-cli",
+   "count": "14,769",
+   "percent": "0.07"
+  },
+  {
+   "number": 256,
+   "formula": "webp",
+   "count": "14,682",
+   "percent": "0.07"
+  },
+  {
+   "number": 257,
+   "formula": "libusb",
+   "count": "14,676",
+   "percent": "0.07"
+  },
+  {
+   "number": 258,
+   "formula": "yamllint",
+   "count": "14,576",
+   "percent": "0.07"
+  },
+  {
+   "number": 259,
+   "formula": "tesseract-lang",
+   "count": "14,537",
+   "percent": "0.07"
+  },
+  {
+   "number": 260,
+   "formula": "mas",
+   "count": "14,504",
+   "percent": "0.07"
+  },
+  {
+   "number": 261,
+   "formula": "k6",
+   "count": "14,451",
+   "percent": "0.07"
+  },
+  {
+   "number": 262,
+   "formula": "aws-sam-cli",
+   "count": "14,438",
+   "percent": "0.07"
+  },
+  {
+   "number": 263,
+   "formula": "llmfit",
+   "count": "14,284",
+   "percent": "0.07"
+  },
+  {
+   "number": 264,
+   "formula": "gobject-introspection",
+   "count": "14,267",
+   "percent": "0.07"
+  },
+  {
+   "number": 265,
+   "formula": "duckdb",
+   "count": "14,203",
+   "percent": "0.06"
+  },
+  {
+   "number": 266,
+   "formula": "zellij",
+   "count": "14,168",
+   "percent": "0.06"
+  },
+  {
+   "number": 267,
+   "formula": "bubblewrap",
+   "count": "14,090",
+   "percent": "0.06"
+  },
+  {
+   "number": 268,
+   "formula": "socat",
+   "count": "14,042",
+   "percent": "0.06"
+  },
+  {
+   "number": 269,
+   "formula": "agent-browser",
+   "count": "13,911",
+   "percent": "0.06"
+  },
+  {
+   "number": 270,
+   "formula": "sshpass",
+   "count": "13,787",
+   "percent": "0.06"
+  },
+  {
+   "number": 271,
+   "formula": "container",
+   "count": "13,698",
+   "percent": "0.06"
+  },
+  {
+   "number": 272,
+   "formula": "openssh",
+   "count": "13,671",
+   "percent": "0.06"
+  },
+  {
+   "number": 273,
+   "formula": "swiftgen",
+   "count": "13,669",
+   "percent": "0.06"
+  },
+  {
+   "number": 274,
+   "formula": "mysql@8.4",
+   "count": "13,635",
+   "percent": "0.06"
+  },
+  {
+   "number": 275,
+   "formula": "mysql@8.0",
+   "count": "13,583",
+   "percent": "0.06"
+  },
+  {
+   "number": 276,
+   "formula": "autoconf",
+   "count": "13,558",
+   "percent": "0.06"
+  },
+  {
+   "number": 277,
+   "formula": "doctl",
+   "count": "13,537",
+   "percent": "0.06"
+  },
+  {
+   "number": 278,
+   "formula": "tree-sitter",
+   "count": "13,508",
+   "percent": "0.06"
+  },
+  {
+   "number": 279,
+   "formula": "meson",
+   "count": "13,470",
+   "percent": "0.06"
+  },
+  {
+   "number": 280,
+   "formula": "supabase",
+   "count": "13,396",
+   "percent": "0.06"
+  },
+  {
+   "number": 281,
+   "formula": "vmware-tanzu/carvel/vendir",
+   "count": "13,347",
+   "percent": "0.06"
+  },
+  {
+   "number": 282,
+   "formula": "ctlptl",
+   "count": "13,191",
+   "percent": "0.06"
+  },
+  {
+   "number": 283,
+   "formula": "databricks/tap/databricks",
+   "count": "13,118",
+   "percent": "0.06"
+  },
+  {
+   "number": 284,
+   "formula": "parallel",
+   "count": "13,042",
+   "percent": "0.06"
+  },
+  {
+   "number": 285,
+   "formula": "numpy",
+   "count": "13,006",
+   "percent": "0.06"
+  },
+  {
+   "number": 286,
+   "formula": "zsh-autosuggestions",
+   "count": "12,987",
+   "percent": "0.06"
+  },
+  {
+   "number": 287,
+   "formula": "zlib",
+   "count": "12,982",
+   "percent": "0.06"
+  },
+  {
+   "number": 288,
+   "formula": "rjyo/moshi/moshi-hook",
+   "count": "12,965",
+   "percent": "0.06"
+  },
+  {
+   "number": 289,
+   "formula": "lima",
+   "count": "12,916",
+   "percent": "0.06"
+  },
+  {
+   "number": 290,
+   "formula": "unixodbc",
+   "count": "12,903",
+   "percent": "0.06"
+  },
+  {
+   "number": 291,
+   "formula": "qwen-code",
+   "count": "12,842",
+   "percent": "0.06"
+  },
+  {
+   "number": 292,
+   "formula": "subversion",
+   "count": "12,804",
+   "percent": "0.06"
+  },
+  {
+   "number": 293,
+   "formula": "firebase-cli",
+   "count": "12,793",
+   "percent": "0.06"
+  },
+  {
+   "number": 294,
+   "formula": "mongosh",
+   "count": "12,724",
+   "percent": "0.06"
+  },
+  {
+   "number": 295,
+   "formula": "azure/kubelogin/kubelogin",
+   "count": "12,668",
+   "percent": "0.06"
+  },
+  {
+   "number": 296,
+   "formula": "chargepoint/xcparse/xcparse",
+   "count": "12,580",
+   "percent": "0.06"
+  },
+  {
+   "number": 297,
+   "formula": "httpie",
+   "count": "12,563",
+   "percent": "0.06"
+  },
+  {
+   "number": 298,
+   "formula": "opencv",
+   "count": "12,516",
+   "percent": "0.06"
+  },
+  {
+   "number": 299,
+   "formula": "clang-format",
+   "count": "12,319",
+   "percent": "0.06"
+  },
+  {
+   "number": 300,
+   "formula": "smartmontools",
+   "count": "12,254",
+   "percent": "0.06"
+  },
+  {
+   "number": 301,
+   "formula": "cliproxyapi",
+   "count": "12,247",
+   "percent": "0.06"
+  },
+  {
+   "number": 302,
+   "formula": "zizmor",
+   "count": "12,231",
+   "percent": "0.06"
+  },
+  {
+   "number": 303,
+   "formula": "gentleman-programming/tap/engram",
+   "count": "12,215",
+   "percent": "0.06"
+  },
+  {
+   "number": 304,
+   "formula": "cloudflare-wrangler",
+   "count": "12,198",
+   "percent": "0.06"
+  },
+  {
+   "number": 305,
+   "formula": "nushell",
+   "count": "12,168",
+   "percent": "0.06"
+  },
+  {
+   "number": 306,
+   "formula": "hashicorp/tap/vault",
+   "count": "12,026",
+   "percent": "0.05"
+  },
+  {
+   "number": 307,
+   "formula": "gogcli",
+   "count": "11,899",
+   "percent": "0.05"
+  },
+  {
+   "number": 308,
+   "formula": "bitwarden-cli",
+   "count": "11,875",
+   "percent": "0.05"
+  },
+  {
+   "number": 309,
+   "formula": "rbenv",
+   "count": "11,851",
+   "percent": "0.05"
+  },
+  {
+   "number": 310,
+   "formula": "uutils-findutils",
+   "count": "11,766",
+   "percent": "0.05"
+  },
+  {
+   "number": 311,
+   "formula": "zsh-syntax-highlighting",
+   "count": "11,708",
+   "percent": "0.05"
+  },
+  {
+   "number": 312,
+   "formula": "himalaya",
+   "count": "11,700",
+   "percent": "0.05"
+  },
+  {
+   "number": 313,
+   "formula": "httrack",
+   "count": "11,700",
+   "percent": "0.05"
+  },
+  {
+   "number": 314,
+   "formula": "terragrunt",
+   "count": "11,687",
+   "percent": "0.05"
+  },
+  {
+   "number": 315,
+   "formula": "imagemagick-full",
+   "count": "11,656",
+   "percent": "0.05"
+  },
+  {
+   "number": 316,
+   "formula": "kind",
+   "count": "11,617",
+   "percent": "0.05"
+  },
+  {
+   "number": 317,
+   "formula": "gdal",
+   "count": "11,454",
+   "percent": "0.05"
+  },
+  {
+   "number": 318,
+   "formula": "uutils-coreutils",
+   "count": "11,446",
+   "percent": "0.05"
+  },
+  {
+   "number": 319,
+   "formula": "python-setuptools",
+   "count": "11,302",
+   "percent": "0.05"
+  },
+  {
+   "number": 320,
+   "formula": "espeak-ng",
+   "count": "11,281",
+   "percent": "0.05"
+  },
+  {
+   "number": 321,
+   "formula": "gdk-pixbuf",
+   "count": "11,272",
+   "percent": "0.05"
+  },
+  {
+   "number": 322,
+   "formula": "norwoodj/tap/helm-docs",
+   "count": "11,215",
+   "percent": "0.05"
+  },
+  {
+   "number": 323,
+   "formula": "grafana-alloy",
+   "count": "11,213",
+   "percent": "0.05"
+  },
+  {
+   "number": 324,
+   "formula": "poetry",
+   "count": "11,196",
+   "percent": "0.05"
+  },
+  {
+   "number": 325,
+   "formula": "guile",
+   "count": "11,184",
+   "percent": "0.05"
+  },
+  {
+   "number": 326,
+   "formula": "lefthook",
+   "count": "11,115",
+   "percent": "0.05"
+  },
+  {
+   "number": 327,
+   "formula": "oci-cli",
+   "count": "11,066",
+   "percent": "0.05"
+  },
+  {
+   "number": 328,
+   "formula": "unzip",
+   "count": "10,981",
+   "percent": "0.05"
+  },
+  {
+   "number": 329,
+   "formula": "syncthing",
+   "count": "10,954",
+   "percent": "0.05"
+  },
+  {
+   "number": 330,
+   "formula": "xmlstarlet",
+   "count": "10,935",
+   "percent": "0.05"
+  },
+  {
+   "number": 331,
+   "formula": "zig",
+   "count": "10,903",
+   "percent": "0.05"
+  },
+  {
+   "number": 332,
+   "formula": "luajit",
+   "count": "10,885",
+   "percent": "0.05"
+  },
+  {
+   "number": 333,
+   "formula": "go@1.25",
+   "count": "10,884",
+   "percent": "0.05"
+  },
+  {
+   "number": 334,
+   "formula": "bottom",
+   "count": "10,865",
+   "percent": "0.05"
+  },
+  {
+   "number": 335,
+   "formula": "openai-whisper",
+   "count": "10,846",
+   "percent": "0.05"
+  },
+  {
+   "number": 336,
+   "formula": "little-cms2",
+   "count": "10,809",
+   "percent": "0.05"
+  },
+  {
+   "number": 337,
+   "formula": "openshift-cli",
+   "count": "10,803",
+   "percent": "0.05"
+  },
+  {
+   "number": 338,
+   "formula": "qrencode",
+   "count": "10,752",
+   "percent": "0.05"
+  },
+  {
+   "number": 339,
+   "formula": "fontconfig",
+   "count": "10,743",
+   "percent": "0.05"
+  },
+  {
+   "number": 340,
+   "formula": "c-ares",
+   "count": "10,736",
+   "percent": "0.05"
+  },
+  {
+   "number": 341,
+   "formula": "pgvector",
+   "count": "10,735",
+   "percent": "0.05"
+  },
+  {
+   "number": 342,
+   "formula": "wireshark",
+   "count": "10,717",
+   "percent": "0.05"
+  },
+  {
+   "number": 343,
+   "formula": "pigz",
+   "count": "10,569",
+   "percent": "0.05"
+  },
+  {
+   "number": 344,
+   "formula": "terraform-docs",
+   "count": "10,380",
+   "percent": "0.05"
+  },
+  {
+   "number": 345,
+   "formula": "allure",
+   "count": "10,171",
+   "percent": "0.05"
+  },
+  {
+   "number": 346,
+   "formula": "terminal-notifier",
+   "count": "10,167",
+   "percent": "0.05"
+  },
+  {
+   "number": 347,
+   "formula": "betterleaks",
+   "count": "10,166",
+   "percent": "0.05"
+  },
+  {
+   "number": 348,
+   "formula": "tectonic",
+   "count": "10,163",
+   "percent": "0.05"
+  },
+  {
+   "number": 349,
+   "formula": "jadx",
+   "count": "10,015",
+   "percent": "0.05"
+  },
+  {
+   "number": 350,
+   "formula": "topgrade",
+   "count": "9,999",
+   "percent": "0.05"
+  },
+  {
+   "number": 351,
+   "formula": "openvpn",
+   "count": "9,939",
+   "percent": "0.05"
+  },
+  {
+   "number": 352,
+   "formula": "dust",
+   "count": "9,933",
+   "percent": "0.05"
+  },
+  {
+   "number": 353,
+   "formula": "typos-cli",
+   "count": "9,908",
+   "percent": "0.05"
+  },
+  {
+   "number": 354,
+   "formula": "grpc",
+   "count": "9,900",
+   "percent": "0.05"
+  },
+  {
+   "number": 355,
+   "formula": "freetds",
+   "count": "9,898",
+   "percent": "0.05"
+  },
+  {
+   "number": 356,
+   "formula": "openjdk@25",
+   "count": "9,893",
+   "percent": "0.05"
+  },
+  {
+   "number": 357,
+   "formula": "rust-analyzer",
+   "count": "9,860",
+   "percent": "0.04"
+  },
+  {
+   "number": 358,
+   "formula": "gstreamer",
+   "count": "9,789",
+   "percent": "0.04"
+  },
+  {
+   "number": 359,
+   "formula": "typst",
+   "count": "9,754",
+   "percent": "0.04"
+  },
+  {
+   "number": 360,
+   "formula": "jandedobbeleer/oh-my-posh/oh-my-posh",
+   "count": "9,659",
+   "percent": "0.04"
+  },
+  {
+   "number": 361,
+   "formula": "gmp",
+   "count": "9,584",
+   "percent": "0.04"
+  },
+  {
+   "number": 362,
+   "formula": "ansible-lint",
+   "count": "9,511",
+   "percent": "0.04"
+  },
+  {
+   "number": 363,
+   "formula": "croc",
+   "count": "9,494",
+   "percent": "0.04"
+  },
+  {
+   "number": 364,
+   "formula": "valkyrie00/bbrew/bbrew",
+   "count": "9,441",
+   "percent": "0.04"
+  },
+  {
+   "number": 365,
+   "formula": "libass",
+   "count": "9,418",
+   "percent": "0.04"
+  },
+  {
+   "number": 366,
+   "formula": "qt",
+   "count": "9,412",
+   "percent": "0.04"
+  },
+  {
+   "number": 367,
+   "formula": "lld",
+   "count": "9,393",
+   "percent": "0.04"
+  },
+  {
+   "number": 368,
+   "formula": "biome",
+   "count": "9,373",
+   "percent": "0.04"
+  },
+  {
+   "number": 369,
+   "formula": "freerdp",
+   "count": "9,321",
+   "percent": "0.04"
+  },
+  {
+   "number": 370,
+   "formula": "yarn",
+   "count": "9,227",
+   "percent": "0.04"
+  },
+  {
+   "number": 371,
+   "formula": "atlassian/acli/acli",
+   "count": "9,212",
+   "percent": "0.04"
+  },
+  {
+   "number": 372,
+   "formula": "cmake-docs",
+   "count": "9,211",
+   "percent": "0.04"
+  },
+  {
+   "number": 373,
+   "formula": "gauche",
+   "count": "9,182",
+   "percent": "0.04"
+  },
+  {
+   "number": 374,
+   "formula": "fvm",
+   "count": "9,151",
+   "percent": "0.04"
+  },
+  {
+   "number": 375,
+   "formula": "python@3.9",
+   "count": "9,133",
+   "percent": "0.04"
+  },
+  {
+   "number": 376,
+   "formula": "cameroncooke/axe/axe",
+   "count": "9,107",
+   "percent": "0.04"
+  },
+  {
+   "number": 377,
+   "formula": "cosign",
+   "count": "9,099",
+   "percent": "0.04"
+  },
+  {
+   "number": 378,
+   "formula": "potrace",
+   "count": "9,088",
+   "percent": "0.04"
+  },
+  {
+   "number": 379,
+   "formula": "mariadb",
+   "count": "9,054",
+   "percent": "0.04"
+  },
+  {
+   "number": 380,
+   "formula": "xcodesorg/made/xcodes",
+   "count": "9,002",
+   "percent": "0.04"
+  },
+  {
+   "number": 381,
+   "formula": "mingw-w64",
+   "count": "8,983",
+   "percent": "0.04"
+  },
+  {
+   "number": 382,
+   "formula": "libxslt",
+   "count": "8,955",
+   "percent": "0.04"
+  },
+  {
+   "number": 383,
+   "formula": "docker-credential-helper",
+   "count": "8,932",
+   "percent": "0.04"
+  },
+  {
+   "number": 384,
+   "formula": "cowsay",
+   "count": "8,881",
+   "percent": "0.04"
+  },
+  {
+   "number": 385,
+   "formula": "hadolint",
+   "count": "8,819",
+   "percent": "0.04"
+  },
+  {
+   "number": 386,
+   "formula": "checkov",
+   "count": "8,805",
+   "percent": "0.04"
+  },
+  {
+   "number": 387,
+   "formula": "cryptography",
+   "count": "8,789",
+   "percent": "0.04"
+  },
+  {
+   "number": 388,
+   "formula": "syft",
+   "count": "8,763",
+   "percent": "0.04"
+  },
+  {
+   "number": 389,
+   "formula": "crane",
+   "count": "8,711",
+   "percent": "0.04"
+  },
+  {
+   "number": 390,
+   "formula": "make",
+   "count": "8,702",
+   "percent": "0.04"
+  },
+  {
+   "number": 391,
+   "formula": "aws-vault",
+   "count": "8,700",
+   "percent": "0.04"
+  },
+  {
+   "number": 392,
+   "formula": "libngtcp2",
+   "count": "8,693",
+   "percent": "0.04"
+  },
+  {
+   "number": 393,
+   "formula": "elixir",
+   "count": "8,666",
+   "percent": "0.04"
+  },
+  {
+   "number": 394,
+   "formula": "circleci",
+   "count": "8,649",
+   "percent": "0.04"
+  },
+  {
+   "number": 395,
+   "formula": "chibi-scheme",
+   "count": "8,571",
+   "percent": "0.04"
+  },
+  {
+   "number": 396,
+   "formula": "hermes-agent",
+   "count": "8,550",
+   "percent": "0.04"
+  },
+  {
+   "number": 397,
+   "formula": "ugrep",
+   "count": "8,542",
+   "percent": "0.04"
+  },
+  {
+   "number": 398,
+   "formula": "ghidra",
+   "count": "8,537",
+   "percent": "0.04"
+  },
+  {
+   "number": 399,
+   "formula": "restic",
+   "count": "8,443",
+   "percent": "0.04"
+  },
+  {
+   "number": 400,
+   "formula": "portaudio",
+   "count": "8,415",
+   "percent": "0.04"
+  },
+  {
+   "number": 446,
+   "formula": "pcre2",
+   "count": "7,191",
+   "percent": "0.03"
+  },
+  {
+   "number": 461,
+   "formula": "libgit2",
+   "count": "6,802",
+   "percent": "0.03"
+  },
+  {
+   "number": 497,
+   "formula": "libevent",
+   "count": "5,955",
+   "percent": "0.03"
+  },
+  {
+   "number": 500,
+   "formula": "readline",
+   "count": "5,904",
+   "percent": "0.03"
+  },
+  {
+   "number": 572,
+   "formula": "simdjson",
+   "count": "4,737",
+   "percent": "0.02"
+  },
+  {
+   "number": 742,
+   "formula": "libuv",
+   "count": "3,217",
+   "percent": "0.01"
+  },
+  {
+   "number": 744,
+   "formula": "krb5",
+   "count": "3,207",
+   "percent": "0.01"
+  },
+  {
+   "number": 790,
+   "formula": "jemalloc",
+   "count": "2,890",
+   "percent": "0.01"
+  },
+  {
+   "number": 894,
+   "formula": "abseil",
+   "count": "2,368",
+   "percent": "0.01"
+  },
+  {
+   "number": 904,
+   "formula": "libnghttp2",
+   "count": "2,326",
+   "percent": "0.01"
+  },
+  {
+   "number": 930,
+   "formula": "fmt",
+   "count": "2,216",
+   "percent": "0.01"
+  },
+  {
+   "number": 937,
+   "formula": "icu4c@78",
+   "count": "2,189",
+   "percent": "0.01"
+  },
+  {
+   "number": 965,
+   "formula": "simdutf",
+   "count": "2,079",
+   "percent": "0.01"
+  },
+  {
+   "number": 982,
+   "formula": "ncurses",
+   "count": "2,028",
+   "percent": "0.01"
+  },
+  {
+   "number": 999,
+   "formula": "utf8proc",
+   "count": "1,979",
+   "percent": "0.01"
+  },
+  {
+   "number": 1019,
+   "formula": "json-c",
+   "count": "1,899",
+   "percent": "0.01"
+  },
+  {
+   "number": 1148,
+   "formula": "libidn2",
+   "count": "1,541",
+   "percent": "0.01"
+  },
+  {
+   "number": 1187,
+   "formula": "lz4",
+   "count": "1,459",
+   "percent": "0.01"
+  },
+  {
+   "number": 1295,
+   "formula": "libpsl",
+   "count": "1,222",
+   "percent": "0.01"
+  },
+  {
+   "number": 1373,
+   "formula": "brotli",
+   "count": "1,104",
+   "percent": "0.01"
+  },
+  {
+   "number": 1425,
+   "formula": "libunistring",
+   "count": "1,035",
+   "percent": "0"
+  },
+  {
+   "number": 1641,
+   "formula": "ada-url",
+   "count": "805",
+   "percent": "0"
+  },
+  {
+   "number": 1694,
+   "formula": "mpdecimal",
+   "count": "759",
+   "percent": "0"
+  },
+  {
+   "number": 1786,
+   "formula": "luv",
+   "count": "667",
+   "percent": "0"
+  },
+  {
+   "number": 1817,
+   "formula": "oniguruma",
+   "count": "645",
+   "percent": "0"
+  },
+  {
+   "number": 1926,
+   "formula": "llhttp",
+   "count": "572",
+   "percent": "0"
+  },
+  {
+   "number": 2074,
+   "formula": "merve",
+   "count": "498",
+   "percent": "0"
+  },
+  {
+   "number": 2245,
+   "formula": "hdrhistogram_c",
+   "count": "426",
+   "percent": "0"
+  },
+  {
+   "number": 2248,
+   "formula": "highway",
+   "count": "425",
+   "percent": "0"
+  },
+  {
+   "number": 2694,
+   "formula": "unibilium",
+   "count": "294",
+   "percent": "0"
+  },
+  {
+   "number": 3769,
+   "formula": "nbytes",
+   "count": "148",
+   "percent": "0"
+  },
+  {
+   "number": 4020,
+   "formula": "uvwasi",
+   "count": "129",
+   "percent": "0"
+  },
+  {
+   "number": 4301,
+   "formula": "lpeg",
+   "count": "115",
+   "percent": "0"
+  }
+ ]
+}

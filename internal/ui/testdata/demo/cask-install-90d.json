@@ -1,0 +1,2409 @@
+{
+ "category": "cask_install",
+ "total_items": 400,
+ "start_date": "2026-07-18",
+ "end_date": "2026-10-16",
+ "total_count": 5678969,
+ "items": [
+  {
+   "number": 1,
+   "cask": "codex",
+   "count": "347,666",
+   "percent": "6.12"
+  },
+  {
+   "number": 2,
+   "cask": "claude-code",
+   "count": "162,212",
+   "percent": "2.86"
+  },
+  {
+   "number": 3,
+   "cask": "libreoffice",
+   "count": "133,828",
+   "percent": "2.36"
+  },
+  {
+   "number": 4,
+   "cask": "gcloud-cli",
+   "count": "132,242",
+   "percent": "2.33"
+  },
+  {
+   "number": 5,
+   "cask": "android-platform-tools",
+   "count": "118,208",
+   "percent": "2.08"
+  },
+  {
+   "number": 6,
+   "cask": "docker-desktop",
+   "count": "113,395",
+   "percent": "2"
+  },
+  {
+   "number": 7,
+   "cask": "android-commandlinetools",
+   "count": "107,581",
+   "percent": "1.89"
+  },
+  {
+   "number": 8,
+   "cask": "visual-studio-code",
+   "count": "97,762",
+   "percent": "1.72"
+  },
+  {
+   "number": 9,
+   "cask": "google-chrome",
+   "count": "81,116",
+   "percent": "1.43"
+  },
+  {
+   "number": 10,
+   "cask": "ghostty",
+   "count": "78,140",
+   "percent": "1.38"
+  },
+  {
+   "number": 11,
+   "cask": "git-credential-manager",
+   "count": "63,720",
+   "percent": "1.12"
+  },
+  {
+   "number": 12,
+   "cask": "1password-cli",
+   "count": "57,724",
+   "percent": "1.02"
+  },
+  {
+   "number": 13,
+   "cask": "iterm2",
+   "count": "51,469",
+   "percent": "0.91"
+  },
+  {
+   "number": 14,
+   "cask": "ngrok",
+   "count": "50,538",
+   "percent": "0.89"
+  },
+  {
+   "number": 15,
+   "cask": "obsidian",
+   "count": "50,520",
+   "percent": "0.89"
+  },
+  {
+   "number": 16,
+   "cask": "microsoft/git/microsoft-git",
+   "count": "50,184",
+   "percent": "0.88"
+  },
+  {
+   "number": 17,
+   "cask": "flutter",
+   "count": "46,869",
+   "percent": "0.83"
+  },
+  {
+   "number": 18,
+   "cask": "tailscale-app",
+   "count": "46,119",
+   "percent": "0.81"
+  },
+  {
+   "number": 19,
+   "cask": "orbstack",
+   "count": "44,720",
+   "percent": "0.79"
+  },
+  {
+   "number": 20,
+   "cask": "blender",
+   "count": "44,404",
+   "percent": "0.78"
+  },
+  {
+   "number": 21,
+   "cask": "claude",
+   "count": "44,232",
+   "percent": "0.78"
+  },
+  {
+   "number": 22,
+   "cask": "copilot-cli",
+   "count": "44,081",
+   "percent": "0.78"
+  },
+  {
+   "number": 23,
+   "cask": "claude-code@latest",
+   "count": "39,995",
+   "percent": "0.70"
+  },
+  {
+   "number": 24,
+   "cask": "temurin@17",
+   "count": "39,430",
+   "percent": "0.69"
+  },
+  {
+   "number": 25,
+   "cask": "blackhole-2ch",
+   "count": "37,109",
+   "percent": "0.65"
+  },
+  {
+   "number": 26,
+   "cask": "font-jetbrains-mono-nerd-font",
+   "count": "35,305",
+   "percent": "0.62"
+  },
+  {
+   "number": 27,
+   "cask": "firefox",
+   "count": "34,654",
+   "percent": "0.61"
+  },
+  {
+   "number": 28,
+   "cask": "vorssaint",
+   "count": "34,500",
+   "percent": "0.61"
+  },
+  {
+   "number": 29,
+   "cask": "chatgpt",
+   "count": "33,824",
+   "percent": "0.60"
+  },
+  {
+   "number": 30,
+   "cask": "android-studio",
+   "count": "33,744",
+   "percent": "0.59"
+  },
+  {
+   "number": 31,
+   "cask": "session-manager-plugin",
+   "count": "32,280",
+   "percent": "0.57"
+  },
+  {
+   "number": 32,
+   "cask": "vlc",
+   "count": "31,715",
+   "percent": "0.56"
+  },
+  {
+   "number": 33,
+   "cask": "stats",
+   "count": "31,088",
+   "percent": "0.55"
+  },
+  {
+   "number": 34,
+   "cask": "temurin@21",
+   "count": "28,216",
+   "percent": "0.50"
+  },
+  {
+   "number": 35,
+   "cask": "dbeaver-community",
+   "count": "27,349",
+   "percent": "0.48"
+  },
+  {
+   "number": 36,
+   "cask": "rectangle",
+   "count": "27,077",
+   "percent": "0.48"
+  },
+  {
+   "number": 37,
+   "cask": "dotnet-sdk",
+   "count": "26,937",
+   "percent": "0.47"
+  },
+  {
+   "number": 38,
+   "cask": "postman",
+   "count": "26,223",
+   "percent": "0.46"
+  },
+  {
+   "number": 39,
+   "cask": "maccy",
+   "count": "25,675",
+   "percent": "0.45"
+  },
+  {
+   "number": 40,
+   "cask": "macfuse",
+   "count": "25,176",
+   "percent": "0.44"
+  },
+  {
+   "number": 41,
+   "cask": "raycast",
+   "count": "23,720",
+   "percent": "0.42"
+  },
+  {
+   "number": 42,
+   "cask": "mitmproxy",
+   "count": "23,546",
+   "percent": "0.41"
+  },
+  {
+   "number": 43,
+   "cask": "betterdisplay",
+   "count": "23,524",
+   "percent": "0.41"
+  },
+  {
+   "number": 44,
+   "cask": "discord",
+   "count": "22,669",
+   "percent": "0.40"
+  },
+  {
+   "number": 45,
+   "cask": "cc-switch",
+   "count": "22,616",
+   "percent": "0.40"
+  },
+  {
+   "number": 46,
+   "cask": "opencode-desktop",
+   "count": "22,583",
+   "percent": "0.40"
+  },
+  {
+   "number": 47,
+   "cask": "zed",
+   "count": "22,222",
+   "percent": "0.39"
+  },
+  {
+   "number": 48,
+   "cask": "azure-cli",
+   "count": "21,318",
+   "percent": "0.38"
+  },
+  {
+   "number": 49,
+   "cask": "brave-browser",
+   "count": "21,255",
+   "percent": "0.37"
+  },
+  {
+   "number": 50,
+   "cask": "ollama-app",
+   "count": "20,852",
+   "percent": "0.37"
+  },
+  {
+   "number": 51,
+   "cask": "spotify",
+   "count": "20,786",
+   "percent": "0.37"
+  },
+  {
+   "number": 52,
+   "cask": "antigravity-cli",
+   "count": "19,012",
+   "percent": "0.33"
+  },
+  {
+   "number": 53,
+   "cask": "cursor",
+   "count": "18,720",
+   "percent": "0.33"
+  },
+  {
+   "number": 54,
+   "cask": "warp",
+   "count": "18,705",
+   "percent": "0.33"
+  },
+  {
+   "number": 55,
+   "cask": "utm",
+   "count": "18,567",
+   "percent": "0.33"
+  },
+  {
+   "number": 56,
+   "cask": "slack",
+   "count": "18,349",
+   "percent": "0.32"
+  },
+  {
+   "number": 57,
+   "cask": "sikarugir-app/sikarugir/sikarugir",
+   "count": "17,848",
+   "percent": "0.31"
+  },
+  {
+   "number": 58,
+   "cask": "iina",
+   "count": "17,847",
+   "percent": "0.31"
+  },
+  {
+   "number": 59,
+   "cask": "localsend",
+   "count": "17,680",
+   "percent": "0.31"
+  },
+  {
+   "number": 60,
+   "cask": "godot",
+   "count": "17,027",
+   "percent": "0.30"
+  },
+  {
+   "number": 61,
+   "cask": "temurin",
+   "count": "16,754",
+   "percent": "0.30"
+  },
+  {
+   "number": 62,
+   "cask": "font-meslo-lg-nerd-font",
+   "count": "16,455",
+   "percent": "0.29"
+  },
+  {
+   "number": 63,
+   "cask": "zoom",
+   "count": "15,583",
+   "percent": "0.27"
+  },
+  {
+   "number": 64,
+   "cask": "nikitabobko/tap/aerospace",
+   "count": "15,470",
+   "percent": "0.27"
+  },
+  {
+   "number": 65,
+   "cask": "drawio",
+   "count": "15,234",
+   "percent": "0.27"
+  },
+  {
+   "number": 66,
+   "cask": "xquartz",
+   "count": "15,190",
+   "percent": "0.27"
+  },
+  {
+   "number": 67,
+   "cask": "stablyai/orca/orca",
+   "count": "15,175",
+   "percent": "0.27"
+  },
+  {
+   "number": 68,
+   "cask": "hammerspoon",
+   "count": "15,161",
+   "percent": "0.27"
+  },
+  {
+   "number": 69,
+   "cask": "docker/tap/sbx",
+   "count": "15,055",
+   "percent": "0.27"
+  },
+  {
+   "number": 70,
+   "cask": "lm-studio",
+   "count": "14,280",
+   "percent": "0.25"
+  },
+  {
+   "number": 71,
+   "cask": "sublime-text",
+   "count": "14,054",
+   "percent": "0.25"
+  },
+  {
+   "number": 72,
+   "cask": "1password",
+   "count": "13,769",
+   "percent": "0.24"
+  },
+  {
+   "number": 73,
+   "cask": "cmux",
+   "count": "13,650",
+   "percent": "0.24"
+  },
+  {
+   "number": 74,
+   "cask": "microsoft-edge",
+   "count": "13,489",
+   "percent": "0.24"
+  },
+  {
+   "number": 75,
+   "cask": "openlogi",
+   "count": "13,353",
+   "percent": "0.24"
+  },
+  {
+   "number": 76,
+   "cask": "obs",
+   "count": "13,118",
+   "percent": "0.23"
+  },
+  {
+   "number": 77,
+   "cask": "bitwarden",
+   "count": "13,070",
+   "percent": "0.23"
+  },
+  {
+   "number": 78,
+   "cask": "whatsapp",
+   "count": "13,001",
+   "percent": "0.23"
+  },
+  {
+   "number": 79,
+   "cask": "karabiner-elements",
+   "count": "12,984",
+   "percent": "0.23"
+  },
+  {
+   "number": 80,
+   "cask": "notion",
+   "count": "12,964",
+   "percent": "0.23"
+  },
+  {
+   "number": 81,
+   "cask": "bruno",
+   "count": "12,948",
+   "percent": "0.23"
+  },
+  {
+   "number": 82,
+   "cask": "linearmouse",
+   "count": "12,696",
+   "percent": "0.22"
+  },
+  {
+   "number": 83,
+   "cask": "jordanbaird-ice",
+   "count": "12,429",
+   "percent": "0.22"
+  },
+  {
+   "number": 84,
+   "cask": "inkscape",
+   "count": "12,125",
+   "percent": "0.21"
+  },
+  {
+   "number": 85,
+   "cask": "basictex",
+   "count": "12,100",
+   "percent": "0.21"
+  },
+  {
+   "number": 86,
+   "cask": "codexbar",
+   "count": "11,967",
+   "percent": "0.21"
+  },
+  {
+   "number": 87,
+   "cask": "zulu@17",
+   "count": "11,916",
+   "percent": "0.21"
+  },
+  {
+   "number": 88,
+   "cask": "keka",
+   "count": "11,714",
+   "percent": "0.21"
+  },
+  {
+   "number": 89,
+   "cask": "appcleaner",
+   "count": "11,433",
+   "percent": "0.20"
+  },
+  {
+   "number": 90,
+   "cask": "github",
+   "count": "11,108",
+   "percent": "0.20"
+  },
+  {
+   "number": 91,
+   "cask": "wine-stable",
+   "count": "10,598",
+   "percent": "0.19"
+  },
+  {
+   "number": 92,
+   "cask": "google-drive",
+   "count": "10,575",
+   "percent": "0.19"
+  },
+  {
+   "number": 93,
+   "cask": "terraform-linters/tap/tflint",
+   "count": "10,521",
+   "percent": "0.19"
+  },
+  {
+   "number": 94,
+   "cask": "kitty",
+   "count": "10,510",
+   "percent": "0.19"
+  },
+  {
+   "number": 95,
+   "cask": "dopplerhq/cli/doppler",
+   "count": "10,489",
+   "percent": "0.18"
+  },
+  {
+   "number": 96,
+   "cask": "wireshark-app",
+   "count": "10,442",
+   "percent": "0.18"
+  },
+  {
+   "number": 97,
+   "cask": "steam",
+   "count": "10,413",
+   "percent": "0.18"
+  },
+  {
+   "number": 98,
+   "cask": "figma",
+   "count": "10,317",
+   "percent": "0.18"
+  },
+  {
+   "number": 99,
+   "cask": "gimp",
+   "count": "10,307",
+   "percent": "0.18"
+  },
+  {
+   "number": 100,
+   "cask": "microsoft-teams",
+   "count": "10,257",
+   "percent": "0.18"
+  },
+  {
+   "number": 101,
+   "cask": "openmtp",
+   "count": "10,221",
+   "percent": "0.18"
+  },
+  {
+   "number": 102,
+   "cask": "swiftbar",
+   "count": "10,079",
+   "percent": "0.18"
+  },
+  {
+   "number": 103,
+   "cask": "miniconda",
+   "count": "9,790",
+   "percent": "0.17"
+  },
+  {
+   "number": 104,
+   "cask": "font-hack-nerd-font",
+   "count": "9,657",
+   "percent": "0.17"
+  },
+  {
+   "number": 105,
+   "cask": "calibre",
+   "count": "9,599",
+   "percent": "0.17"
+  },
+  {
+   "number": 106,
+   "cask": "pgadmin4",
+   "count": "9,596",
+   "percent": "0.17"
+  },
+  {
+   "number": 107,
+   "cask": "pearcleaner",
+   "count": "9,594",
+   "percent": "0.17"
+  },
+  {
+   "number": 108,
+   "cask": "powershell@preview",
+   "count": "9,307",
+   "percent": "0.16"
+  },
+  {
+   "number": 109,
+   "cask": "freecad",
+   "count": "9,292",
+   "percent": "0.16"
+  },
+  {
+   "number": 110,
+   "cask": "whisky",
+   "count": "9,269",
+   "percent": "0.16"
+  },
+  {
+   "number": 111,
+   "cask": "db-browser-for-sqlite",
+   "count": "9,252",
+   "percent": "0.16"
+  },
+  {
+   "number": 112,
+   "cask": "thaw",
+   "count": "9,245",
+   "percent": "0.16"
+  },
+  {
+   "number": 113,
+   "cask": "alt-tab",
+   "count": "9,243",
+   "percent": "0.16"
+  },
+  {
+   "number": 114,
+   "cask": "font-jetbrains-mono",
+   "count": "9,219",
+   "percent": "0.16"
+  },
+  {
+   "number": 115,
+   "cask": "steipete/tap/codexbar",
+   "count": "9,160",
+   "percent": "0.16"
+  },
+  {
+   "number": 116,
+   "cask": "font-fira-code-nerd-font",
+   "count": "9,147",
+   "percent": "0.16"
+  },
+  {
+   "number": 117,
+   "cask": "audacity",
+   "count": "9,111",
+   "percent": "0.16"
+  },
+  {
+   "number": 118,
+   "cask": "homebrew-app",
+   "count": "9,105",
+   "percent": "0.16"
+  },
+  {
+   "number": 119,
+   "cask": "unity-hub",
+   "count": "9,061",
+   "percent": "0.16"
+  },
+  {
+   "number": 120,
+   "cask": "rustdesk",
+   "count": "8,970",
+   "percent": "0.16"
+  },
+  {
+   "number": 121,
+   "cask": "antigravity",
+   "count": "8,936",
+   "percent": "0.16"
+  },
+  {
+   "number": 122,
+   "cask": "caskhub",
+   "count": "8,860",
+   "percent": "0.16"
+  },
+  {
+   "number": 123,
+   "cask": "temurin@25",
+   "count": "8,791",
+   "percent": "0.15"
+  },
+  {
+   "number": 124,
+   "cask": "windows-app",
+   "count": "8,651",
+   "percent": "0.15"
+  },
+  {
+   "number": 125,
+   "cask": "qlmarkdown",
+   "count": "8,561",
+   "percent": "0.15"
+  },
+  {
+   "number": 126,
+   "cask": "vscodium",
+   "count": "8,505",
+   "percent": "0.15"
+  },
+  {
+   "number": 127,
+   "cask": "gstreamer-runtime",
+   "count": "8,478",
+   "percent": "0.15"
+  },
+  {
+   "number": 128,
+   "cask": "telegram",
+   "count": "8,180",
+   "percent": "0.14"
+  },
+  {
+   "number": 129,
+   "cask": "xdevplatform/tap/xurl",
+   "count": "8,136",
+   "percent": "0.14"
+  },
+  {
+   "number": 130,
+   "cask": "balenaetcher",
+   "count": "8,076",
+   "percent": "0.14"
+  },
+  {
+   "number": 131,
+   "cask": "go-task/tap/go-task",
+   "count": "8,066",
+   "percent": "0.14"
+  },
+  {
+   "number": 132,
+   "cask": "onedrive",
+   "count": "7,905",
+   "percent": "0.14"
+  },
+  {
+   "number": 133,
+   "cask": "mos",
+   "count": "7,866",
+   "percent": "0.14"
+  },
+  {
+   "number": 134,
+   "cask": "wezterm",
+   "count": "7,821",
+   "percent": "0.14"
+  },
+  {
+   "number": 135,
+   "cask": "monitorcontrol",
+   "count": "7,757",
+   "percent": "0.14"
+  },
+  {
+   "number": 136,
+   "cask": "ngrok/ngrok/ngrok",
+   "count": "7,750",
+   "percent": "0.14"
+  },
+  {
+   "number": 137,
+   "cask": "cyberduck",
+   "count": "7,527",
+   "percent": "0.13"
+  },
+  {
+   "number": 138,
+   "cask": "caffeine",
+   "count": "7,460",
+   "percent": "0.13"
+  },
+  {
+   "number": 139,
+   "cask": "miniforge",
+   "count": "7,403",
+   "percent": "0.13"
+  },
+  {
+   "number": 140,
+   "cask": "t3-code",
+   "count": "7,200",
+   "percent": "0.13"
+  },
+  {
+   "number": 141,
+   "cask": "anthropics/tap/ant",
+   "count": "7,170",
+   "percent": "0.13"
+  },
+  {
+   "number": 142,
+   "cask": "podman-desktop",
+   "count": "7,148",
+   "percent": "0.13"
+  },
+  {
+   "number": 143,
+   "cask": "intellij-idea",
+   "count": "7,123",
+   "percent": "0.13"
+  },
+  {
+   "number": 144,
+   "cask": "tigervnc",
+   "count": "7,084",
+   "percent": "0.12"
+  },
+  {
+   "number": 145,
+   "cask": "mactex",
+   "count": "7,007",
+   "percent": "0.12"
+  },
+  {
+   "number": 146,
+   "cask": "openclaw/tap/goplaces",
+   "count": "6,769",
+   "percent": "0.12"
+  },
+  {
+   "number": 147,
+   "cask": "transmission",
+   "count": "6,601",
+   "percent": "0.12"
+  },
+  {
+   "number": 148,
+   "cask": "raspberry-pi-imager",
+   "count": "6,588",
+   "percent": "0.12"
+  },
+  {
+   "number": 149,
+   "cask": "arc",
+   "count": "6,535",
+   "percent": "0.12"
+  },
+  {
+   "number": 150,
+   "cask": "librewolf",
+   "count": "6,418",
+   "percent": "0.11"
+  },
+  {
+   "number": 151,
+   "cask": "tuist",
+   "count": "6,393",
+   "percent": "0.11"
+  },
+  {
+   "number": 152,
+   "cask": "openscad@snapshot",
+   "count": "6,387",
+   "percent": "0.11"
+  },
+  {
+   "number": 153,
+   "cask": "hiddenbar",
+   "count": "6,333",
+   "percent": "0.11"
+  },
+  {
+   "number": 154,
+   "cask": "alfred",
+   "count": "6,325",
+   "percent": "0.11"
+  },
+  {
+   "number": 155,
+   "cask": "shottr",
+   "count": "6,241",
+   "percent": "0.11"
+  },
+  {
+   "number": 156,
+   "cask": "logi-options+",
+   "count": "6,184",
+   "percent": "0.11"
+  },
+  {
+   "number": 157,
+   "cask": "rar",
+   "count": "6,171",
+   "percent": "0.11"
+  },
+  {
+   "number": 158,
+   "cask": "mounty",
+   "count": "6,122",
+   "percent": "0.11"
+  },
+  {
+   "number": 159,
+   "cask": "keepassxc",
+   "count": "6,102",
+   "percent": "0.11"
+  },
+  {
+   "number": 160,
+   "cask": "handy",
+   "count": "6,100",
+   "percent": "0.11"
+  },
+  {
+   "number": 161,
+   "cask": "fluidvoice",
+   "count": "6,076",
+   "percent": "0.11"
+  },
+  {
+   "number": 162,
+   "cask": "mongodb-compass",
+   "count": "6,040",
+   "percent": "0.11"
+  },
+  {
+   "number": 163,
+   "cask": "dockdoor",
+   "count": "5,997",
+   "percent": "0.11"
+  },
+  {
+   "number": 164,
+   "cask": "kicad",
+   "count": "5,974",
+   "percent": "0.11"
+  },
+  {
+   "number": 165,
+   "cask": "fuse-t",
+   "count": "5,938",
+   "percent": "0.10"
+  },
+  {
+   "number": 166,
+   "cask": "tableplus",
+   "count": "5,875",
+   "percent": "0.10"
+  },
+  {
+   "number": 167,
+   "cask": "font-symbols-only-nerd-font",
+   "count": "5,863",
+   "percent": "0.10"
+  },
+  {
+   "number": 168,
+   "cask": "zen",
+   "count": "5,851",
+   "percent": "0.10"
+  },
+  {
+   "number": 169,
+   "cask": "temurin@8",
+   "count": "5,802",
+   "percent": "0.10"
+  },
+  {
+   "number": 170,
+   "cask": "google-gemini",
+   "count": "5,718",
+   "percent": "0.10"
+  },
+  {
+   "number": 171,
+   "cask": "puremac",
+   "count": "5,665",
+   "percent": "0.10"
+  },
+  {
+   "number": 172,
+   "cask": "signal",
+   "count": "5,629",
+   "percent": "0.10"
+  },
+  {
+   "number": 173,
+   "cask": "chromium",
+   "count": "5,627",
+   "percent": "0.10"
+  },
+  {
+   "number": 174,
+   "cask": "blackhole-16ch",
+   "count": "5,607",
+   "percent": "0.10"
+  },
+  {
+   "number": 175,
+   "cask": "moonlight",
+   "count": "5,522",
+   "percent": "0.10"
+  },
+  {
+   "number": 176,
+   "cask": "mactex-no-gui",
+   "count": "5,485",
+   "percent": "0.10"
+  },
+  {
+   "number": 177,
+   "cask": "deskflow/tap/deskflow",
+   "count": "5,431",
+   "percent": "0.10"
+  },
+  {
+   "number": 178,
+   "cask": "ublue-os/tap/rog-control-center-linux",
+   "count": "5,428",
+   "percent": "0.10"
+  },
+  {
+   "number": 179,
+   "cask": "jetbrains-toolbox",
+   "count": "5,282",
+   "percent": "0.09"
+  },
+  {
+   "number": 180,
+   "cask": "xcodes-app",
+   "count": "5,274",
+   "percent": "0.09"
+  },
+  {
+   "number": 181,
+   "cask": "protonvpn",
+   "count": "5,255",
+   "percent": "0.09"
+  },
+  {
+   "number": 182,
+   "cask": "ublue-os/tap/asusctl-linux",
+   "count": "5,083",
+   "percent": "0.09"
+  },
+  {
+   "number": 183,
+   "cask": "dbx",
+   "count": "5,031",
+   "percent": "0.09"
+  },
+  {
+   "number": 184,
+   "cask": "cloudflare-warp",
+   "count": "5,028",
+   "percent": "0.09"
+  },
+  {
+   "number": 185,
+   "cask": "ungoogled-chromium",
+   "count": "4,925",
+   "percent": "0.09"
+  },
+  {
+   "number": 186,
+   "cask": "macpacker",
+   "count": "4,924",
+   "percent": "0.09"
+  },
+  {
+   "number": 187,
+   "cask": "handbrake-app",
+   "count": "4,921",
+   "percent": "0.09"
+  },
+  {
+   "number": 188,
+   "cask": "finetune",
+   "count": "4,817",
+   "percent": "0.08"
+  },
+  {
+   "number": 189,
+   "cask": "ublue-os/tap/visual-studio-code-linux",
+   "count": "4,785",
+   "percent": "0.08"
+  },
+  {
+   "number": 190,
+   "cask": "markedit",
+   "count": "4,774",
+   "percent": "0.08"
+  },
+  {
+   "number": 191,
+   "cask": "hermes-desktop",
+   "count": "4,762",
+   "percent": "0.08"
+  },
+  {
+   "number": 192,
+   "cask": "multipass",
+   "count": "4,736",
+   "percent": "0.08"
+  },
+  {
+   "number": 193,
+   "cask": "microsoft-word",
+   "count": "4,727",
+   "percent": "0.08"
+  },
+  {
+   "number": 194,
+   "cask": "rancher",
+   "count": "4,696",
+   "percent": "0.08"
+  },
+  {
+   "number": 195,
+   "cask": "the-unarchiver",
+   "count": "4,597",
+   "percent": "0.08"
+  },
+  {
+   "number": 196,
+   "cask": "sentry-cli",
+   "count": "4,539",
+   "percent": "0.08"
+  },
+  {
+   "number": 197,
+   "cask": "emacs-app",
+   "count": "4,493",
+   "percent": "0.08"
+  },
+  {
+   "number": 198,
+   "cask": "duckduckgo",
+   "count": "4,464",
+   "percent": "0.08"
+  },
+  {
+   "number": 199,
+   "cask": "microsoft-excel",
+   "count": "4,457",
+   "percent": "0.08"
+  },
+  {
+   "number": 200,
+   "cask": "freelens",
+   "count": "4,414",
+   "percent": "0.08"
+  },
+  {
+   "number": 201,
+   "cask": "abue-ammar/tinycast/tinycast",
+   "count": "4,410",
+   "percent": "0.08"
+  },
+  {
+   "number": 202,
+   "cask": "sequel-ace",
+   "count": "4,363",
+   "percent": "0.08"
+  },
+  {
+   "number": 203,
+   "cask": "openscad",
+   "count": "4,347",
+   "percent": "0.08"
+  },
+  {
+   "number": 204,
+   "cask": "lulu",
+   "count": "4,318",
+   "percent": "0.08"
+  },
+  {
+   "number": 205,
+   "cask": "anydesk",
+   "count": "4,297",
+   "percent": "0.08"
+  },
+  {
+   "number": 206,
+   "cask": "dotnet-sdk@8",
+   "count": "4,211",
+   "percent": "0.07"
+  },
+  {
+   "number": 207,
+   "cask": "thunderbird",
+   "count": "4,192",
+   "percent": "0.07"
+  },
+  {
+   "number": 208,
+   "cask": "upscayl",
+   "count": "4,125",
+   "percent": "0.07"
+  },
+  {
+   "number": 209,
+   "cask": "scroll-reverser",
+   "count": "4,125",
+   "percent": "0.07"
+  },
+  {
+   "number": 210,
+   "cask": "meld",
+   "count": "4,094",
+   "percent": "0.07"
+  },
+  {
+   "number": 211,
+   "cask": "font-fira-code",
+   "count": "4,056",
+   "percent": "0.07"
+  },
+  {
+   "number": 212,
+   "cask": "crossover",
+   "count": "4,030",
+   "percent": "0.07"
+  },
+  {
+   "number": 213,
+   "cask": "mysqlworkbench",
+   "count": "4,029",
+   "percent": "0.07"
+  },
+  {
+   "number": 214,
+   "cask": "kiro-cli",
+   "count": "3,972",
+   "percent": "0.07"
+  },
+  {
+   "number": 215,
+   "cask": "notunes",
+   "count": "3,958",
+   "percent": "0.07"
+  },
+  {
+   "number": 216,
+   "cask": "tor-browser",
+   "count": "3,945",
+   "percent": "0.07"
+  },
+  {
+   "number": 217,
+   "cask": "temurin@11",
+   "count": "3,915",
+   "percent": "0.07"
+  },
+  {
+   "number": 218,
+   "cask": "frankea/whisky/whisky",
+   "count": "3,911",
+   "percent": "0.07"
+  },
+  {
+   "number": 219,
+   "cask": "macos-fuse-t/cask/fuse-t",
+   "count": "3,905",
+   "percent": "0.07"
+  },
+  {
+   "number": 220,
+   "cask": "cursor-cli",
+   "count": "3,887",
+   "percent": "0.07"
+  },
+  {
+   "number": 221,
+   "cask": "zotero",
+   "count": "3,879",
+   "percent": "0.07"
+  },
+  {
+   "number": 222,
+   "cask": "syncthing-app",
+   "count": "3,858",
+   "percent": "0.07"
+  },
+  {
+   "number": 223,
+   "cask": "keepingyouawake",
+   "count": "3,853",
+   "percent": "0.07"
+  },
+  {
+   "number": 224,
+   "cask": "chromedriver",
+   "count": "3,822",
+   "percent": "0.07"
+  },
+  {
+   "number": 225,
+   "cask": "microsoft-office",
+   "count": "3,814",
+   "percent": "0.07"
+  },
+  {
+   "number": 226,
+   "cask": "antigravity-ide",
+   "count": "3,773",
+   "percent": "0.07"
+  },
+  {
+   "number": 227,
+   "cask": "corretto@21",
+   "count": "3,765",
+   "percent": "0.07"
+  },
+  {
+   "number": 228,
+   "cask": "mark-text",
+   "count": "3,752",
+   "percent": "0.07"
+  },
+  {
+   "number": 229,
+   "cask": "coteditor",
+   "count": "3,739",
+   "percent": "0.07"
+  },
+  {
+   "number": 230,
+   "cask": "helium-browser",
+   "count": "3,728",
+   "percent": "0.07"
+  },
+  {
+   "number": 231,
+   "cask": "keycastr",
+   "count": "3,728",
+   "percent": "0.07"
+  },
+  {
+   "number": 232,
+   "cask": "microsoft-outlook",
+   "count": "3,671",
+   "percent": "0.06"
+  },
+  {
+   "number": 233,
+   "cask": "anki",
+   "count": "3,652",
+   "percent": "0.06"
+  },
+  {
+   "number": 234,
+   "cask": "clash-verge-rev",
+   "count": "3,648",
+   "percent": "0.06"
+  },
+  {
+   "number": 235,
+   "cask": "headlamp",
+   "count": "3,632",
+   "percent": "0.06"
+  },
+  {
+   "number": 236,
+   "cask": "codex-app",
+   "count": "3,576",
+   "percent": "0.06"
+  },
+  {
+   "number": 237,
+   "cask": "grandperspective",
+   "count": "3,568",
+   "percent": "0.06"
+  },
+  {
+   "number": 238,
+   "cask": "virtualbox",
+   "count": "3,540",
+   "percent": "0.06"
+  },
+  {
+   "number": 239,
+   "cask": "microsoft-powerpoint",
+   "count": "3,458",
+   "percent": "0.06"
+  },
+  {
+   "number": 240,
+   "cask": "vagrant",
+   "count": "3,437",
+   "percent": "0.06"
+  },
+  {
+   "number": 241,
+   "cask": "wispr-flow",
+   "count": "3,437",
+   "percent": "0.06"
+  },
+  {
+   "number": 242,
+   "cask": "pycharm",
+   "count": "3,426",
+   "percent": "0.06"
+  },
+  {
+   "number": 243,
+   "cask": "intellij-idea-ce",
+   "count": "3,418",
+   "percent": "0.06"
+  },
+  {
+   "number": 244,
+   "cask": "zulu@8",
+   "count": "3,401",
+   "percent": "0.06"
+  },
+  {
+   "number": 245,
+   "cask": "darrylmorley/whatcable/whatcable",
+   "count": "3,385",
+   "percent": "0.06"
+  },
+  {
+   "number": 246,
+   "cask": "alielsokary/tap/caskhub",
+   "count": "3,376",
+   "percent": "0.06"
+  },
+  {
+   "number": 247,
+   "cask": "comfy",
+   "count": "3,365",
+   "percent": "0.06"
+  },
+  {
+   "number": 248,
+   "cask": "grok-build",
+   "count": "3,353",
+   "percent": "0.06"
+  },
+  {
+   "number": 249,
+   "cask": "mole-app",
+   "count": "3,319",
+   "percent": "0.06"
+  },
+  {
+   "number": 250,
+   "cask": "dropbox",
+   "count": "3,301",
+   "percent": "0.06"
+  },
+  {
+   "number": 251,
+   "cask": "maestro",
+   "count": "3,260",
+   "percent": "0.06"
+  },
+  {
+   "number": 252,
+   "cask": "openvpn-connect",
+   "count": "3,245",
+   "percent": "0.06"
+  },
+  {
+   "number": 253,
+   "cask": "aldente",
+   "count": "3,242",
+   "percent": "0.06"
+  },
+  {
+   "number": 254,
+   "cask": "adobe-acrobat-reader",
+   "count": "3,226",
+   "percent": "0.06"
+  },
+  {
+   "number": 255,
+   "cask": "proxyman",
+   "count": "3,179",
+   "percent": "0.06"
+  },
+  {
+   "number": 256,
+   "cask": "clickhouse",
+   "count": "3,136",
+   "percent": "0.06"
+  },
+  {
+   "number": 257,
+   "cask": "macs-fan-control",
+   "count": "3,133",
+   "percent": "0.06"
+  },
+  {
+   "number": 258,
+   "cask": "redis-insight",
+   "count": "3,125",
+   "percent": "0.06"
+  },
+  {
+   "number": 259,
+   "cask": "another-redis-desktop-manager",
+   "count": "3,110",
+   "percent": "0.05"
+  },
+  {
+   "number": 260,
+   "cask": "background-music",
+   "count": "3,099",
+   "percent": "0.05"
+  },
+  {
+   "number": 261,
+   "cask": "qbittorrent",
+   "count": "3,099",
+   "percent": "0.05"
+  },
+  {
+   "number": 262,
+   "cask": "bambu-studio",
+   "count": "3,096",
+   "percent": "0.05"
+  },
+  {
+   "number": 263,
+   "cask": "grok-bot",
+   "count": "3,090",
+   "percent": "0.05"
+  },
+  {
+   "number": 264,
+   "cask": "rstudio",
+   "count": "3,062",
+   "percent": "0.05"
+  },
+  {
+   "number": 265,
+   "cask": "wechat",
+   "count": "3,061",
+   "percent": "0.05"
+  },
+  {
+   "number": 266,
+   "cask": "skim",
+   "count": "3,059",
+   "percent": "0.05"
+  },
+  {
+   "number": 267,
+   "cask": "gcc-arm-embedded",
+   "count": "3,051",
+   "percent": "0.05"
+  },
+  {
+   "number": 268,
+   "cask": "tunnelblick",
+   "count": "3,032",
+   "percent": "0.05"
+  },
+  {
+   "number": 269,
+   "cask": "openlens",
+   "count": "3,029",
+   "percent": "0.05"
+  },
+  {
+   "number": 270,
+   "cask": "applite",
+   "count": "3,027",
+   "percent": "0.05"
+  },
+  {
+   "number": 271,
+   "cask": "prismlauncher",
+   "count": "3,019",
+   "percent": "0.05"
+  },
+  {
+   "number": 272,
+   "cask": "libreoffice-language-pack",
+   "count": "3,000",
+   "percent": "0.05"
+  },
+  {
+   "number": 273,
+   "cask": "font-inter",
+   "count": "2,969",
+   "percent": "0.05"
+  },
+  {
+   "number": 274,
+   "cask": "paseo",
+   "count": "2,961",
+   "percent": "0.05"
+  },
+  {
+   "number": 275,
+   "cask": "gcenx/wine/game-porting-toolkit",
+   "count": "2,949",
+   "percent": "0.05"
+  },
+  {
+   "number": 276,
+   "cask": "chattymin/tap/poke-token-bar",
+   "count": "2,928",
+   "percent": "0.05"
+  },
+  {
+   "number": 277,
+   "cask": "sourcetree",
+   "count": "2,914",
+   "percent": "0.05"
+  },
+  {
+   "number": 278,
+   "cask": "termius",
+   "count": "2,914",
+   "percent": "0.05"
+  },
+  {
+   "number": 279,
+   "cask": "macusb",
+   "count": "2,903",
+   "percent": "0.05"
+  },
+  {
+   "number": 280,
+   "cask": "theboredteam/boring-notch/boring-notch",
+   "count": "2,902",
+   "percent": "0.05"
+  },
+  {
+   "number": 281,
+   "cask": "zulu@21",
+   "count": "2,888",
+   "percent": "0.05"
+  },
+  {
+   "number": 282,
+   "cask": "opensuperwhisper",
+   "count": "2,884",
+   "percent": "0.05"
+  },
+  {
+   "number": 283,
+   "cask": "burp-suite",
+   "count": "2,871",
+   "percent": "0.05"
+  },
+  {
+   "number": 284,
+   "cask": "openclaw",
+   "count": "2,859",
+   "percent": "0.05"
+  },
+  {
+   "number": 285,
+   "cask": "anaconda",
+   "count": "2,855",
+   "percent": "0.05"
+  },
+  {
+   "number": 286,
+   "cask": "font-maple-mono-nf-cn",
+   "count": "2,818",
+   "percent": "0.05"
+  },
+  {
+   "number": 287,
+   "cask": "font-source-code-pro",
+   "count": "2,815",
+   "percent": "0.05"
+  },
+  {
+   "number": 288,
+   "cask": "vivaldi",
+   "count": "2,790",
+   "percent": "0.05"
+  },
+  {
+   "number": 289,
+   "cask": "cryptomator",
+   "count": "2,784",
+   "percent": "0.05"
+  },
+  {
+   "number": 290,
+   "cask": "github-copilot-app",
+   "count": "2,777",
+   "percent": "0.05"
+  },
+  {
+   "number": 291,
+   "cask": "steamcmd",
+   "count": "2,766",
+   "percent": "0.05"
+  },
+  {
+   "number": 292,
+   "cask": "macshot",
+   "count": "2,764",
+   "percent": "0.05"
+  },
+  {
+   "number": 293,
+   "cask": "r-app",
+   "count": "2,721",
+   "percent": "0.05"
+  },
+  {
+   "number": 294,
+   "cask": "font-sauce-code-pro-nerd-font",
+   "count": "2,683",
+   "percent": "0.05"
+  },
+  {
+   "number": 295,
+   "cask": "sonarqube-cli",
+   "count": "2,680",
+   "percent": "0.05"
+  },
+  {
+   "number": 296,
+   "cask": "font-blex-mono-nerd-font",
+   "count": "2,658",
+   "percent": "0.05"
+  },
+  {
+   "number": 297,
+   "cask": "devin-cli",
+   "count": "2,652",
+   "percent": "0.05"
+  },
+  {
+   "number": 298,
+   "cask": "font-0xproto-nerd-font",
+   "count": "2,631",
+   "percent": "0.05"
+  },
+  {
+   "number": 299,
+   "cask": "affinity",
+   "count": "2,623",
+   "percent": "0.05"
+  },
+  {
+   "number": 300,
+   "cask": "quarto",
+   "count": "2,607",
+   "percent": "0.05"
+  },
+  {
+   "number": 301,
+   "cask": "teamviewer",
+   "count": "2,578",
+   "percent": "0.05"
+  },
+  {
+   "number": 302,
+   "cask": "mac-mouse-fix",
+   "count": "2,574",
+   "percent": "0.05"
+  },
+  {
+   "number": 303,
+   "cask": "typora",
+   "count": "2,571",
+   "percent": "0.05"
+  },
+  {
+   "number": 304,
+   "cask": "onyx",
+   "count": "2,561",
+   "percent": "0.05"
+  },
+  {
+   "number": 305,
+   "cask": "easydict",
+   "count": "2,559",
+   "percent": "0.05"
+  },
+  {
+   "number": 306,
+   "cask": "onlyoffice",
+   "count": "2,550",
+   "percent": "0.04"
+  },
+  {
+   "number": 307,
+   "cask": "jellyfin",
+   "count": "2,519",
+   "percent": "0.04"
+  },
+  {
+   "number": 308,
+   "cask": "openusage",
+   "count": "2,509",
+   "percent": "0.04"
+  },
+  {
+   "number": 309,
+   "cask": "itsycal",
+   "count": "2,496",
+   "percent": "0.04"
+  },
+  {
+   "number": 310,
+   "cask": "ublue-os/tap/jetbrains-toolbox-linux",
+   "count": "2,491",
+   "percent": "0.04"
+  },
+  {
+   "number": 311,
+   "cask": "crmne/tap/spotifast",
+   "count": "2,490",
+   "percent": "0.04"
+  },
+  {
+   "number": 312,
+   "cask": "tabby",
+   "count": "2,490",
+   "percent": "0.04"
+  },
+  {
+   "number": 313,
+   "cask": "macpaw/taps/cleanmymac-cli",
+   "count": "2,471",
+   "percent": "0.04"
+  },
+  {
+   "number": 314,
+   "cask": "epic-games",
+   "count": "2,468",
+   "percent": "0.04"
+  },
+  {
+   "number": 315,
+   "cask": "block-goose",
+   "count": "2,463",
+   "percent": "0.04"
+  },
+  {
+   "number": 316,
+   "cask": "nordvpn",
+   "count": "2,436",
+   "percent": "0.04"
+  },
+  {
+   "number": 317,
+   "cask": "alacritty",
+   "count": "2,436",
+   "percent": "0.04"
+  },
+  {
+   "number": 318,
+   "cask": "cleanmymac-cli",
+   "count": "2,434",
+   "percent": "0.04"
+  },
+  {
+   "number": 319,
+   "cask": "gemini",
+   "count": "2,410",
+   "percent": "0.04"
+  },
+  {
+   "number": 320,
+   "cask": "chatgpt-classic",
+   "count": "2,404",
+   "percent": "0.04"
+  },
+  {
+   "number": 321,
+   "cask": "warrensbox/tap/tfswitch",
+   "count": "2,394",
+   "percent": "0.04"
+  },
+  {
+   "number": 322,
+   "cask": "gtkwave",
+   "count": "2,389",
+   "percent": "0.04"
+  },
+  {
+   "number": 323,
+   "cask": "insomnia",
+   "count": "2,371",
+   "percent": "0.04"
+  },
+  {
+   "number": 324,
+   "cask": "markdown-preview",
+   "count": "2,362",
+   "percent": "0.04"
+  },
+  {
+   "number": 325,
+   "cask": "font-caskaydia-mono-nerd-font",
+   "count": "2,336",
+   "percent": "0.04"
+  },
+  {
+   "number": 326,
+   "cask": "ubersicht",
+   "count": "2,323",
+   "percent": "0.04"
+  },
+  {
+   "number": 327,
+   "cask": "arduino-ide",
+   "count": "2,305",
+   "percent": "0.04"
+  },
+  {
+   "number": 328,
+   "cask": "espanso",
+   "count": "2,283",
+   "percent": "0.04"
+  },
+  {
+   "number": 329,
+   "cask": "linear",
+   "count": "2,274",
+   "percent": "0.04"
+  },
+  {
+   "number": 330,
+   "cask": "draw-things",
+   "count": "2,270",
+   "percent": "0.04"
+  },
+  {
+   "number": 331,
+   "cask": "mac-sai",
+   "count": "2,263",
+   "percent": "0.04"
+  },
+  {
+   "number": 332,
+   "cask": "flameshot",
+   "count": "2,258",
+   "percent": "0.04"
+  },
+  {
+   "number": 333,
+   "cask": "netbirdio/tap/netbird-ui",
+   "count": "2,258",
+   "percent": "0.04"
+  },
+  {
+   "number": 334,
+   "cask": "voiceink",
+   "count": "2,229",
+   "percent": "0.04"
+  },
+  {
+   "number": 335,
+   "cask": "opera",
+   "count": "2,225",
+   "percent": "0.04"
+  },
+  {
+   "number": 336,
+   "cask": "android-file-transfer",
+   "count": "2,215",
+   "percent": "0.04"
+  },
+  {
+   "number": 337,
+   "cask": "font-ubuntu-nerd-font",
+   "count": "2,185",
+   "percent": "0.04"
+  },
+  {
+   "number": 338,
+   "cask": "coderabbit",
+   "count": "2,183",
+   "percent": "0.04"
+  },
+  {
+   "number": 339,
+   "cask": "font-droid-sans-mono-nerd-font",
+   "count": "2,179",
+   "percent": "0.04"
+  },
+  {
+   "number": 340,
+   "cask": "nextcloud",
+   "count": "2,174",
+   "percent": "0.04"
+  },
+  {
+   "number": 341,
+   "cask": "capcut",
+   "count": "2,164",
+   "percent": "0.04"
+  },
+  {
+   "number": 342,
+   "cask": "sfm",
+   "count": "2,162",
+   "percent": "0.04"
+  },
+  {
+   "number": 343,
+   "cask": "open-webui",
+   "count": "2,159",
+   "percent": "0.04"
+  },
+  {
+   "number": 344,
+   "cask": "font-go-mono-nerd-font",
+   "count": "2,136",
+   "percent": "0.04"
+  },
+  {
+   "number": 345,
+   "cask": "font-comic-shanns-mono-nerd-font",
+   "count": "2,134",
+   "percent": "0.04"
+  },
+  {
+   "number": 346,
+   "cask": "radix",
+   "count": "2,105",
+   "percent": "0.04"
+  },
+  {
+   "number": 347,
+   "cask": "kiro",
+   "count": "2,103",
+   "percent": "0.04"
+  },
+  {
+   "number": 348,
+   "cask": "unity-cli",
+   "count": "2,098",
+   "percent": "0.04"
+  },
+  {
+   "number": 349,
+   "cask": "kamillobinski/thock/thock",
+   "count": "2,095",
+   "percent": "0.04"
+  },
+  {
+   "number": 350,
+   "cask": "bettertouchtool",
+   "count": "2,092",
+   "percent": "0.04"
+  },
+  {
+   "number": 351,
+   "cask": "fork",
+   "count": "2,091",
+   "percent": "0.04"
+  },
+  {
+   "number": 352,
+   "cask": "telegram-desktop",
+   "count": "2,087",
+   "percent": "0.04"
+  },
+  {
+   "number": 353,
+   "cask": "font-maple-mono-nf",
+   "count": "2,055",
+   "percent": "0.04"
+  },
+  {
+   "number": 354,
+   "cask": "postgres-app",
+   "count": "2,049",
+   "percent": "0.04"
+  },
+  {
+   "number": 355,
+   "cask": "whatcable",
+   "count": "2,042",
+   "percent": "0.04"
+  },
+  {
+   "number": 356,
+   "cask": "macwhisper",
+   "count": "2,023",
+   "percent": "0.04"
+  },
+  {
+   "number": 357,
+   "cask": "bbedit",
+   "count": "2,019",
+   "percent": "0.04"
+  },
+  {
+   "number": 358,
+   "cask": "krita",
+   "count": "2,010",
+   "percent": "0.04"
+  },
+  {
+   "number": 359,
+   "cask": "datagrip",
+   "count": "1,997",
+   "percent": "0.04"
+  },
+  {
+   "number": 360,
+   "cask": "safedep/tap/pmg",
+   "count": "1,968",
+   "percent": "0.03"
+  },
+  {
+   "number": 361,
+   "cask": "wechatwebdevtools",
+   "count": "1,963",
+   "percent": "0.03"
+  },
+  {
+   "number": 362,
+   "cask": "devtunnel",
+   "count": "1,941",
+   "percent": "0.03"
+  },
+  {
+   "number": 363,
+   "cask": "localstack/tap/lstk",
+   "count": "1,941",
+   "percent": "0.03"
+  },
+  {
+   "number": 364,
+   "cask": "macdown",
+   "count": "1,941",
+   "percent": "0.03"
+  },
+  {
+   "number": 365,
+   "cask": "blackhole-64ch",
+   "count": "1,935",
+   "percent": "0.03"
+  },
+  {
+   "number": 366,
+   "cask": "clipy",
+   "count": "1,934",
+   "percent": "0.03"
+  },
+  {
+   "number": 367,
+   "cask": "orcaslicer",
+   "count": "1,922",
+   "percent": "0.03"
+  },
+  {
+   "number": 368,
+   "cask": "kde-connect",
+   "count": "1,919",
+   "percent": "0.03"
+  },
+  {
+   "number": 369,
+   "cask": "agentsview",
+   "count": "1,918",
+   "percent": "0.03"
+  },
+  {
+   "number": 370,
+   "cask": "macdown-3000",
+   "count": "1,908",
+   "percent": "0.03"
+  },
+  {
+   "number": 371,
+   "cask": "crystalfetch",
+   "count": "1,901",
+   "percent": "0.03"
+  },
+  {
+   "number": 372,
+   "cask": "slack-cli",
+   "count": "1,894",
+   "percent": "0.03"
+  },
+  {
+   "number": 373,
+   "cask": "macos-fuse-t/cask/fuse-t-sshfs",
+   "count": "1,888",
+   "percent": "0.03"
+  },
+  {
+   "number": 374,
+   "cask": "robbietilton-compositor",
+   "count": "1,882",
+   "percent": "0.03"
+  },
+  {
+   "number": 375,
+   "cask": "secretive",
+   "count": "1,875",
+   "percent": "0.03"
+  },
+  {
+   "number": 376,
+   "cask": "font-d2coding",
+   "count": "1,873",
+   "percent": "0.03"
+  },
+  {
+   "number": 377,
+   "cask": "displaylink",
+   "count": "1,865",
+   "percent": "0.03"
+  },
+  {
+   "number": 378,
+   "cask": "superwhisper",
+   "count": "1,853",
+   "percent": "0.03"
+  },
+  {
+   "number": 379,
+   "cask": "android-cli",
+   "count": "1,848",
+   "percent": "0.03"
+  },
+  {
+   "number": 380,
+   "cask": "t3-code@nightly",
+   "count": "1,842",
+   "percent": "0.03"
+  },
+  {
+   "number": 381,
+   "cask": "qgis",
+   "count": "1,832",
+   "percent": "0.03"
+  },
+  {
+   "number": 382,
+   "cask": "finicky",
+   "count": "1,823",
+   "percent": "0.03"
+  },
+  {
+   "number": 383,
+   "cask": "msitarzewski/agency-agents/agency-agents",
+   "count": "1,815",
+   "percent": "0.03"
+  },
+  {
+   "number": 384,
+   "cask": "lunar",
+   "count": "1,786",
+   "percent": "0.03"
+  },
+  {
+   "number": 385,
+   "cask": "circleci-public/circleci/circleci@next",
+   "count": "1,778",
+   "percent": "0.03"
+  },
+  {
+   "number": 386,
+   "cask": "loop",
+   "count": "1,763",
+   "percent": "0.03"
+  },
+  {
+   "number": 387,
+   "cask": "sshfs-mac",
+   "count": "1,762",
+   "percent": "0.03"
+  },
+  {
+   "number": 388,
+   "cask": "espressif/eim/eim-gui",
+   "count": "1,747",
+   "percent": "0.03"
+  },
+  {
+   "number": 389,
+   "cask": "firefox@developer-edition",
+   "count": "1,745",
+   "percent": "0.03"
+  },
+  {
+   "number": 390,
+   "cask": "stremio",
+   "count": "1,713",
+   "percent": "0.03"
+  },
+  {
+   "number": 391,
+   "cask": "lens",
+   "count": "1,709",
+   "percent": "0.03"
+  },
+  {
+   "number": 392,
+   "cask": "granola",
+   "count": "1,705",
+   "percent": "0.03"
+  },
+  {
+   "number": 393,
+   "cask": "font-dejavu",
+   "count": "1,705",
+   "percent": "0.03"
+  },
+  {
+   "number": 394,
+   "cask": "keyclu",
+   "count": "1,697",
+   "percent": "0.03"
+  },
+  {
+   "number": 395,
+   "cask": "zqxwce/tap/vphone-cli",
+   "count": "1,695",
+   "percent": "0.03"
+  },
+  {
+   "number": 396,
+   "cask": "corretto@17",
+   "count": "1,690",
+   "percent": "0.03"
+  },
+  {
+   "number": 397,
+   "cask": "penso/tap/herdr-gpui",
+   "count": "1,683",
+   "percent": "0.03"
+  },
+  {
+   "number": 398,
+   "cask": "beekeeper-studio",
+   "count": "1,673",
+   "percent": "0.03"
+  },
+  {
+   "number": 399,
+   "cask": "anythingllm",
+   "count": "1,668",
+   "percent": "0.03"
+  },
+  {
+   "number": 400,
+   "cask": "ublue-os/tap/vscodium-linux",
+   "count": "1,664",
+   "percent": "0.03"
+  }
+ ]
+}

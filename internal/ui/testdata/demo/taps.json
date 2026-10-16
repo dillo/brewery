@@ -1,0 +1,5 @@
+[
+  {"name": "homebrew/core", "user": "Homebrew", "repo": "core", "path": "/opt/homebrew/Library/Taps/homebrew/homebrew-core", "installed": false, "official": true, "remote": null, "formula_names": [], "cask_tokens": []},
+  {"name": "homebrew/cask", "user": "Homebrew", "repo": "cask", "path": "/opt/homebrew/Library/Taps/homebrew/homebrew-cask", "installed": false, "official": true, "remote": null, "formula_names": [], "cask_tokens": []},
+  {"name": "dillo/tap", "user": "dillo", "repo": "tap", "path": "/opt/homebrew/Library/Taps/dillo/homebrew-tap", "installed": true, "official": false, "remote": "https://github.com/dillo/homebrew-tap", "formula_names": [], "cask_tokens": ["dillo/tap/brewery"]}
+]

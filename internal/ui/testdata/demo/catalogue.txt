@@ -1,0 +1,851 @@
+==> Formulae
+abseil: C++ Common Libraries
+act: Run your GitHub Actions locally
+actionlint: Static checker for GitHub Actions workflow files
+ada-url: WHATWG-compliant and fast URL parser written in modern C++
+age: Simple, modern, secure file encryption
+agent-browser: Browser automation CLI for AI agents
+allure: Flexible lightweight test report tool
+anomalyco/tap/opencode: The AI coding agent built for the terminal.
+ansible: Automate deployment, configuration, and upgrading
+ansible-lint: Checks ansible playbooks for practices and behaviour
+aom: Codec library for encoding and decoding AV1 video streams
+argocd: GitOps Continuous Delivery for Kubernetes
+aria2: Download with resuming and segmented downloading
+asc: Fast, lightweight CLI for App Store Connect
+asdf: Extendable version manager with support for Ruby, Node.js, Erlang & more
+ast-grep: Code searching, linting, rewriting
+atuin: Improved shell history for zsh, bash, fish and nushell
+autoconf: Automatic configure script builder
+automake: Tool for generating GNU Standards-compliant Makefiles
+aws-sam-cli: CLI tool to build, test, debug, and deploy Serverless applications using AWS SAM
+aws-vault: Securely store and access AWS credentials in development environments
+awscli: Official Amazon AWS command-line interface
+azcopy: Azure Storage data transfer utility
+bash: Bourne-Again SHell, a UNIX command interpreter
+bat: Clone of cat(1) with syntax highlighting and Git integration
+bats-core: Bash Automated Testing System
+bazelisk: User-friendly launcher for Bazel
+betterleaks: Secrets scanner built for configurability and speed
+binutils: GNU binary tools for native development
+biome: Toolchain of the web
+bitwarden-cli: Secure and free password manager for all of your devices
+boost: Collection of portable C++ source libraries
+bottom: Yet another cross-platform graphical process/system monitor
+brotli: Generic-purpose lossless compression algorithm by Google
+btop: Resource monitor. C++ version and continuation of bashtop and bpytop
+bubblewrap: Unprivileged sandboxing tool for Linux
+bun: Incredibly fast JavaScript runtime, bundler, test runner, and package manager
+c-ares: Asynchronous DNS library
+ca-certificates: Mozilla CA certificate store
+caddy: Powerful, enterprise-ready, open source web server with automatic HTTPS
+cairo: Vector graphics library with cross-device output support
+ccache: Object-file caching compiler wrapper
+chafa: Versatile and fast Unicode/ASCII/ANSI graphics renderer
+checkov: Prevent cloud misconfigurations during build-time for IaC tools
+chezmoi: Manage your dotfiles across multiple diverse machines, securely
+chibi-scheme: Small footprint Scheme for use as a C Extension Language
+circleci: Official command-line tool for CircleCI
+clang-format: Formatting tools for C, C++, Obj-C, Java, JavaScript, TypeScript
+cliclick: Tool for emulating mouse and keyboard events
+cliproxyapi: Wrap Gemini CLI, Codex, Claude Code, Qwen Code as an API service
+cloudflare-wrangler: CLI tool for Cloudflare Workers
+cloudflared: Cloudflare Tunnel client (formerly Argo Tunnel)
+cmake: Cross-platform make
+cmake-docs: Documentation for CMake
+cocoapods: Dependency manager for Cocoa projects
+colima: Container runtimes on MacOS (and Linux) with minimal setup
+composer: Dependency Manager for PHP
+container: Create and run Linux containers using lightweight virtual machines
+coreutils: GNU File, Shell, and Text utilities
+cosign: Container Signing
+cowsay: Apjanke's fork of the classic cowsay project
+crane: Tool for interacting with remote images and registries
+croc: Securely send things from one computer to another
+cryptography: Cryptographic recipes and primitives for Python
+ctlptl: Making local Kubernetes clusters fun and easy to set up
+curl: Get a file from an HTTP, HTTPS or FTP server
+cycode: Boost security in your dev lifecycle via SAST, SCA, Secrets & IaC scanning
+dart-sdk: Dart Language SDK, including the VM, dart2js, core libraries, and more
+deno: Secure runtime for JavaScript and TypeScript
+direnv: Load/unload environment variables based on $PWD
+docker: Pack, ship and run any application as a lightweight container
+docker-buildx: Docker CLI plugin for extended build capabilities with BuildKit
+docker-compose: Isolated development environments using Docker
+docker-credential-helper: Platform keystore credential helper for Docker
+doctl: Command-line tool for DigitalOcean
+dotnet: .NET Core
+duckdb: Embeddable SQL OLAP Database Management System
+dust: More intuitive version of du in rust
+dysk: Linux utility to get information on filesystems, like df but better
+elixir: Functional metaprogramming aware language built on Erlang VM
+espeak-ng: Speech synthesizer that supports more than hundred languages and accents
+exiftool: Perl lib for reading and writing EXIF metadata
+expat: XML 1.0 parser
+eza: Modern, maintained replacement for ls
+fastfetch: Like neofetch, but much faster because written mostly in C
+fastlane: Easiest way to build and release mobile apps
+fb303: Thrift functions for querying information from a service
+fbthrift: Facebook's branch of Apache Thrift, including a new C++ server
+fd: Simple, fast and user-friendly alternative to find
+ffmpeg: Play, record, convert, and stream select audio and video codecs
+ffmpeg-full: Play, record, convert, and stream many audio and video codecs
+firebase-cli: Firebase command-line tools
+fish: User-friendly command-line shell for UNIX-like operating systems
+fizz: C++14 implementation of the TLS-1.3 standard
+flyctl: Command-line tools for fly.io services
+fmt: Open-source formatting library for C++
+fnm: Fast and simple Node.js version manager
+folly: Collection of reusable C++ library artifacts developed at Facebook
+fontconfig: XML-based font configuration API for X Windows
+freerdp: X11 implementation of the Remote Desktop Protocol (RDP)
+freetds: Libraries to talk to Microsoft SQL Server and Sybase databases
+freetype: Software library to render fonts
+fvm: Manage Flutter SDK versions per project
+fzf: Command-line fuzzy finder written in Go
+gallery-dl: Command-line downloader for image-hosting site galleries and collections
+gauche: R7RS Scheme implementation, developed to be a handy script interpreter
+gawk: GNU awk utility
+gcc: GNU compiler collection
+gdal: Geospatial Data Abstraction Library
+gdk-pixbuf: Toolkit for image loading and pixel buffer manipulation
+gemini-cli: Interact with Google Gemini AI models from the command-line
+gettext: GNU internationalization (i18n) and localization (l10n) library
+gh: GitHub command-line tool
+ghidra: Multi-platform software reverse engineering framework
+ghostscript: Interpreter for PostScript and PDF
+git: Distributed revision control system
+git-crypt: Enable transparent encryption/decryption of files in a git repo
+git-delta: Syntax-highlighting pager for git and diff output
+git-filter-repo: Quickly rewrite git repository history
+git-gui: Tcl/Tk UI for the git revision control system
+git-lfs: Git extension for versioning large files
+gitleaks: Audit git repos for secrets
+glab: Open-source GitLab command-line tool
+glances: Alternative to top/htop
+glfw: Multi-platform library for OpenGL applications
+glib: Core application library for C
+glow: Render markdown on the CLI
+glslang: OpenGL and OpenGL ES reference compiler for shading languages
+gmp: GNU multiple precision arithmetic library
+gnu-sed: GNU implementation of the famous stream editor
+gnu-tar: GNU version of the tar archiving utility
+gnupg: GNU Privacy Guard (OpenPGP)
+gnutls: GNU Transport Layer Security (TLS) Library
+go: Open source programming language to build simple/reliable/efficient software
+go-task: Task is a task runner/build tool that aims to be simpler and easier to use
+go@1.25: Open source programming language to build simple/reliable/efficient software
+gobject-introspection: Generate introspection data for GObject libraries
+gogcli: Google Suite CLI
+golangci-lint: Fast linters runner for Go
+gomplate: Command-line Golang template processor
+gradle: Open-source build automation tool based on the Groovy and Kotlin DSL
+grafana-alloy: OpenTelemetry Collector distribution with programmable pipelines
+graphviz: Graph visualization software from AT&T and Bell Labs
+grpc: Next generation open source RPC library and framework
+grype: Vulnerability scanner for container images and filesystems
+gsasl: SASL library command-line interface
+gstreamer: Development framework for multimedia applications
+guile: GNU Ubiquitous Intelligent Language for Extensions
+gum: Tool for glamorous shell scripts
+hadolint: Smarter Dockerfile linter to validate best practices
+harfbuzz: OpenType text shaping engine
+hdrhistogram_c: C port of the HdrHistogram
+hello: Program providing model for GNU coding standards and practices
+helm: Kubernetes package manager
+herdr: Agent multiplexer that lives in your terminal
+hermes-agent: Self-improving AI agent that creates skills from experience
+hf: Client library for huggingface.co hub
+highway: Performance-portable, length-agnostic SIMD with runtime dispatch
+himalaya: CLI email client written in Rust
+htop: Improved top (interactive process viewer)
+httpd: Apache HTTP server
+httpie: User-friendly cURL replacement (command-line HTTP client)
+httrack: Website copier/offline browser
+hugo: Configurable static site generator
+hyperfine: Command-line benchmarking tool
+icu4c@78: C/C++ and Java libraries for Unicode and globalization
+ideviceinstaller: Tool for managing apps on iOS devices
+imagemagick: Tools and libraries to manipulate images in select formats
+imagemagick-full: Tools and libraries to manipulate images in many formats
+iperf3: Update of iperf: measures TCP, UDP, and SCTP bandwidth
+jadx: Dex to Java decompiler
+jemalloc: Implementation of malloc emphasizing fragmentation avoidance
+jfrog-cli: Command-line interface for JFrog products
+jj: Git-compatible distributed version control system
+jpeg: Image manipulation library
+jpeg-xl: New file format for still image compression
+jq: Lightweight and flexible command-line JSON processor
+json-c: JSON parser for C
+jsonnet: Domain specific configuration language for defining JSON data
+jupyterlab: Interactive environments for writing and running code
+just: Handy way to save and run project-specific commands
+k3d: Little helper to run CNCF's k3s in Docker
+k6: Modern load testing tool, using Go and JavaScript
+k9s: Kubernetes CLI To Manage Your Clusters In Style!
+kind: Run local Kubernetes cluster in Docker
+krb5: Network authentication protocol
+kubeconform: FAST Kubernetes manifests validator, with support for Custom Resources!
+kubectx: Tool that can switch between kubectl contexts easily and create aliases
+kubernetes-cli: Kubernetes command-line interface
+kustomize: Template-free customization of Kubernetes YAML manifests
+lazydocker: Lazier way to manage everything docker
+lazygit: Simple terminal UI for git commands
+lcov: Graphical front-end for GCC's coverage testing tool (gcov)
+lefthook: Fast and powerful Git hooks manager for any type of projects
+libass: Subtitle renderer for the ASS/SSA subtitle format
+libavif: Library for encoding and decoding .avif files
+libevent: Asynchronous event library
+libffi: Portable Foreign Function Interface library
+libgit2: C library of Git core methods that is re-entrant and linkable
+libheif: ISO/IEC 23008-12:2017 HEIF file format decoder and encoder
+libidn2: International domain name library (IDNA2008, Punycode and TR46)
+libimobiledevice: Library to communicate with iOS devices natively
+libnghttp2: HTTP/2 C Library
+libnghttp3: HTTP/3 library written in C
+libngtcp2: IETF QUIC protocol implementation
+libomp: LLVM's OpenMP runtime library
+libpng: Library for manipulating PNG images
+libpq: Postgres C API library
+libpsl: C library for the Public Suffix List
+librsvg: Library to render SVG files using Cairo
+libssh2: C library implementing the SSH2 protocol
+libtiff: TIFF library and utilities
+libtool: Generic library support script
+libunistring: C string library for manipulating Unicode strings
+libusb: Library for USB device access
+libuv: Multi-platform support library with a focus on asynchronous I/O
+libxml2: GNOME XML library
+libxslt: C XSLT library for GNOME
+libzip: C library for reading, creating, and modifying zip archives
+license-eye: Tool to check and fix license headers and resolve dependency licenses
+lima: Linux virtual machines
+little-cms2: Color management engine supporting ICC profiles
+llama.cpp: LLM inference in C/C++
+lld: LLVM Project Linker
+llhttp: Port of http_parser to llparse
+llmfit: Find what models run on your hardware
+llvm: Next-gen compiler infrastructure
+lpeg: Parsing Expression Grammars For Lua
+lua: Powerful, lightweight programming language
+luajit: Just-In-Time Compiler (JIT) for the Lua programming language
+luv: Bare libuv bindings for lua
+lz4: Extremely Fast Compression algorithm
+make: Utility for directing compilation
+mariadb: Drop-in replacement for MySQL
+mas: Mac App Store command-line interface
+maven: Java-based project management
+merve: C++ lexer for extracting named exports from CommonJS modules
+meson: Fast and user friendly build system
+mingw-w64: Minimalist GNU for Windows and GCC cross-compilers
+minikube: Run a Kubernetes cluster locally
+mint: Dependency manager that installs and runs Swift command-line tool packages
+mise: Polyglot runtime manager (asdf rust clone)
+mkcert: Simple tool to make locally trusted development certificates
+mole: Deep clean and optimize your Mac
+mongodb-atlas-cli: Atlas CLI enables you to manage your MongoDB Atlas
+mongosh: MongoDB Shell to connect, configure, query, and work with your MongoDB database
+mosh: Remote terminal application
+mpdecimal: Library for decimal floating point arithmetic
+mpv: Media player based on MPlayer and mplayer2
+mysql: Open source relational database management system
+mysql-client: Open source relational database management system
+mysql@8.0: Open source relational database management system
+mysql@8.4: Open source relational database management system
+nbytes: Library of byte handling functions extracted from Node.js core
+ncdu: NCurses Disk Usage
+ncurses: Text-based UI library
+neovim: Ambitious Vim-fork focused on extensibility and agility
+nginx: HTTP(S) server and reverse proxy, and IMAP/POP3 proxy server
+ninja: Small build system for use with gyp or CMake
+nmap: Port scanning utility for large networks
+node: Open-source, cross-platform JavaScript runtime environment
+node@20: Open-source, cross-platform JavaScript runtime environment
+node@22: Open-source, cross-platform JavaScript runtime environment
+node@24: Open-source, cross-platform JavaScript runtime environment
+nss: Libraries for security-enabled client and server applications
+numpy: Package for scientific computing with Python
+nushell: Modern shell for the GitHub era
+nvm: Manage multiple Node.js versions
+oci-cli: Oracle Cloud Infrastructure CLI
+ocrmypdf: Adds an OCR text layer to scanned PDF files
+oh-my-posh: Prompt theme engine for any shell
+ollama: Create, run, and share large language models (LLMs)
+oniguruma: Regular expressions library
+openai-whisper: General-purpose speech recognition model
+opencode: AI coding agent, built for the terminal
+opencv: Open source computer vision library
+openexr: High dynamic-range image file format
+openjdk: Development kit for the Java programming language
+openjdk@11: Development kit for the Java programming language
+openjdk@17: Development kit for the Java programming language
+openjdk@21: Development kit for the Java programming language
+openjdk@25: Development kit for the Java programming language
+openjpeg: Library for JPEG-2000 image manipulation
+openshift-cli: OpenShift command-line interface tools
+openssh: OpenBSD freely-licensed SSH connectivity tools
+openssl@3: Cryptography and SSL/TLS Toolkit
+openssl@4: Cryptography and SSL/TLS Toolkit
+opentofu: Drop-in replacement for Terraform. Infrastructure as Code Tool
+openvpn: SSL/TLS VPN implementing OSI layer 2 or 3 secure network extension
+oras: OCI Registry As Storage
+osv-scanner: Vulnerability scanner which uses the OSV database
+p11-kit: Library to load and enumerate PKCS#11 modules
+p7zip: 7-Zip (high compression file archiver) implementation
+pandoc: Swiss-army knife of markup format conversion
+pango: Framework for layout and rendering of i18n text
+parallel: Shell command parallelization utility
+pcre2: Perl compatible regular expressions library with a new API
+pgvector: Open-source vector similarity search for Postgres
+php: General-purpose scripting language
+pi-coding-agent: AI agent toolkit
+pigz: Parallel gzip
+pipenv: Python dependency management tool
+pipx: Execute binaries from Python packages in isolated environments
+pkgconf: Package compiler and linker metadata toolkit
+pnpm: Fast, disk space efficient package manager
+podman: Tool for managing OCI containers and pods
+poetry: Python package management tool
+poppler: PDF rendering library (based on the xpdf-3.0 code base)
+portaudio: Cross-platform library for audio I/O
+postgresql@14: Object-relational database system
+postgresql@15: Object-relational database system
+postgresql@16: Object-relational database system
+postgresql@17: Object-relational database system
+postgresql@18: Object-relational database system
+potrace: Convert bitmaps to vector graphics
+powershell: Command-line shell and scripting language
+pre-commit: Framework for managing multi-language pre-commit hooks
+prettier: Code formatter for JavaScript, CSS, JSON, GraphQL, Markdown, YAML
+protobuf: Protocol buffers (Google's data interchange format)
+pulumi: Cloud native development platform
+pv: Monitor data's progress through a pipe
+pyenv: Python version management
+pyenv-virtualenv: Pyenv plugin to manage virtualenv
+python-setuptools: Easily download, build, install, upgrade, and uninstall Python packages
+python-tk@3.13: Python interface to Tcl/Tk
+python-tk@3.14: Python interface to Tcl/Tk
+python-yq: Command-line YAML and XML processor that wraps jq
+python@3.10: Interpreted, interactive, object-oriented programming language
+python@3.11: Interpreted, interactive, object-oriented programming language
+python@3.12: Interpreted, interactive, object-oriented programming language
+python@3.13: Interpreted, interactive, object-oriented programming language
+python@3.14: Interpreted, interactive, object-oriented programming language
+python@3.15: Interpreted, interactive, object-oriented programming language
+python@3.9: Interpreted, interactive, object-oriented programming language
+qemu: Generic machine emulator and virtualizer
+qpdf: Tools for and transforming and inspecting PDF files
+qrencode: QR Code generation
+qt: Cross-platform application and UI framework
+qt@5: Cross-platform application and UI framework
+qwen-code: AI-powered command-line workflow tool for developers
+railway: Develop and deploy code with zero configuration
+rbenv: Ruby version manager
+rclone: Rsync for cloud storage
+readline: Library for command-line editing
+redis: Persistent key-value database, with built-in net interface
+restic: Fast, efficient and secure backup program
+ripgrep: Search tool like grep and The Silver Searcher
+rsync: Utility that provides fast incremental file transfer
+rtk: CLI proxy to minimize LLM token consumption
+ruby: Powerful, clean, object-oriented scripting language
+ruby-build: Install various Ruby versions and implementations
+ruff: Extremely fast Python linter, written in Rust
+rust: Safe, concurrent, practical language
+rust-analyzer: Experimental Rust compiler front-end for IDEs
+rustup: Rust toolchain installer
+sccache: Used as a compiler wrapper and avoids compilation when possible
+scrcpy: Display and control your Android device
+sdl2-compat: SDL2 compatibility layer that uses SDL3 behind the scenes
+semgrep: Easily detect and prevent bugs and anti-patterns in your codebase
+sevenzip: 7-Zip is a file archiver with a high compression ratio
+shellcheck: Static analysis and lint tool, for (ba)sh scripts
+shfmt: Autoformat shell script source code
+simdjson: SIMD-accelerated C++ JSON parser
+simdutf: Unicode conversion routines, fast
+skopeo: Work with remote images registries
+smartmontools: SMART hard drive monitoring
+socat: SOcket CAT: netcat on steroids
+sonar-scanner: Launcher to analyze a project with SonarQube
+sonic: Fast, lightweight & schema-less search backend
+sops: Editor of encrypted files
+sourcekitten: Framework and command-line tool for interacting with SourceKit
+sourcery: Meta-programming for Swift, stop writing boilerplate code
+sqlcmd: Microsoft SQL Server command-line interface
+sqlite: Command-line interface for SQLite
+sshpass: Non-interactive SSH password auth
+sshuttle: Proxy server that works as a poor man's VPN
+starship: Cross-shell prompt for astronauts
+subversion: Version control system designed to be a better CVS
+summarize: Multi-modal AI tool to extract and summarize content
+supabase: Postgres development platform
+swiftformat: Formatting tool for reformatting Swift code
+swiftgen: Swift code generator for assets, storyboards, Localizable.strings, etc.
+swiftlint: Tool to enforce Swift style and conventions
+syft: CLI for generating a Software Bill of Materials from container images
+syncthing: Open source continuous file synchronization application
+tailscale: Easiest, most secure way to use WireGuard and 2FA
+tcl-tk: Tool Command Language
+tectonic: Modernized, complete, self-contained TeX/LaTeX engine
+television: General purpose fuzzy finder TUI
+telnet: User interface to the TELNET protocol
+temporal: Command-line interface for running and interacting with Temporal Server and UI
+terminal-notifier: Send macOS User Notifications from the command-line
+terraform-docs: Tool to generate documentation from Terraform modules
+terragrunt: Thin wrapper for Terraform e.g. for locking state
+tesseract: OCR (Optical Character Recognition) engine
+tesseract-lang: Enables extra languages support for Tesseract
+tfenv: Terraform version manager inspired by rbenv
+tilt: Define your dev environment as code. For microservice apps on Kubernetes
+tmux: Terminal multiplexer
+topgrade: Upgrade all the things
+tor: Anonymizing overlay network for TCP
+trash-cli: Command-line interface to the freedesktop.org trashcan
+tree: Display directories as trees (with optional color/HTML output)
+tree-sitter: Incremental parsing library
+tree-sitter-cli: Parser generator tool
+trivy: Vulnerability scanner for container images, file systems, and Git repos
+trufflehog: Find and verify credentials
+typos-cli: Source code spell checker
+typst: Markup-based typesetting system
+ugrep: Ultra fast grep with query UI, fuzzy search, archive search, and more
+unar: Command-line unarchiving tools supporting multiple formats
+unbound: Validating, recursive, caching DNS resolver
+unibilium: Very basic terminfo library
+unixodbc: ODBC 3 connectivity for UNIX
+unzip: Extraction utility for .zip compressed archives
+utf8proc: Clean C library for processing UTF-8 Unicode data
+uutils-coreutils: Cross-platform Rust rewrite of the GNU coreutils
+uutils-findutils: Cross-platform Rust rewrite of the GNU findutils
+uv: Extremely fast Python package installer and resolver, written in Rust
+uvwasi: WASI syscall API built atop libuv
+vale: Syntax-aware linter for prose
+vercel: Command-line interface for Vercel
+vim: Vi 'workalike' with many additional features
+vips: Image processing library
+virtualenv: Tool for creating isolated virtual python environments
+wangle: Modular, composable client/server abstractions framework
+watch: Executes a program periodically, showing output fullscreen
+watchman: Watch files and take action when they change
+webp: Image format providing lossless and lossy compression for web images
+wget: Internet file retriever
+whisper.cpp: Port of OpenAI's Whisper model in C/C++
+wimlib: Library to create, extract, and modify Windows Imaging files
+wireshark: Network analyzer and capture tool - without graphical user interface
+xcbeautify: Little beautifier tool for xcodebuild
+xclogparser: Tool to parse the SLF serialization format used by Xcode
+xcodegen: Generate your Xcode project from a spec file and your folder structure
+xcodes: Command-line tool to install and switch between multiple versions of Xcode
+xcresultparser: Parse binary .xcresult bundles from Xcode builds and test runs
+xctesthtmlreport: Xcode-like HTML report for Unit and UI Tests
+xmlstarlet: XML command-line utilities
+xz: General-purpose data compression with high compression ratio
+yamllint: Linter for YAML files
+yarn: JavaScript package manager
+yazi: Blazing fast terminal file manager written in Rust, based on async I/O
+yq: Process YAML, JSON, XML, CSV and properties documents from the CLI
+yt-dlp: Feature-rich command-line audio/video downloader
+zellij: Pluggable terminal workspace, with terminal multiplexer as the base feature
+zig: Programming language designed for robustness, optimality, and clarity
+zizmor: Find security issues in GitHub Actions setups
+zlib: General-purpose lossless data-compression library
+zoxide: Shell extension to navigate your filesystem faster
+zsh: UNIX shell (command interpreter)
+zsh-autosuggestions: Fish-like fast/unobtrusive autosuggestions for zsh
+zsh-syntax-highlighting: Fish shell like syntax highlighting for zsh
+zstd: Zstandard is a real-time compression algorithm
+
+==> Casks
+1password: (1Password) Password manager that keeps all passwords secure behind one password
+1password-cli: (1Password CLI) Command-line interface for 1Password
+adobe-acrobat-reader: (Adobe Acrobat Reader) View, print, and comment on PDF documents
+adobe-creative-cloud: (Adobe Creative Cloud) Collection of apps and services for photography, design, video, web, and UX
+affinity: (Affinity) Image editing and design software
+agentsview: (AgentsView) Browse, search and analyse your past AI coding sessions
+alacritty: (Alacritty) GPU-accelerated terminal emulator
+aldente: (AlDente) Menu bar tool to limit maximum charging percentage
+alfred: (Alfred) Application launcher and productivity software
+alt-tab: (AltTab) Enable Windows-like alt-tab
+anaconda: (Anaconda Distribution) Distribution of the Python and R programming languages for scientific computing
+android-cli: (Android CLI) Command-line interface for Android app development with AI agents
+android-commandlinetools: (Android SDK Command-line Tools) Command-line tools for building and debugging Android apps
+android-file-transfer: (Android File Transfer) Transfer files from and to an Android smartphone
+android-platform-tools: (Android SDK Platform-Tools) Android SDK component
+android-studio: (Android Studio) Tools for building Android applications
+anki: (Anki) Memory training application
+another-redis-desktop-manager: (Another Redis Desktop Manager) Redis desktop manager
+antigravity: (Google Antigravity) Agent orchestration platform
+antigravity-cli: (Google Antigravity CLI) Terminal interface for Antigravity agents
+antigravity-ide: (Google Antigravity IDE) AI Coding Agent IDE
+anydesk: (AnyDesk) Allows connection to a computer remotely
+anythingllm: (AnythingLLM) Private desktop AI chat application
+appcleaner: (FreeMacSoft AppCleaner) Application uninstaller
+applite: (Applite) User-friendly GUI app for Homebrew
+arc: (Arc) Chromium based browser
+arduino-ide: (Arduino IDE) Electronics prototyping platform
+audacity: (Audacity) Multi-track audio editor and recorder
+azure-cli: (Azure CLI) Microsoft Azure CLI 2.0
+background-music: (Background Music) Audio utility
+balenaetcher: (Etcher) Tool to flash OS images to SD cards & USB drives
+bambu-studio: (Bambu Studio) 3D model slicing software for 3D printers, maintained by Bambu Lab
+bartender: (Bartender) Menu bar icon organiser
+basictex: (BasicTeX) Compact TeX distribution as alternative to the full TeX Live / MacTeX
+bbedit: (BBEdit) Text, code, and markup editor
+beekeeper-studio: (Beekeeper Studio) Cross platform SQL editor and database management app
+betterdisplay: (BetterDisplay) Display management tool
+bettertouchtool: (BetterTouchTool) Tool to customise input devices and automate computer systems
+bitwarden: (Bitwarden) Desktop password and login vault
+blackhole-16ch: (BlackHole 16ch) Virtual Audio Driver
+blackhole-2ch: (BlackHole 2ch) Virtual Audio Driver
+blackhole-64ch: (BlackHole 64ch) Virtual Audio Driver
+blender: (Blender) 3D creation suite
+block-goose: (Goose) Open source, extensible AI agent that goes beyond code suggestions
+brave-browser: (Brave) Web browser focusing on privacy
+bruno: (Bruno) Open source IDE for exploring and testing APIs
+burp-suite: (Burp Suite Community Edition) Web security testing toolkit
+caffeine: (Caffeine) Utility that prevents the system from going to sleep
+calibre: (calibre) E-books management software
+capcut: (CapCut) Video editing and image design platform
+caskhub: (CaskHub) Native GUI for Homebrew casks
+cc-switch: (CC Switch) Configuration manager for AI coding agents
+chatgpt: (ChatGPT) OpenAI's official ChatGPT desktop app
+chatgpt-classic: (ChatGPT Classic) OpenAI's previous ChatGPT desktop app
+chromedriver: (ChromeDriver) Automated testing of webapps for Google Chrome
+chromium: (Chromium) Free and open-source web browser
+clash-verge-rev: (Clash Verge Rev) Continuation of Clash Verge - A Clash Meta GUI based on Tauri
+claude: (Claude) Anthropic's official Claude AI desktop app
+claude-code: (Claude Code) Terminal-based AI coding assistant
+claude-code@latest: (Claude Code) Terminal-based AI coding assistant
+cleanmymac-cli: (CleanMyMac CLI) Command-line interface for CleanMyMac
+clickhouse: (ClickHouse) Column-oriented database management system
+clipy: (Clipy) Clipboard extension app
+clop: (Clop) Image, video and clipboard optimiser
+cloudflare-warp: (Cloudflare WARP) Free app that makes your Internet safer
+cmux: (cmux) Ghostty-based terminal with vertical tabs and notifications for AI coding agents
+coderabbit: (CodeRabbit) AI code review CLI
+codex: (Codex) OpenAI's coding agent that runs in your terminal
+codex-app: (Codex) OpenAI's Codex desktop app for managing coding agents
+codexbar: (CodexBar) Menu bar app for tracking agentic coding limits and usage
+comfy: (Comfy Desktop) Node-based image, video and audio generator
+copilot-cli: (GitHub Copilot CLI) Brings the power of Copilot coding agent directly to your terminal
+corretto@17: (AWS Corretto JDK) OpenJDK distribution from Amazon
+corretto@21: (AWS Corretto JDK) OpenJDK distribution from Amazon
+corretto@25: (AWS Corretto JDK) OpenJDK distribution from Amazon
+coteditor: (CotEditor) Plain-text editor for web pages, program source codes and more
+crisp: (Crisp) Menu bar display manager: DDC brightness, HiDPI, presets, virtual displays
+crossover: (CrossOver) Tool to run Windows software
+cryptomator: (Cryptomator) Multi-platform client-side cloud file encryption tool
+crystalfetch: (Crystalfetch) UI for creating Windows installer ISO from UUPDump
+cursor: (Cursor) Write, edit, and chat about your code with AI
+cursor-cli: (Cursor CLI) Command-line agent for Cursor
+cyberduck: (Cyberduck) Server and cloud storage browser
+datagrip: (DataGrip) Databases and SQL IDE
+db-browser-for-sqlite: (DB Browser for SQLite) Browser for SQLite databases
+dbeaver-community: (DBeaver Community Edition) Universal database tool and SQL client
+dbx: (DBX) Database management tool
+deepseek-harness: (DeepSeek Harness) Plugin-based AI agent desktop application
+devin-cli: (Devin CLI) Coding agent with Devin Cloud integration
+devtunnel: (Microsoft Dev Tunnels) Provides developers secure tunnels to share local web services
+discord: (Discord) Voice and text chat software
+displaylink: (DisplayLink USB Graphics Software) Drivers for DisplayLink docks, adapters and monitors
+dockdoor: (DockDoor) Window peeking utility app
+docker-desktop: (Docker Desktop, Docker Community Edition, Docker CE) App to build and share containerised applications and microservices
+dotnet-sdk: (.NET SDK) Developer platform
+dotnet-sdk@8: (.NET SDK) Developer platform
+draw-things: (Draw Things) Run Stable Diffusion locally
+drawio: (draw.io Desktop) Online diagram software
+dropbox: (Dropbox) Client for the Dropbox cloud storage service
+duckduckgo: (DuckDuckGo) Web browser focusing on privacy
+easydict: (Easydict) Dictionary and translator app
+emacs-app: (Emacs) GNU Emacs text editor
+epic-games: (Epic Games Launcher) Launcher for *Epic Games* games
+espanso: (Espanso) Cross-platform Text Expander written in Rust
+figma: (Figma) Collaborative team software
+finetune: (FineTune) Per-application volume mixer, equalizer, and audio router
+finicky: (Finicky) Utility for customizing which browser to start
+firefox: (Mozilla Firefox) Web browser
+firefox@developer-edition: (Mozilla Firefox Developer Edition) Web browser
+flameshot: (Flameshot) Screenshot software with built-in annotation tools
+fluidvoice: (FluidVoice) Offline voice-to-text dictation app with AI enhancement
+flutter: (Flutter SDK) UI toolkit for building applications for mobile, web and desktop
+font-0xproto-nerd-font: (0xProto Nerd Font (0xProto)) [no description]
+font-blex-mono-nerd-font: (BlexMono Nerd Font (IBM Plex Mono)) [no description]
+font-caskaydia-mono-nerd-font: (CaskaydiaMono Nerd Font (Cascadia Mono)) [no description]
+font-comic-shanns-mono-nerd-font: (ComicShannsMono Nerd Font (Comic Shanns Mono)) [no description]
+font-d2coding: (D2 Coding) [no description]
+font-dejavu: (DejaVu) [no description]
+font-droid-sans-mono-nerd-font: (DroidSansM Nerd Font (Droid Sans Mono)) [no description]
+font-fira-code: (Fira Code) [no description]
+font-fira-code-nerd-font: (FiraCode Nerd Font (Fira Code)) [no description]
+font-go-mono-nerd-font: (GoMono Nerd Font (Go Mono)) [no description]
+font-hack-nerd-font: (Hack Nerd Font (Hack)) [no description]
+font-inter: (Inter) [no description]
+font-jetbrains-mono: (JetBrains Mono) [no description]
+font-jetbrains-mono-nerd-font: (JetBrainsMono Nerd Font families (JetBrains Mono)) [no description]
+font-maple-mono-nf: (Maple Mono NF) [no description]
+font-maple-mono-nf-cn: (Maple Mono NF CN) [no description]
+font-meslo-lg-nerd-font: (MesloLG Nerd Font families (Meslo LG)) [no description]
+font-noto-sans-cjk-sc: (Noto Sans CJK SC) [no description]
+font-sauce-code-pro-nerd-font: (SauceCodePro Nerd Font (Source Code Pro)) [no description]
+font-source-code-pro: (Source Code Pro) [no description]
+font-symbols-only-nerd-font: (Symbols Nerd Font (Symbols Only)) [no description]
+font-ubuntu-nerd-font: (Ubuntu Nerd Font (Ubuntu)) [no description]
+fork: (Fork) GIT client
+freecad: (FreeCAD) 3D parametric modeller
+freelens: (Freelens) Kubernetes IDE
+fuse-t: (FUSE-T) Kext-less implementation of FUSE
+gcc-arm-embedded: (GCC ARM Embedded) Pre-built GNU bare-metal toolchain for 32-bit Arm processors
+gcloud-cli: (Google Cloud CLI) Set of tools to manage resources and applications hosted on Google Cloud
+gemini: (Gemini) Disk space cleaner that finds and deletes duplicated and similar files
+ghostty: (Ghostty) Terminal emulator that uses platform-native UI and GPU acceleration
+gimp: (GIMP, GNU Image Manipulation Program) Free and open-source image editor
+git-credential-manager: (Git Credential Manager) Cross-platform Git credential storage for multiple hosting providers
+github: (GitHub Desktop) Desktop client for GitHub repositories
+github-copilot-app: (GitHub Copilot) Native client for GitHub Copilot
+godot: (Godot Engine) 2D and 3D game engine
+google-chrome: (Google Chrome) Web browser
+google-chrome@canary: (Google Chrome Canary) Web browser
+google-drive: (Google Drive) Client for the Google Drive storage service
+google-gemini: (Gemini) Native desktop AI assistant from Google
+grandperspective: (GrandPerspective) Graphically shows disk usage within a file system
+granola: (Granola) AI-powered notepad for meetings
+grok-bot: (Grok Bot) AI teammates that work across your apps and tools
+grok-build: (Grok Build) Extensible coding agent for the terminal
+gstreamer-runtime: (GStreamer runtime package) Open Source Multimedia Framework
+gtkwave: (GTKWave) GTK+ based wave viewer
+hammerspoon: (Hammerspoon) Desktop automation application
+handbrake-app: (HandBrake) Open-source video transcoder
+handy: (Handy) Speech to text application
+headlamp: (Headlamp) UI for Kubernetes
+helium-browser: (Helium) Chromium-based web browser
+hermes-desktop: (Hermes Agent Desktop) Open-source desktop AI agent
+hiddenbar: (Hidden Bar) Utility to hide menu bar items
+highball: (Highball) Tool to run Windows games
+homebrew-app: (Homebrew) Homebrew's official GUI
+hopper-disassembler: (Hopper Disassembler) Reverse engineering tool that lets you disassemble, decompile and debug your app
+iina: (IINA) Free and open-source media player
+imageoptim: (ImageOptim) Tool to optimise images to a smaller size
+inkscape: (Inkscape) Vector graphics editor
+insomnia: (Insomnia) HTTP and GraphQL Client
+intellij-idea: (IntelliJ IDEA Ultimate) Java IDE by JetBrains
+intellij-idea-ce: (IntelliJ IDEA Community Edition, IntelliJ IDEA CE) IDE for Java development - community edition
+istat-menus: (iStats Menus) System monitoring app
+iterm2: (iTerm2) Terminal emulator as alternative to Apple's Terminal app
+itsycal: (Itsycal) Menu bar calendar
+jellyfin: (Jellyfin) Media system
+jetbrains-toolbox: (JetBrains Toolbox) JetBrains tools manager
+jordanbaird-ice: (Ice) Menu bar manager
+karabiner-elements: (Karabiner Elements) Keyboard customiser
+kde-connect: (KDE Connect) Communicate with your handheld devices
+keepassxc: (KeePassXC) Password manager app
+keepingyouawake: (KeepingYouAwake) Tool to prevent the system from going into sleep mode
+keka: (Keka) File archiver
+keycastr: (KeyCastr) Open-source keystroke visualiser
+keyclu: (KeyClu) Find shortcuts for any installed application
+kicad: (KiCad) Electronics design automation suite
+kiro: (kiro) Agent-centric IDE with spec-driven development
+kiro-cli: (Kiro CLI) AI-powered productivity tool for the command-line
+kitty: (kitty) GPU-based terminal emulator
+krita: (Krita) Free and open-source painting and sketching program
+lens: (Lens) Kubernetes IDE
+libreoffice: (LibreOffice) Free cross-platform office suite, fresh version
+libreoffice-language-pack: (LibreOffice Language Pack) Collection of alternate languages for LibreOffice
+librewolf: (LibreWolf) Web browser
+lightcraft: (LightCraft) Photo library manager and raw image developer
+linear: (Linear) App to manage software development and track bugs
+linearmouse: (LinearMouse) Customise mouse behavior
+lm-studio: (LM Studio) Discover, download, and run local LLMs
+lm-studio-bionic: (LM Studio Bionic) AI agent for working with open models
+localsend: (LocalSend) Open-source cross-platform alternative to AirDrop
+logi-options+: (Logitech Options+) Software for Logitech devices
+loop: (Loop) Window manager
+losslesscut: (LosslessCut) Trims video and audio files losslessly
+lulu: (LuLu) Open-source firewall to block unknown outgoing connections
+lunar: (Lunar) Adaptive brightness for external displays
+mac-mouse-fix: (Mac Mouse Fix) Mouse utility to add gesture functions and smooth scrolling to 3rd party mice
+mac-sai: (Mac Sai) System cleaner, optimiser, and malware scanner
+maccy: (Maccy) Clipboard manager
+macdown: (MacDown) Open-source Markdown editor
+macdown-3000: (MacDown 3000) Markdown editor with live preview and syntax highlighting
+macfuse: (macFUSE) File system integration
+macpacker: (MacPacker) Archive manager
+macs-fan-control: (Macs Fan Control) Controls and monitors all fans on Apple computers
+macshot: (macshot) Screenshot and screen recording tool
+mactex: (MacTeX) Full TeX Live distribution with GUI applications
+mactex-no-gui: (MacTeX) Full TeX Live distribution without GUI applications
+macusb: (macUSB) Tool to create bootable USB installers
+macwhisper: (MacWhisper) Speech recognition tool
+maestro: (Maestro) AI agent command center
+mark-text: (MarkText) Markdown editor
+markdown-preview: (Markdown Preview) Markdown previewer with bundled Quick Look extension
+markedit: (MarkEdit) Markdown editor
+meld: (Meld for macOS) Visual diff and merge tool
+microsoft-edge: (Microsoft Edge) Multi-platform web browser
+microsoft-excel: (Microsoft Excel) Spreadsheet software
+microsoft-office: (Microsoft Office) Office suite
+microsoft-outlook: (Microsoft Outlook) Email client
+microsoft-powerpoint: (Microsoft PowerPoint) Presentation software
+microsoft-teams: (Microsoft Teams) Meet, chat, call, and collaborate in just one place
+microsoft-word: (Microsoft Word) Word processor
+middleclick: (MiddleClick) Utility to extend trackpad functionality
+miniconda: (Miniconda) Minimal installer for conda
+miniforge: (miniforge) Minimal installer for conda specific to conda-forge
+mitmproxy: (mitmproxy) Intercept, modify, replay, save HTTP/S traffic
+mole-app: (Mole) Deep clean, analyze, and optimize app
+mongodb-compass: (MongoDB Compass) Interactive tool for analyzing MongoDB data
+monitorcontrol: (MonitorControl) Tool to control external monitor brightness & volume
+moonlight: (Moonlight) GameStream client
+mos: (Mos) Smooths scrolling and set mouse scroll directions independently
+mounty: (Mounty for NTFS) Re-mounts write-protected NTFS volumes
+multipass: (Multipass) Orchestrates virtual Ubuntu instances
+musescore: (MuseScore) Open-source music notation software
+mysqlworkbench: (MySQL Workbench) Visual tool to design, develop and administer MySQL servers
+nextcloud: (Nextcloud) Desktop sync client for Nextcloud software products
+ngrok: (ngrok) Reverse proxy, secure introspectable tunnels to localhost
+nordvpn: (NordVPN) VPN client for secure internet access and private browsing
+notion: (Notion) App to write, plan, collaborate, and get organised
+notunes: (noTunes) Simple application that will prevent iTunes or Apple Music from launching
+obs: (OBS) Open-source software for live streaming and screen recording
+obsidian: (Obsidian) Knowledge base that works on top of a local folder of plain text Markdown files
+ollama-app: (Ollama) Get up and running with large language models locally
+omniwm: (OmniWM) Tiling window manager
+onedrive: (OneDrive) Cloud storage client
+onlyoffice: (ONLYOFFICE) Document editor
+onyx: (OnyX) Verify system files structure, run miscellaneous maintenance and more
+open-webui: (Open WebUI) Desktop application for Open WebUI
+openclaw: (OpenClaw) Personal AI assistant
+opencode-desktop: (OpenCode) AI coding agent desktop client
+openlens: (OpenLens) Open source build of Lens Kubernetes IDE
+openlogi: (OpenLogi) Local-first alternative to Logitech Options+ for HID++ devices
+openmtp: (OpenMTP) Android file transfer
+openscad: (OpenSCAD) Programmable solid 3D CAD modeller
+openscad@snapshot: (OpenSCAD) Programmable solid 3D CAD modeller
+opensuperwhisper: (OpenSuperWhisper) Whisper dictation/transcription app
+openusage: (OpenUsage) AI usage tracker for Cursor, Claude Code, Codex, Copilot and more
+openvpn-connect: (OpenVPN Connect client) Client program for the OpenVPN Access Server
+opera: (Opera) Web browser
+orbstack: (OrbStack) Replacement for Docker Desktop
+orcaslicer: (Orca Slicer) G-code generator for 3D printers
+paseo: (Paseo) Self-hosted daemon for AI coding agents
+pdfcraft: (PdfCraft) PDF editor
+pearcleaner: (Pearcleaner) Utility to uninstall apps and remove leftover files from old/uninstalled apps
+pgadmin4: (pgAdmin4) Administration and development platform for PostgreSQL
+photocraft: (PhotoCraft) Image editor
+podman-desktop: (Podman Desktop) Browse, manage, inspect containers and images
+postgres-app: (Postgres) App wrapper for Postgres
+postman: (Postman) Collaboration platform for API development
+powershell@preview: (PowerShell) Command-line shell and scripting language
+prismlauncher: (Prism Launcher) Minecraft launcher
+proton-mail: (Proton Mail) Client for Proton Mail and Proton Calendar
+protonvpn: (ProtonVPN) VPN client focusing on security
+proxyman: (Proxyman) HTTP debugging proxy
+puremac: (PureMac) Open-source application manager and system cleaner
+pycharm: (PyCharm, PyCharm Professional) IDE for professional Python development
+qbittorrent: (qBittorrent) Peer to peer Bitorrent client
+qgis: (QGIS) Geographic Information System
+qlmarkdown: (sbarex QLMarkdown) Quick Look generator for Markdown files
+quarto: (quarto) Scientific and technical publishing system built on Pandoc
+r-app: (R) Environment for statistical computing and graphics
+radix: (Radix) Disk space analyzer
+rancher: (Rancher Desktop) Kubernetes and container management on the desktop
+rar: (RAR Archiver) Archive manager for data compression and backups
+raspberry-pi-imager: (Raspberry Pi Imager) Imaging utility to install operating systems to a microSD card
+raycast: (Raycast) Control your tools with a few keystrokes
+realvnc-connect-viewer: (RealVNC Connect Viewer) Remote desktop application focusing on security
+rectangle: (Rectangle) Move and resize windows using keyboard shortcuts or snap areas
+redis-insight: (Redis Insight) GUI for streamlined Redis application development
+robbietilton-compositor: (Compositor) Photoshop alternative
+rstudio: (RStudio) Data science software focusing on R and Python
+rustdesk: (RustDesk) Open source virtual/remote desktop application
+scroll-reverser: (Scroll Reverser) Tool to reverse the direction of scrolling
+secretive: (Secretive) Store SSH keys in the Secure Enclave
+sentry-cli: (Sentry CLI) Command-line utility to interact with Sentry
+sequel-ace: (Sequel Ace) MySQL/MariaDB database management
+session-manager-plugin: (Session Manager Plugin for the AWS CLI) Plugin for AWS CLI to start and end sessions that connect to managed instances
+sfm: (SFM) Standalone client for sing-box, the universal proxy platform
+shottr: (Shottr) Screenshot measurement and annotation tool
+signal: (Signal) Instant messaging application focusing on security
+skim: (Skim) PDF reader and note-taking application
+slack: (Slack) Team communication and collaboration software
+slack-cli: (Slack CLI) CLI to create, run, and deploy Slack apps
+sonarqube-cli: (SonarQube CLI) Code quality and security for terminal workflows, scripts, and AI agents
+sourcetree: (Atlassian SourceTree) Graphical client for Git version control
+spotify: (Spotify) Music streaming service
+sqlcl: (sqlcl) Oracle SQLcl is the modern command-line interface for the Oracle Database
+sshfs-mac: (SSHFS) Network filesystem client to connect to SSH servers
+stats: (Stats) System monitor for the menu bar
+steam: (Steam) Video game digital distribution service
+steamcmd: (SteamCMD) Command-line client for Steam
+stremio: (Stremio) Open-source media center
+sublime-text: (Sublime Text) Text editor for code, markup and prose
+superwhisper: (Superwhisper) Dictation tool including LLM reformatting
+swiftbar: (SwiftBar) Menu bar customization tool
+syncthing-app: (Syncthing) Real time file synchronisation software
+syntax-highlight: (Syntax Highlight) Quicklook extension for source files
+t3-code: (T3 Code) Minimal GUI for AI code agents
+t3-code@nightly: (T3 Code Nightly) Minimal GUI for AI code agents
+tabby: (Tabby, Terminus) Terminal emulator, SSH and serial client
+tableplus: (TablePlus) Native GUI tool for relational databases
+tailscale-app: (Tailscale) Mesh VPN based on WireGuard
+teamviewer: (TeamViewer) Remote access and connectivity software focused on security
+telegram: (Telegram for macOS) Messaging app with a focus on speed and security
+telegram-desktop: (Telegram Desktop) Desktop client for Telegram messenger
+temurin: (Eclipse Temurin Java Development Kit) JDK from the Eclipse Foundation (Adoptium)
+temurin@11: (Eclipse Temurin 11) JDK from the Eclipse Foundation (Adoptium)
+temurin@17: (Eclipse Temurin Java Development Kit) JDK from the Eclipse Foundation (Adoptium)
+temurin@21: (Eclipse Temurin 21) JDK from the Eclipse Foundation (Adoptium)
+temurin@25: (Eclipse Temurin 25) JDK from the Eclipse Foundation (Adoptium)
+temurin@8: (Eclipse Temurin 8) JDK from the Eclipse Foundation (Adoptium)
+terminal-browser: (terminal-browser) Terminal-based web browser
+termius: (Termius) SSH client
+textream: (Textream) Teleprompter that highlights scripts in real time as you speak
+thaw: (Thaw) Menu bar manager
+thaw@beta: (Thaw) Menu bar manager
+the-unarchiver: (The Unarchiver) Unpacks archive files
+thunderbird: (Mozilla Thunderbird) Customizable email client
+tigervnc: (TigerVNC) Multi-platform VNC client and server
+tor-browser: (Tor Browser) Web browser focusing on security
+transmission: (Transmission) Open-source BitTorrent client
+tuist: (Tuist) Create, maintain, and interact with Xcode projects at scale
+tunnelblick: (Tunnelblick) Free and open-source OpenVPN client
+typora: (Typora) Configurable document editor that supports Markdown
+ubersicht: (Übersicht) Run commands and display their output on the desktop
+ungoogled-chromium: (Ungoogled Chromium) Google Chromium, sans integration with Google
+unity-cli: (Unity CLI) Command-line interface for Unity
+unity-hub: (Unity Hub) Management tool for Unity
+unsloth: (Unsloth Desktop) Desktop application for Unsloth Studio
+upscayl: (Upscayl) AI image upscaler
+utm: (UTM) Virtual machines UI using QEMU
+vagrant: (Vagrant) Development environment
+vercel: (Vercel CLI) Command-line interface for Vercel
+virtualbox: (Oracle VirtualBox) Virtualiser for arm64 hardware
+visual-studio-code: (Microsoft Visual Studio Code, VS Code) Open-source code editor
+vivaldi: (Vivaldi) Web browser with built-in email client focusing on customization and control
+vlc: (VLC media player) Multimedia player
+voiceink: (VoiceInk) Voice to text app
+vorssaint: (Vorssaint) Menu bar toolkit with keep-awake, system monitor and volume mixer
+vscodium: (VSCodium) Binary releases of VS Code without MS branding/telemetry/licensing
+warp: (Warp) Rust-based terminal
+wechat: (WeChat for Mac, 微信 Mac 版) Free messaging and calling application
+wechatwebdevtools: (Wechat DevTools, 微信开发者工具) Wechat DevTools for Official Account and Mini Program development
+wezterm: (WezTerm) GPU-accelerated cross-platform terminal emulator and multiplexer
+whatcable: (WhatCable) Menu bar app for USB-C cable diagnostics
+whatsapp: (WhatsApp) Native desktop client for WhatsApp
+whisky: (Whisky) Wine wrapper built with SwiftUI
+windows-app: (Windows App) Connect to Windows
+wine-stable: (WineHQ-stable) Compatibility layer to run Windows applications
+wireshark-app: (Wireshark) Network protocol analyzer
+wispr-flow: (Wispr Flow) Voice-to-text dictation with AI-powered auto-editing
+wizcli: (Wiz CLI) CLI for interacting with the Wiz platform
+wordcraft: (WordCraft) Word processor
+wpsoffice-cn: (WPS Office) All-in-one office service platform in Chinese
+xcodes-app: (Xcodes) Install and switch between multiple versions of Xcode
+xquartz: (XQuartz) Open-source version of the X.Org X Window System
+yandex: (Yandex.Browser) Web browser
+zed: (Zed) Multiplayer code editor
+zen: (Zen Browser) Gecko based web browser
+zoom: (Zoom) Video communication and virtual meeting platform
+zotero: (Zotero) Collect, organise, cite, and share research sources
+zulu@17: (Azul Zulu Java Standard Edition Development Kit) OpenJDK distribution from Azul
+zulu@21: (Azul Zulu Java Standard Edition Development Kit) OpenJDK distribution from Azul
+zulu@8: (Azul Zulu Java 8 Standard Edition Development Kit) OpenJDK distribution from Azul
