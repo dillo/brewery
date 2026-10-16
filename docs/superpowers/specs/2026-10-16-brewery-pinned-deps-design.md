@@ -31,7 +31,7 @@ A **blocker** of a formula is an installed package that is in its dependencies (
 
 - **`u`** on Installed or Outdated, for an outdated, unpinned formula with blockers: no job; it flashes `curl needs openssl@3 unpinned first` (names joined with ", ").
 - **Marked upgrades** leave out formulae with blockers. If some are left out, the flash after starting says `skipped curl: needs openssl@3 unpinned`; if all are, nothing starts and it says that alone.
-- **Upgrade all (`U`)**: the dialog adds a line `brew will refuse curl, wget: they need openssl@3 unpinned` (all blocked formulae, and the union of their blockers). `y` still runs `brew upgrade`; brew upgrades the rest.
+- **Upgrade all (`A` on Outdated)**: the dialog adds a line `brew will refuse curl, wget: they need openssl@3 unpinned` (`it needs` for one; all blocked formulae, and the union of their blockers). `y` still runs `brew upgrade`; brew upgrades the rest.
 
 The check uses the dependencies of the installed version. An upgrade can add or drop dependencies, so for upgrades it's a strong hint, not a guarantee.
 
@@ -43,4 +43,4 @@ The check uses the dependencies of the installed version. An upgrade can add or 
 
 ## Testing
 
-Unit tests in `state` (PinnedBehind) and `ui` (preview labels and warning; `u` on both tabs; marked upgrade partly and fully blocked; the `U` dialog line; the Discover dialog before and after brew answers). The fixture gains a pinned, outdated dependency in tests that need it, built in the test from `fixtureSnapshot`. No real installs.
+Unit tests in `state` (PinnedBehind) and `ui` (preview labels and warning; `u` on both tabs; marked upgrade partly and fully blocked; the `U` dialog line; the Discover dialog before and after brew answers). Tests that need a pinned, outdated dependency build one from `fixtureSnapshot`, in both the app's snapshot and the fake source (a refresh after a job reloads from the source). No real installs.
