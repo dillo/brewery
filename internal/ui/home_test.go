@@ -226,3 +226,16 @@ func TestPlural(t *testing.T) {
 		t.Error("plural wrong")
 	}
 }
+
+func TestHomeOutdatedTileCountsPinned(t *testing.T) {
+	h := loadedHome()
+	snap := fixtureSnapshot(t)
+	snap.Outdated[0].Pinned = true // lua-language-server: U skips it
+	if got := h.tiles(snap)[1]; got.value != "2" || got.detail != "1 pinned · docker-desktop" || got.style.GetForeground() != testStyles.Warn.GetForeground() {
+		t.Errorf("tile %q (%q)", got.value, got.detail)
+	}
+	snap.Outdated[1].Pinned = true // nothing left that U would upgrade
+	if got := h.tiles(snap)[1]; got.value != "2" || got.detail != "2 pinned · nothing to upgrade" || got.style.GetForeground() != testStyles.Muted.GetForeground() {
+		t.Errorf("tile %q (%q)", got.value, got.detail)
+	}
+}
