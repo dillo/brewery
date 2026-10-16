@@ -16,6 +16,8 @@ import (
 type Analytics interface {
 	Cached(list string) (analytics.List, time.Time, error)
 	Fetch(ctx context.Context, list string) (analytics.List, error)
+	Tried() string // the day a fetch last started, as 2006-01-02
+	SetTried(day string) error
 }
 
 var _ Analytics = analytics.Store{}
@@ -28,6 +30,7 @@ type (
 	cachedStatsMsg struct {
 		lists map[string]analytics.List
 		at    map[string]time.Time
+		tried string // the day a fetch last started, in this run or an earlier one
 	}
 	fetchedStatsMsg struct {
 		i   int // the list's index in analytics.Lists
@@ -46,7 +49,7 @@ func (a *App) wantStats() tea.Cmd {
 		a.discover.statsRead = true
 		an := a.analytics
 		return func() tea.Msg {
-			m := cachedStatsMsg{lists: map[string]analytics.List{}, at: map[string]time.Time{}}
+			m := cachedStatsMsg{lists: map[string]analytics.List{}, at: map[string]time.Time{}, tried: an.Tried()}
 			for _, name := range analytics.Lists {
 				if l, at, err := an.Cached(name); err == nil {
 					m.lists[name], m.at[name] = l, at
@@ -60,6 +63,9 @@ func (a *App) wantStats() tea.Cmd {
 
 func (a *App) gotCachedStats(m cachedStatsMsg) tea.Cmd {
 	d := &a.discover
+	if d.triedOn == "" {
+		d.triedOn = m.tried
+	}
 	for name, l := range m.lists {
 		if _, ok := d.stats[name]; !ok { // a download that finished first is newer
 			d.stats[name], d.statsAt[name] = l, m.at[name]
@@ -70,8 +76,8 @@ func (a *App) gotCachedStats(m cachedStatsMsg) tea.Cmd {
 }
 
 // fetchStats downloads every list, one after another, unless the copies
-// are all from today or a fetch already started today. force (r) fetches
-// anyway. Only one fetch runs at a time.
+// are all from today or a fetch already started today, in this run or an
+// earlier one. force (r) fetches anyway. Only one fetch runs at a time.
 func (a *App) fetchStats(force bool) tea.Cmd {
 	d := &a.discover
 	today := a.now().Format(time.DateOnly)
@@ -79,7 +85,12 @@ func (a *App) fetchStats(force bool) tea.Cmd {
 		return nil
 	}
 	d.fetching, d.triedOn, d.fetchErr = true, today, nil
-	return a.fetchList(0)
+	an := a.analytics
+	remember := func() tea.Msg {
+		_ = an.SetTried(today) // without it, the next start may fetch again today
+		return nil
+	}
+	return tea.Batch(a.fetchList(0), remember)
 }
 
 func (a *App) fetchList(i int) tea.Cmd {

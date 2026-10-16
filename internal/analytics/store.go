@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,21 @@ const BaseURL = "https://formulae.brew.sh/api/analytics/"
 
 // maxSize bounds a download; the largest list is about 4MB.
 const maxSize = 64 << 20
+
+// StatusError is a list formulae.brew.sh answered with a status other
+// than 200 OK.
+type StatusError struct {
+	List string
+	Code int
+}
+
+func (e *StatusError) Error() string {
+	return fmt.Sprintf("%s: %d %s", e.List, e.Code, http.StatusText(e.Code))
+}
+
+// ErrBadList is a list that came back but isn't one: an error page, or
+// JSON in another shape.
+var ErrBadList = errors.New("not an analytics list")
 
 // Store downloads analytics lists and keeps the last copy of each in Dir.
 type Store struct {
@@ -79,7 +95,7 @@ func (s Store) Fetch(ctx context.Context, list string) (List, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return List{}, fmt.Errorf("%s: %s", list, resp.Status)
+		return List{}, &StatusError{List: list, Code: resp.StatusCode}
 	}
 	b, err := io.ReadAll(io.LimitReader(resp.Body, maxSize))
 	if err != nil {
@@ -87,10 +103,32 @@ func (s Store) Fetch(ctx context.Context, list string) (List, error) {
 	}
 	l, err := Parse(b)
 	if err != nil {
-		return List{}, err
+		return List{}, fmt.Errorf("%s: %w: %v", list, ErrBadList, err)
 	}
 	_ = s.save(list, b) // without a copy, the next start only shows the lists once they're fetched again
 	return l, nil
+}
+
+// triedFile holds the day a fetch last started.
+const triedFile = "tried"
+
+// Tried is the day a fetch last started, as 2006-01-02, or "" if none
+// is known.
+func (s Store) Tried() string {
+	b, err := os.ReadFile(filepath.Join(s.Dir, triedFile))
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
+}
+
+// SetTried records day (2006-01-02) as the day a fetch last started, so a
+// fetch that failed isn't tried again by every start that day.
+func (s Store) SetTried(day string) error {
+	if err := os.MkdirAll(s.Dir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(s.Dir, triedFile), []byte(day+"\n"), 0o644)
 }
 
 // save writes the copy of list atomically, so a crash midway never leaves
