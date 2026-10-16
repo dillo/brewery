@@ -10,17 +10,16 @@ Show people what brewery looks like before they install it. The README gets four
 
 The demo data is in brew's own formats and goes through brewery's real parsers (`brew.ParseInfo`, `ParseOutdated`, `ParseServices`, `ParseTaps`, `ParseCatalogue`, `analytics.Parse`). That keeps every screen authentic.
 
-- **`info.json`** (`brew info --json=v2 --installed`): about 40 well-known packages, each with a description, homepage, tap, versions, install time and runtime dependencies.
+- **`info.json`** (`brew info --json=v2 --installed`): generated from brew's public package data (`brew info --json=v2` for the list below, with every runtime dependency followed). The "installed" fields are made up, and cask targets brew expands with the local home are rewritten to `/Users/demo`. The result is 63 formulae (18 on request, the rest their real dependencies) and 6 casks, each with a description, homepage, tap, versions, install time and runtime dependencies.
   - **Formulae:** git, node, python@3.13, go, ripgrep, fd, fzf, bat, jq, gh, neovim, tmux, wget, htop, postgresql@16, redis, plus their usual dependencies (pcre2, openssl@3, ca-certificates, libuv, icu4c, sqlite, xz, readline, oniguruma, …).
   - **Casks:** firefox, visual-studio-code, iterm2, docker-desktop, raycast, font-jetbrains-mono-nerd-font.
-  - About 30 formulae and 6 casks, so the view counts look like a real machine.
-- **`outdated.json`:** three outdated (node, gh, firefox), one of them pinned (node). Those packages are also marked outdated and pinned in `info.json`, so every tab agrees.
+- **`outdated.json`:** three outdated, each one release behind (node 26.11.1, gh 2.101.0, firefox 157.0.2), with node pinned. Those packages are also marked outdated and pinned in `info.json`, so every tab agrees.
 - **`services.json`:** postgresql@16 started and redis stopped. `user` is `demo`, and paths are under `/Users/demo` and `/opt/homebrew`.
 - **`taps.json`:** `homebrew/core`, `homebrew/cask` and one third-party tap.
 - **Sizes:** a realistic size per package (git 63 MB, docker-desktop 2.2 GB, …).
 - **Discover:**
   - `catalogue.txt` is a few hundred entries in `brew search --desc ""` format, including everything installed plus popular packages that aren't.
-  - The analytics lists use formulae.brew.sh's JSON format: `install-on-request/30d`, `90d` and `365d`, and `cask-install/30d` and `90d`.
+  - The analytics lists are formulae.brew.sh's public lists for `install-on-request/30d`, `90d` and `365d`, and `cask-install/30d` and `90d`, trimmed to the top 400 plus the demo's packages. The catalogue is `brew search --desc ""` trimmed to those names (848 entries).
 - Nothing comes from the user's machine. No real username, path or package list.
 
 ## 2. Renderer (`internal/ui/screenshots_test.go`)
@@ -33,8 +32,8 @@ The demo data is in brew's own formats and goes through brewery's real parsers (
   - window size 120×36, icons on (`UseIcons(true)`), and Lip Gloss colour forced to true colour so the capture carries real colours.
 - **Screens**, each written to `docs/screenshots/<name>.ansi` as `App.render()` output, with ANSI codes kept:
   1. `home`: the Home tab, with doctor's warnings and two recent jobs from a demo history.
-  2. `installed`: Installed, All view, with git selected and its preview showing the dependency tree.
-  3. `discover`: Discover, Popular tools, with a not-installed package selected and its preview showing version, licence, "Would also install" and installs.
+  2. `installed`: Installed, Top-level view, with git selected and its preview showing the dependency tree. The All view would open on libraries (abseil, ada-url, …), so Top-level shows the tools people actually install.
+  3. `discover`: Discover, Popular tools, with pipx selected (#7, not installed). Its preview shows version, licence, "Would also install python@3.15" and installs.
   4. `upgrade`: `u` on an outdated package, unpinned, with the drawer open showing brew's upgrade output, written by a fake process from a recorded demo transcript.
 - **Checks:** the test fails if a capture is empty or contains `loading…`, `starting brewery…` or `asking brew…` (no screen captured mid-load).
 
@@ -42,12 +41,12 @@ The demo data is in brew's own formats and goes through brewery's real parsers (
 
 - **`freeze`** (`github.com/charmbracelet/freeze`) turns each `.ansi` capture into `docs/screenshots/<name>.png`:
   - a terminal window frame (`--window`);
-  - JetBrains Mono Nerd Font (`--font.family`, or `--font.file` pointing at the installed TTF), so icons render;
+  - JetBrains Mono **NL** Nerd Font (`--font.family 'JetBrainsMonoNL Nerd Font' --font.file ~/Library/Fonts/JetBrainsMonoNLNerdFont-Regular.ttf`), so icons render. The NL (no ligatures) cut is needed because freeze's PNG rasteriser ignores `--font.ligatures=false`, and plain JetBrains Mono turns brew's `==>` and `->` into arrows;
   - background `#24273a` (Catppuccin Macchiato Base, brewery's palette);
   - modest padding, rounded corners, and the output scaled for a retina-sharp PNG.
 
-  The prototype settles the exact flags.
-- **`make screenshots`** runs the tagged test, then `freeze` on each capture. It needs `freeze` (`brew install freeze`) and the font (`brew install --cask font-jetbrains-mono-nerd-font`). The Makefile comment says so.
+  Run with stdin from `/dev/null`: freeze reads stdin whenever it isn't a terminal, even when given a file, and hangs.
+- **`make screenshots`** runs the tagged test, then `freeze` on each capture. It needs Charm's freeze, installed with `go install github.com/charmbracelet/freeze@latest`. **Not** `brew install freeze`, which is a different app (an Amazon Glacier client cask). It also needs the font (`brew install --cask font-jetbrains-mono-nerd-font`, which includes the NL cut). `FREEZE` and `FONT` can be overridden. The Makefile comment says so.
 - The `.ansi` captures are intermediate files, and `.gitignore` excludes them. Only the PNGs are committed. Each should be a few hundred KB at most.
 
 ## 4. README
