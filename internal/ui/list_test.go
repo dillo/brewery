@@ -288,3 +288,10 @@ func TestSkeletonOnTinyPanes(t *testing.T) {
 	it.setData(nil, state.NewIndex(nil))
 	_ = it.view(nil)
 }
+
+func TestServiceStatusFitsWithAnIcon(t *testing.T) {
+	widest := theme.With(theme.Nerd.Failed, "error (exit 127)")
+	if w := lipgloss.Width(widest); w > serviceCols[1].width {
+		t.Errorf("%q is %d wide; STATUS has %d", widest, w, serviceCols[1].width)
+	}
+}

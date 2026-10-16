@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image/color"
 	"testing"
+
+	"charm.land/lipgloss/v2"
 )
 
 func TestModeColorsAreDistinct(t *testing.T) {
@@ -38,6 +40,14 @@ func TestTabChipsAreDistinct(t *testing.T) {
 			t.Errorf("%s and %s chips share a color", name, other)
 		}
 		seen[key] = name
+	}
+}
+
+func TestSelectedRowKeepsTheTerminalText(t *testing.T) {
+	// Tint resets to the terminal's text color, so the selected row must use
+	// it too, or the cells after a tinted one would change color.
+	if c := New(Macchiato).TableSelected.GetForeground(); c != (lipgloss.NoColor{}) {
+		t.Errorf("TableSelected has foreground %v", c)
 	}
 }
 
