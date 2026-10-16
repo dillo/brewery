@@ -93,7 +93,7 @@ make test
 `make screenshots` regenerates the images above from a made-up machine
 (`internal/ui/testdata/demo`). It needs Charm's
 [freeze](https://github.com/charmbracelet/freeze)
-(`go install github.com/charmbracelet/freeze@latest`) and the JetBrains Mono
+(`go install github.com/charmbracelet/freeze@v0.2.2`) and the JetBrains Mono
 Nerd Font (`brew install --cask font-jetbrains-mono-nerd-font`).
 
 ## Licence

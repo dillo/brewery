@@ -24,7 +24,7 @@
 - **Discover uses pipx** (#7 in the real 30-day list, not installed on the demo machine). Its preview shows "Would also install python@3.15" (its real `brew deps`). `uv` would have said "nothing else".
 
 **Verified:**
-- The prototype (branch `proto/screenshots`, commits 358697a and 252d97e) renders all four screens. `make screenshots` writes the PNGs at 4226×2684 (412–882 KB each, 2.6 MB total). Each was looked at: icons render, colours are brewery's, `==>` shows as typed, and no screen is loading or empty.
+- The prototype (branch `proto/screenshots`, commits 358697a and 252d97e) renders all four screens. `make screenshots` writes the PNGs at 4892×2684 (412–882 KB each, 2.6 MB total). Each was looked at: icons render, colours are brewery's, `==>` shows as typed, and no screen is loading or empty.
 - `go test ./...` doesn't build the tagged file.
 - `go vet` passes with and without the tag, and golangci-lint shows 0 issues with and without `--build-tags screenshots`.
 - No file contains the local username.
@@ -33,7 +33,7 @@
 
 - **Nothing personal in the repo:** no username (`locutus`), no `/Users/<real user>` path, no real package list. The demo machine's user is `demo`, its home `/Users/demo`.
 - **The renderer never runs in `go test ./...` or CI:** the first line is `//go:build screenshots`.
-- **Screens and file names:** `docs/screenshots/{home,installed,discover,upgrade}.png`, rendered at 120×36 with icons on. Captures are `docs/screenshots/*.ansi`, which are git-ignored.
+- **Screens and file names:** `docs/screenshots/{home,installed,discover,upgrade}.png`, rendered at 140×36 with icons on. Captures are `docs/screenshots/*.ansi`, which are git-ignored.
 - **freeze flags (exact):**
   - `--language ansi --window --background '#24273a'`
   - `--padding 20,24 --margin 0 --border.radius 10`
@@ -264,7 +264,7 @@ const upgradeGh = "==> Upgrading 1 outdated package:\r\n" +
 	"  2.101.0 -> 2.102.0\r\n" +
 	"==> Pouring gh--2.102.0.arm64_tahoe.bottle.tar.gz\r\n"
 
-// demoApp is brewery on the demo machine at 120×36, icons on.
+// demoApp is brewery on the demo machine at 140×36, icons on.
 func demoApp(t *testing.T, fs *fakeStarter) *App {
 	t.Helper()
 	t.Setenv("HOME", "/Users/demo")
@@ -422,7 +422,7 @@ Append the line:
 Run: `make screenshots FREEZE=/private/tmp/claude-501/-Users-locutus-Dev-tools-brewery/12a9a9c1-001a-4784-bd8a-fd8ddfef5515/scratchpad/bin/freeze && file docs/screenshots/*.png && git status --short`
 Expected:
 - four `WROTE docs/screenshots/<name>.png` lines;
-- `file` reports `PNG image data, 4226 x 2684` for each;
+- `file` reports `PNG image data, 4892 x 2684` for each;
 - `git status` shows the new PNGs as untracked, and no `.ansi` files.
 
 - [ ] **Step 6: Checks, and commit (not the PNGs: Task 3 commits them)**

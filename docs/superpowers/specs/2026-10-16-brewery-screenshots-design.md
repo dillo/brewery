@@ -29,9 +29,9 @@ The demo data is in brew's own formats and goes through brewery's real parsers (
   - a demo `Source`, `Catalog` and `Analytics`, in the style of the existing test fakes;
   - a fixed clock (`a.now`);
   - `HOME=/Users/demo` and `time.Local = time.UTC`;
-  - window size 120×36, icons on (`UseIcons(true)`), and Lip Gloss colour forced to true colour so the capture carries real colours.
+  - window size 140×36, icons on (`UseIcons(true)`), and Lip Gloss colour forced to true colour so the capture carries real colours.
 - **Screens**, each written to `docs/screenshots/<name>.ansi` as `App.render()` output, with ANSI codes kept:
-  1. `home`: the Home tab, with doctor's warnings and two recent jobs from a demo history.
+  1. `home`: the Home tab, with doctor's warnings and three recent jobs from a demo history.
   2. `installed`: Installed, Top-level view, with git selected and its preview showing the dependency tree. The All view would open on libraries (abseil, ada-url, …), so Top-level shows the tools people actually install.
   3. `discover`: Discover, Popular tools, with pipx selected (#7, not installed). Its preview shows version, licence, "Would also install python@3.15" and installs.
   4. `upgrade`: `u` on an outdated package, unpinned, with the drawer open showing brew's upgrade output, written by a fake process from a recorded demo transcript.
@@ -46,12 +46,12 @@ The demo data is in brew's own formats and goes through brewery's real parsers (
   - modest padding, rounded corners, and the output scaled for a retina-sharp PNG.
 
   Run with stdin from `/dev/null`: freeze reads stdin whenever it isn't a terminal, even when given a file, and hangs.
-- **`make screenshots`** runs the tagged test, then `freeze` on each capture. It needs Charm's freeze, installed with `go install github.com/charmbracelet/freeze@latest`. **Not** `brew install freeze`, which is a different app (an Amazon Glacier client cask). It also needs the font (`brew install --cask font-jetbrains-mono-nerd-font`, which includes the NL cut). `FREEZE` and `FONT` can be overridden. The Makefile comment says so.
-- The `.ansi` captures are intermediate files, and `.gitignore` excludes them. Only the PNGs are committed. Each should be a few hundred KB at most.
+- **`make screenshots`** runs the tagged test, then `freeze` on each capture. It needs Charm's freeze, installed with `go install github.com/charmbracelet/freeze@v0.2.2` (pinned at v0.2.2). **Not** `brew install freeze`, which is a different app (an Amazon Glacier client cask). It also needs the font (`brew install --cask font-jetbrains-mono-nerd-font`, which includes the NL cut). `FREEZE` and `FONT` can be overridden. The Makefile comment says so.
+- The `.ansi` captures are intermediate files, and `.gitignore` excludes them. Only the PNGs are committed. Each is 4892×2684 pixels and 416 KB to 1.0 MB (about 2.8 MB in all).
 
 ## 4. README
 
-- Under the intro paragraph, the Home screenshot is the hero image: `![brewery's Home tab](docs/screenshots/home.png)`.
+- Under the intro paragraph, the Home screenshot is the hero image: `![brewery's Home tab: counts of what's installed, outdated and running, doctor's warnings and recent jobs](docs/screenshots/home.png)`.
 - A new section "A look around" comes after Install. It has the other three images, each with a one-line caption:
   - Installed: "Everything installed, with what it needs and what needs it."
   - Discover: "Find popular and rising packages, and install them."

@@ -135,7 +135,7 @@ const upgradeGh = "==> Upgrading 1 outdated package:\r\n" +
 	"  2.101.0 -> 2.102.0\r\n" +
 	"==> Pouring gh--2.102.0.arm64_tahoe.bottle.tar.gz\r\n"
 
-// demoApp is brewery on the demo machine at 120×36, icons on.
+// demoApp is brewery on the demo machine at 140×36, icons on.
 func demoApp(t *testing.T, fs *fakeStarter) *App {
 	t.Helper()
 	t.Setenv("HOME", "/Users/demo")
@@ -180,7 +180,7 @@ func demoApp(t *testing.T, fs *fakeStarter) *App {
 			Started: demoNow.Add(-3 * time.Hour), Ended: demoNow.Add(-3*time.Hour + 4*time.Second)},
 	}
 	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{recs[1], recs[2], recs[0]}) // newest first
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 36})
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 36})
 	return a
 }
 
@@ -228,6 +228,9 @@ func TestScreenshots(t *testing.T) {
 			break
 		}
 		keys(t, a, "j")
+	}
+	if i := a.outdated.cursor(); i < 0 || a.snap.Outdated[i].Name != "gh" {
+		t.Fatal("gh not found on Outdated")
 	}
 	waiting := settle(t, a, a.handleKey(press("u")))
 	shoot(t, a, "upgrade")

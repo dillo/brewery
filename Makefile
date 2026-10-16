@@ -18,7 +18,7 @@ snapshot:
 	goreleaser release --snapshot --clean
 
 # The README's screenshots, from a made-up machine (internal/ui/testdata/demo).
-# Needs Charm's freeze (go install github.com/charmbracelet/freeze@latest; brew's
+# Needs Charm's freeze (go install github.com/charmbracelet/freeze@v0.2.2; brew's
 # "freeze" is a different app) and the JetBrains Mono Nerd Font, whose NL
 # (no ligatures) cut shows brew's ==> as typed:
 # brew install --cask font-jetbrains-mono-nerd-font
