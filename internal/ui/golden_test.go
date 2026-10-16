@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 // update rewrites the golden snapshots: go test ./internal/ui -run TestScreens -update
@@ -34,8 +35,15 @@ func golden(t *testing.T, name, got string) {
 }
 
 // TestScreens snapshots brewery's main screens at 120×40, icons off, from
-// the test fixtures.
+// the test fixtures. The machine running it mustn't show through: paths
+// under $HOME are shortened to ~ (the fixtures were captured under
+// /Users/locutus), and dates are written in the local time zone.
 func TestScreens(t *testing.T) {
+	t.Setenv("HOME", "/Users/locutus")
+	local := time.Local
+	time.Local = time.UTC
+	t.Cleanup(func() { time.Local = local })
+
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
 	a.UseCatalog(newFakeCatalog(t))
