@@ -287,7 +287,10 @@ func (t *installedTab) preview(p brew.Package) string {
 		if len(p.DirectDeps) == 0 {
 			b.WriteString(st.Muted.Render("none") + "\n")
 		} else {
-			b.WriteString(strings.Join(t.ix.Tree(p.FullName, nil), "\n") + "\n")
+			b.WriteString(strings.Join(t.ix.Tree(p.FullName, t.depLabel), "\n") + "\n")
+		}
+		if behind := t.ix.PinnedBehind(p.Deps...); p.Kind == brew.KindFormula && len(behind) > 0 {
+			b.WriteString(st.Warn.Render("⚠ upgrading needs "+strings.Join(behind, ", ")+" unpinned") + "\n")
 		}
 		b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
 		if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
@@ -300,4 +303,19 @@ func (t *installedTab) preview(p brew.Package) string {
 		b.WriteString("\n" + st.Accent.Render("Caveats") + "\n" + p.Caveats + "\n")
 	}
 	return b.String()
+}
+
+// depLabel names a dependency in the preview's tree, marking it if it's
+// pinned, and with its versions if it's pinned behind: brew won't install
+// or upgrade what needs it until it's unpinned.
+func (t *installedTab) depLabel(name string) string {
+	d, ok := t.ix.Get(name)
+	if !ok || !d.Pinned {
+		return name
+	}
+	s := name + " " + theme.With(t.st.Icons.Pinned, "pinned")
+	if d.Outdated {
+		s += t.st.Warn.Render(" · " + d.Version + " → " + d.Latest)
+	}
+	return s
 }
