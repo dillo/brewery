@@ -2,6 +2,7 @@ package ui
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -44,6 +45,19 @@ func pinnedApp(t *testing.T) (*App, *fakeStarter) {
 	return a, fs
 }
 
+// selectOutdated moves Outdated's cursor to name.
+func selectOutdated(t *testing.T, a *App, name string) {
+	t.Helper()
+	keys(t, a, "3", "g", "g")
+	for range len(a.snap.Outdated) {
+		if i := a.outdated.cursor(); i >= 0 && a.snap.Outdated[i].Name == name {
+			return
+		}
+		keys(t, a, "j")
+	}
+	t.Fatalf("%s not found on Outdated", name)
+}
+
 func TestPreviewMarksPinnedDependencies(t *testing.T) {
 	a, _ := pinnedApp(t)
 	selectInstalled(t, a, "git")
@@ -57,5 +71,53 @@ func TestPreviewMarksPinnedDependencies(t *testing.T) {
 	selectInstalled(t, a, "fd")
 	if out := stripANSI(a.render()); strings.Contains(out, "upgrading needs") {
 		t.Errorf("fd needs nothing pinned:\n%s", out)
+	}
+}
+
+func TestUpgradeRefusesWhileADependencyIsPinnedBehind(t *testing.T) {
+	a, fs := pinnedApp(t)
+	selectInstalled(t, a, "git")
+	keys(t, a, "u")
+	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "git needs pcre2 unpinned first") {
+		t.Errorf("calls %v, status %q", fs.calls, stripANSI(a.statusBar()))
+	}
+	selectOutdated(t, a, "git")
+	keys(t, a, "u")
+	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "git needs pcre2 unpinned first") {
+		t.Errorf("Outdated: calls %v, status %q", fs.calls, stripANSI(a.statusBar()))
+	}
+}
+
+func TestMarkedUpgradeSkipsBlockedFormulae(t *testing.T) {
+	a, fs := pinnedApp(t)
+	selectOutdated(t, a, "git")
+	keys(t, a, "space")
+	keys(t, a, "u")
+	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "skipped git: needs pcre2 unpinned") {
+		t.Errorf("only git marked: calls %v, status %q", fs.calls, stripANSI(a.statusBar()))
+	}
+	p := newFakeProc(0) // the upgrade keeps running while the note shows
+	fs.procs = []*fakeProc{p}
+	if a.marks() != 1 {
+		t.Fatalf("git should still be marked: %d marks", a.marks())
+	}
+	selectOutdated(t, a, "lua-language-server")
+	keys(t, a, "space")
+	waiting := settle(t, a, a.handleKey(press("u")))
+	if want := []string{"upgrade", "lua-language-server"}; !slices.Equal(lastCall(fs), want) || len(fs.calls) != 1 {
+		t.Errorf("ran %v, want %v", fs.calls, want)
+	}
+	if !strings.Contains(stripANSI(a.statusBar()), "skipped git: needs pcre2 unpinned") {
+		t.Errorf("status %q", stripANSI(a.statusBar()))
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
+func TestUpgradeAllNamesWhatBrewWillRefuse(t *testing.T) {
+	a, _ := pinnedApp(t)
+	keys(t, a, "3", "A")
+	if got := confirmText(a); !strings.Contains(got, "brew will refuse git: it needs pcre2 unpinned") {
+		t.Errorf("dialog:\n%s", got)
 	}
 }
