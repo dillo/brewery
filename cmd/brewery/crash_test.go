@@ -116,3 +116,29 @@ func TestCrashLogAdoptsWhatADeadRunLeft(t *testing.T) {
 		t.Errorf("left %v: the empty leftover goes, the live one stays", got)
 	}
 }
+
+func TestCrashLogHandsOutTheTerminalsStderr(t *testing.T) {
+	real, err := os.Stderr.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := startCrashLog(filepath.Join(t.TempDir(), "state"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.stop(crashAt)
+	term, err := c.terminal.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(real, term) {
+		t.Error("terminal should be the real stderr, the one full-screen commands print to")
+	}
+	crashFile, err := c.f.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if os.SameFile(crashFile, term) {
+		t.Error("terminal must not be the crash file")
+	}
+}

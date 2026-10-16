@@ -22,11 +22,15 @@ const keepCrashes = 5
 // which bypass os.Stderr and end the process at once. Nothing else writes
 // to stderr while the TUI is up: it would garble the screen.
 type crashLog struct {
-	dir     string
-	f       *os.File
-	stderr  *os.File // the real stderr, put back by stop
-	fd2     int      // a copy of the real file descriptor 2, put back by stop
-	earlier []string // crash logs left by runs that died without stop
+	dir    string
+	f      *os.File
+	stderr *os.File // the real stderr, put back by stop
+	// terminal is a copy of the real file descriptor 2, for the full-screen
+	// commands that must print to the terminal; stop puts it back as fd 2
+	// and closes it. It is not inherited by children unless handed over
+	// as a cmd.Stderr.
+	terminal *os.File
+	earlier  []string // crash logs left by runs that died without stop
 }
 
 // startCrashLog points os.Stderr and file descriptor 2 at a new temp file
@@ -42,7 +46,8 @@ func startCrashLog(dir string) (*crashLog, error) {
 	if err != nil {
 		return nil, err
 	}
-	fd2, err := unix.Dup(2)
+	// close-on-exec, so only a command given terminal as its stderr has it
+	fd2, err := unix.FcntlInt(2, unix.F_DUPFD_CLOEXEC, 0)
 	if err == nil {
 		err = unix.Dup2(int(f.Fd()), 2)
 		if err != nil {
@@ -54,7 +59,7 @@ func startCrashLog(dir string) (*crashLog, error) {
 		os.Remove(f.Name())
 		return nil, err
 	}
-	c := &crashLog{dir: dir, f: f, stderr: os.Stderr, fd2: fd2, earlier: earlier}
+	c := &crashLog{dir: dir, f: f, stderr: os.Stderr, terminal: os.NewFile(uintptr(fd2), "/dev/stderr"), earlier: earlier}
 	os.Stderr = f
 	return c, nil
 }
@@ -63,8 +68,8 @@ func startCrashLog(dir string) (*crashLog, error) {
 // log named for now, and stop returns its path; otherwise the file is
 // removed and stop returns "".
 func (c *crashLog) stop(now time.Time) string {
-	unix.Dup2(c.fd2, 2)
-	unix.Close(c.fd2)
+	unix.Dup2(int(c.terminal.Fd()), 2)
+	c.terminal.Close()
 	os.Stderr = c.stderr
 	info, err := c.f.Stat()
 	c.f.Close()

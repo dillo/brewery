@@ -72,11 +72,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseCatalog(client)
 	// Discover's analytics are kept beside the snapshot.
 	app.UseAnalytics(analytics.NewStore(filepath.Join(filepath.Dir(cachePath), "analytics"), version))
-	// Full-screen commands get the real stderr: while the TUI runs,
-	// os.Stderr is the crash log.
-	realStderr := os.Stderr
+	// Full-screen commands get the terminal's stderr: while the TUI runs,
+	// os.Stderr and file descriptor 2 are the crash log. terminal is set
+	// once the crash log starts, before the program runs any command.
+	var terminal *os.File
 	fullScreen := func(cmd *exec.Cmd) *exec.Cmd {
-		cmd.Stderr = realStderr
+		if terminal != nil {
+			cmd.Stderr = terminal
+		} else {
+			cmd.Stderr = os.Stderr
+		}
 		return cmd
 	}
 	app.UseTakeover(func(args []string) *exec.Cmd { return fullScreen(exec.Command(bin, args...)) })
@@ -89,6 +94,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseClipboard(clipboard.WriteAll)
 
 	crash, crashErr := startCrashLog(jobs.DefaultStateDir())
+	if crashErr == nil {
+		terminal = crash.terminal
+	}
 	_, err = tea.NewProgram(app).Run()
 	if crashErr == nil {
 		if path := crash.stop(time.Now()); path != "" {
