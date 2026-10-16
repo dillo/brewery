@@ -87,8 +87,12 @@ func (ix *Index) IsLeaf(p brew.Package) bool {
 }
 
 // Tree renders p's direct dependencies recursively, one line per node,
-// using box-drawing prefixes. Repeated subtrees are shown once.
-func (ix *Index) Tree(fullName string) []string {
+// using box-drawing prefixes. Repeated subtrees are shown once. label, if
+// not nil, writes each dependency's name.
+func (ix *Index) Tree(fullName string, label func(fullName string) string) []string {
+	if label == nil {
+		label = func(name string) string { return name }
+	}
 	lines := []string{fullName}
 	seen := map[string]bool{fullName: true}
 	var walk func(name, prefix string)
@@ -101,14 +105,29 @@ func (ix *Index) Tree(fullName string) []string {
 				branch, next = "└─ ", "   "
 			}
 			if seen[d] {
-				lines = append(lines, prefix+branch+d+" …")
+				lines = append(lines, prefix+branch+label(d)+" …")
 				continue
 			}
 			seen[d] = true
-			lines = append(lines, prefix+branch+d)
+			lines = append(lines, prefix+branch+label(d))
 			walk(d, prefix+next)
 		}
 	}
 	walk(fullName, "")
 	return lines
+}
+
+// PinnedBehind lists those of names that are installed, pinned and
+// outdated, sorted and without repeats. brew refuses to install or upgrade
+// a formula while one of its dependencies is pinned behind its latest
+// version (FormulaInstaller#check_install_sanity).
+func (ix *Index) PinnedBehind(names ...string) []string {
+	var behind []string
+	for _, n := range names {
+		if p, ok := ix.byFull[n]; ok && p.Pinned && p.Outdated && !slices.Contains(behind, n) {
+			behind = append(behind, n)
+		}
+	}
+	slices.Sort(behind)
+	return behind
 }

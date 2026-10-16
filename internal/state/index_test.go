@@ -44,10 +44,10 @@ func TestIsLeaf(t *testing.T) {
 func TestTree(t *testing.T) {
 	ix := NewIndex(testPkgs)
 	want := []string{"git", "└─ pcre2", "   └─ json-c"}
-	if got := ix.Tree("git"); !reflect.DeepEqual(got, want) {
+	if got := ix.Tree("git", nil); !reflect.DeepEqual(got, want) {
 		t.Errorf("Tree(git) = %q, want %q", got, want)
 	}
-	if got := ix.Tree("fd"); !reflect.DeepEqual(got, []string{"fd"}) {
+	if got := ix.Tree("fd", nil); !reflect.DeepEqual(got, []string{"fd"}) {
 		t.Errorf("Tree(fd) = %q", got)
 	}
 }
@@ -59,7 +59,7 @@ func TestTreeMarksRepeats(t *testing.T) {
 		{FullName: "c"},
 	}
 	want := []string{"a", "├─ b", "│  └─ c", "└─ c …"}
-	if got := NewIndex(pkgs).Tree("a"); !reflect.DeepEqual(got, want) {
+	if got := NewIndex(pkgs).Tree("a", nil); !reflect.DeepEqual(got, want) {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
@@ -150,5 +150,28 @@ func TestOrphansOfSeveral(t *testing.T) {
 	}
 	if got := NewIndex(testPkgs).Orphans("git", "pcre2"); !reflect.DeepEqual(got, []string{"json-c"}) {
 		t.Errorf("a package being removed isn't its own orphan: %v", got)
+	}
+}
+
+func TestTreeLabelsDependencies(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	label := func(name string) string { return name + "!" }
+	want := []string{"git", "└─ pcre2!", "   └─ json-c!"}
+	if got := ix.Tree("git", label); !reflect.DeepEqual(got, want) {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestPinnedBehind(t *testing.T) {
+	pkgs := slices.Clone(testPkgs)
+	pkgs[1].Pinned, pkgs[1].Outdated = true, true // pcre2: pinned and behind
+	pkgs[2].Pinned = true                         // json-c: pinned but current
+	pkgs[3].Outdated = true                       // fd: behind but not pinned
+	ix := NewIndex(pkgs)
+	if got := ix.PinnedBehind("json-c", "pcre2", "fd", "pcre2", "nope"); !reflect.DeepEqual(got, []string{"pcre2"}) {
+		t.Errorf("PinnedBehind = %v, want [pcre2]", got)
+	}
+	if got := ix.PinnedBehind(); got != nil {
+		t.Errorf("PinnedBehind() = %v, want nil", got)
 	}
 }

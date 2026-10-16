@@ -287,7 +287,7 @@ func (t *installedTab) preview(p brew.Package) string {
 		if len(p.DirectDeps) == 0 {
 			b.WriteString(st.Muted.Render("none") + "\n")
 		} else {
-			b.WriteString(strings.Join(t.ix.Tree(p.FullName), "\n") + "\n")
+			b.WriteString(strings.Join(t.ix.Tree(p.FullName, nil), "\n") + "\n")
 		}
 		b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
 		if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
