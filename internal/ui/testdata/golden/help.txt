@@ -1,0 +1,40 @@
+ 1 Home   2 Installed   3 Outdated  ↑2    4 Services  ✗1    5 Taps   6 Discover                                         
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+╭────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
+│ Installed                                                      ││ git                                                │
+│  Top-level 5   All 7   Apps 2   Dependencies 2                 ││ git 2.51.0                                         │
+│ Things you installed that nothing else╭──────────────────────────────────────╮revision control system                │
+│  NAME                  VERSION     TYP│ Installed                            │                                       │
+│ ──────────────────────────────────────│ u          upgrade                   │ormula                                 │
+│  docker-desktop        4.39.0,18…  cas│ x          uninstall                 │omebrew/core                           │
+│  fd                    10.5.0      for│ p          pin or unpin              │0.0MB                                  │
+│  fontbase              2.22.0      cas│ space      mark for u/x on several   │n request · 2026-08-29                 │
+│  git                   2.51.0      for│ f F        next or previous view     │.51.0                                  │
+│  lua-language-server   3.19.1      for│ tab enter  preview, then j/k scroll  │es                                     │
+│                                       │                                      │ttps://git-scm.com                     │
+│                                       │ Lists                                │                                       │
+│                                       │ j k        move                      │                                       │
+│                                       │ gg G       top, bottom               │                                       │
+│                                       │ ctrl+d/u   half a page               │                                       │
+│                                       │ /          filter by name            │                                       │
+│                                       │ y          copy the name             │                                       │
+│                                       │ gx         open the homepage         │                                       │
+│                                       │                                      │alled depends on this                  │
+│                                       │ Everywhere                           │                                       │
+│                                       │ 1-6 [ ]    switch tabs               │                                       │
+│                                       │ :          run any brew command      │ion has been installed.                │
+│                                       │ r          refresh                   │                                       │
+│                                       │ U          brew update               │                                       │
+│                                       │ c          clean up                  │                                       │
+│                                       │ o          show or hide output       │                                       │
+│                                       │ i          type into the running job │                                       │
+│                                       │ ctrl+c     stop the running job      │                                       │
+│                                       │ q          quit                      │                                       │
+│                                       │                                      │                                       │
+│                                       │ any key closes this                  │                                       │
+│                                       ╰──────────────────────────────────────╯                                       │
+│                                                                ││                                                    │
+│                                                                ││                                                    │
+│                                                                ││                                                    │
+╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
+ NORMAL  Installed › git         u upgrade · x uninstall · p pin · f/F view · tab preview · : command · ? help · q quit 
