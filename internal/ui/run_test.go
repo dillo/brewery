@@ -122,7 +122,7 @@ func (f *fakeStarter) start(args, env []string, cols, rows int) (Proc, error) {
 	}
 	p := f.procs[0]
 	f.procs = f.procs[1:]
-	p.Resize(cols, rows)
+	_ = p.Resize(cols, rows)
 	return p, nil
 }
 
@@ -656,7 +656,9 @@ func TestInsertCtrlCCountsAsStop(t *testing.T) {
 	if got := p.input(); got != "\x03" {
 		t.Fatalf("ctrl+c should reach brew as 0x03, got %q", got)
 	}
-	p.Interrupt() // brew dies of the 0x03, exit 130
+	if err := p.Interrupt(); err != nil { // brew dies of the 0x03, exit 130
+		t.Fatal(err)
+	}
 	resume(t, a, waiting)
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "stopped upgrade fd") {
 		t.Errorf("ctrl+c in insert should count as a stop: %q", bar)

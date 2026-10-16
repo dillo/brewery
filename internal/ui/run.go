@@ -232,7 +232,7 @@ func (a *App) stopJob() tea.Cmd {
 	}
 	a.canceled = true
 	if a.proc != nil {
-		a.proc.Interrupt() // the exit message follows
+		_ = a.proc.Interrupt() // the exit message follows
 		return nil
 	}
 	a.queue.Finish(j, -1, true, "", a.now())

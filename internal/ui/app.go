@@ -271,7 +271,7 @@ func (a *App) quit() tea.Cmd {
 		return tea.Quit
 	}
 	a.quitting, a.canceled = true, true
-	a.proc.Interrupt()
+	_ = a.proc.Interrupt()
 	a.flash = a.st.Warn.Render("stopping " + a.queue.Current().Title + "… · ctrl+c quits now")
 	return tea.Tick(a.quitGrace, func(time.Time) tea.Msg { return quitNowMsg{} })
 }
@@ -279,7 +279,7 @@ func (a *App) quit() tea.Cmd {
 // quitNow kills a job that hasn't stopped, and exits.
 func (a *App) quitNow() tea.Cmd {
 	if a.proc != nil {
-		a.proc.Kill()
+		_ = a.proc.Kill()
 	}
 	return tea.Quit
 }
@@ -394,7 +394,7 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case tea.PasteMsg:
 		switch {
 		case a.mode == modeInsert && a.proc != nil:
-			a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
+			_, _ = a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
 		case a.mode == modeCommand:
 			cmd := a.cmd.update(msg)
 			a.suggest(false)
@@ -430,7 +430,7 @@ func (a *App) layout() {
 	// starts at the right size even while the drawer is hidden.
 	a.drawer.resize(a.width-4, dh-4)
 	if a.proc != nil {
-		a.proc.Resize(a.drawer.cols, a.drawer.rows)
+		_ = a.proc.Resize(a.drawer.cols, a.drawer.rows)
 	}
 	a.tabH = bodyH
 	if shown == 1 {
@@ -519,7 +519,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			if k == "ctrl+c" {
 				a.canceled = true // a ctrl+c the user sends marks the run as stopped, unless brew then finishes cleanly
 			}
-			a.proc.Write(keyBytes(msg))
+			_, _ = a.proc.Write(keyBytes(msg))
 		}
 		return nil
 	}

@@ -105,5 +105,5 @@ func (s Styles) Mode(mode string) lipgloss.Style {
 // Tint colors s with c and then resets only the foreground, so text in a
 // table cell keeps the selected row's background and bold.
 func Tint(c color.Color, s string) string {
-	return ansi.NewStyle().ForegroundColor(c).String() + s + ansi.NewStyle().DefaultForegroundColor().String()
+	return ansi.NewStyle().ForegroundColor(c).String() + s + ansi.NewStyle().ForegroundColor(nil).String()
 }

@@ -21,7 +21,7 @@ func server(t *testing.T, status int, body []byte, delay time.Duration) (*httpte
 		got = [2]string{r.URL.Path, r.UserAgent()}
 		time.Sleep(delay)
 		w.WriteHeader(status)
-		w.Write(body)
+		_, _ = w.Write(body)
 	}))
 	t.Cleanup(srv.Close)
 	return srv, &got

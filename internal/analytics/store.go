@@ -103,7 +103,7 @@ func (s Store) Fetch(ctx context.Context, list string) (List, error) {
 	}
 	l, err := Parse(b)
 	if err != nil {
-		return List{}, fmt.Errorf("%s: %w: %v", list, ErrBadList, err)
+		return List{}, fmt.Errorf("%s: %w: %w", list, ErrBadList, err)
 	}
 	_ = s.save(list, b) // without a copy, the next start only shows the lists once they're fetched again
 	return l, nil

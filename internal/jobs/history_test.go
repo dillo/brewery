@@ -65,8 +65,12 @@ func TestHistoryLoadSkipsBadFilesAndMissingDir(t *testing.T) {
 		t.Errorf("a missing history is empty, got %v %v", got, err)
 	}
 	h := History{Dir: t.TempDir()}
-	h.Save(record("upgrade fd", t0))
-	os.WriteFile(filepath.Join(h.Dir, "20990101T000000.000000000.json"), []byte("{not json"), 0o644)
+	if err := h.Save(record("upgrade fd", t0)); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(h.Dir, "20990101T000000.000000000.json"), []byte("{not json"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	got, err = h.Load()
 	if err != nil || len(got) != 1 || got[0].Title != "upgrade fd" {
 		t.Errorf("a corrupt file should be skipped: %+v %v", got, err)
