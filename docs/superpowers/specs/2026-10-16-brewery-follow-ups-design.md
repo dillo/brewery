@@ -32,7 +32,7 @@ The store returns `*StatusError{Code int}` for a bad status and wraps parse fail
 
 ## 4. Looks
 
-- **`Tint`** ends with the palette's text colour (`p.Text`), not the terminal's default foreground, so tinted cells inside a styled row don't turn the rest of the row plain. `Tint` takes the colour to go back to.
+- **`Tint` and the selected row.** `Tint` resets to the terminal's default foreground, but the selected row set its own (`p.Text`), so every cell after a tinted one on the selected row lost it (on `:jobs`, the whole row after STATUS). Unselected cells use the terminal's colour, so making `Tint` go back to `p.Text` would break them instead. The selected row drops its foreground and keeps its background and bold, and `Tint` stays as it is. (Changed while prototyping: the first idea was to make `Tint` return to `p.Text`.)
 - **Leftover `pvOpen`.** On every resize, if the Services layout isn't "preview alone", `pvOpen` is cleared. Shrinking later shows the list first.
 - **Keys while the preview stands alone.** When the preview stands alone, the list's keys (movement, marks, actions on the selected row) do nothing. `tab`/`enter`/`esc` go back to the list, and global keys (tabs, `:`, `?`, `q`, `r`) still work.
 - **Services STATUS** is wide enough for `error (exit 127)` plus an icon and a space.
@@ -46,7 +46,8 @@ The store returns `*StatusError{Code int}` for a bad status and wraps parse fail
 ## 6. Crash log
 
 - `startCrashLog` also points file descriptor 2 at the temp file with `syscall.Dup2`, keeping a dup of the real fd 2 that `stop` puts back. Go runtime fatal errors (concurrent map writes, out of memory) write to fd 2 directly, so they now land in the log too.
-- Logs are named `crash-<20061016-150405>.log`. After saving one, the oldest beyond the newest 5 are removed. brewery's exit message names the new file.
+- Logs are named `crash-20261016-150405.log` (local time). After saving one, the oldest beyond the newest 5 are removed. brewery's exit message names the new file.
+- A fatal error ends the process at once, so `stop` never runs and the temp file stays. Temp files are named `.crash-<pid>-….log`. On the next start, a leftover whose process isn't running becomes a crash log named for its last write (or is removed if empty), and brewery says "brewery crashed last time. What happened is in <path>" when it exits. A temp file of a brewery that's still running is left alone.
 
 ## 7. History without hard links
 
@@ -57,8 +58,8 @@ The store returns `*StatusError{Code int}` for a bad status and wraps parse fail
 - `TestSelectedRowStaysHighlighted` fails if the selected row is never found (a `found` flag).
 - The `TestSizeTableDropsTrailingColumns` comment gives the widths as 8 + 8.
 - New: `r` before Discover was ever opened starts no fetch and doesn't panic; it fetches once Discover opens.
-- New: the `:` line completes catalogue names when typed key by key (`:install ripgr` then `tab`), not only through `wantCatalogue`.
+- `TestOpeningDuringReadReadsOnce` opens the `:` line by key instead of calling `wantCatalogue` directly. (Typing `:install rip` and completing from the catalogue is already tested by `TestCompletesFromTheCatalogue`.)
 
 ## Testing
 
-Each section gets unit tests in its package, written first. At the end, the controller runs race, live, vet, gofmt and `go mod tidy -diff`. Then the controller drives the branch binary through a PTY with scratch XDG dirs: Discover with an unreachable analytics base URL (wording), Services preview alone then a resize, help open while a stand-in brew prompts, and a forced panic to check the crash log name.
+Each section gets unit tests in its package, written first. At the end, the controller runs race, live, vet, gofmt and `go mod tidy -diff`. Then the controller drives the branch binary through a PTY with scratch XDG dirs: Discover with an unreachable analytics base URL (wording), Services preview alone then a resize, help open while a stand-in brew prompts, and a forced panic (a throwaway build) to check the crash log name.
