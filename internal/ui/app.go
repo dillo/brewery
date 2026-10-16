@@ -529,6 +529,11 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if a.mode == modeFilter {
 		return a.filterKey(msg)
 	}
+	if k == "g" || k == "/" {
+		if a.tab == tabServices && !a.jobsOpen && a.services.previewShown() {
+			return nil // they'd move or filter the list hidden behind the preview
+		}
+	}
 	if a.gPending {
 		a.gPending = false
 		if cmd, ok := a.gKey(k); ok {

@@ -122,15 +122,28 @@ func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
 	a := newJobApp(t, fs)
 	a.readLog = (&fakeLogs{}).read
 	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
-	keys(t, a, "4")
+	var copied string
+	a.UseClipboard(func(text string) error { copied = text; return nil })
+	keys(t, a, "4", "j")
 	before := a.services.cursor()
-	keys(t, a, "enter", "j", "space", "S")
+	keys(t, a, "enter", "j", "space", "S", "g", "g", "/")
 	if a.services.cursor() != before || a.marks() != 0 || a.confirm != nil || len(fs.calls) != 0 {
 		t.Errorf("keys reached the hidden list: cursor %d→%d, marks %d, confirm %v, calls %v",
 			before, a.services.cursor(), a.marks(), a.confirm, fs.calls)
 	}
+	if a.mode != modeNormal {
+		t.Errorf("/ opened a filter on the hidden list: mode %d", a.mode)
+	}
 	if !a.services.previewShown() {
 		t.Fatal("the preview should still show")
+	}
+	name, _, _ := a.selection()
+	_, cmd := a.Update(press("y")) // y copies the service the preview shows
+	if cmd != nil {
+		cmd()
+	}
+	if name == "" || copied != name {
+		t.Errorf("y copied %q, want the selected service %q", copied, name)
 	}
 	keys(t, a, "tab")
 	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
