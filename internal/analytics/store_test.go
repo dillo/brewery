@@ -35,7 +35,7 @@ func TestFetchKeepsACopy(t *testing.T) {
 	if err != nil || len(l.Items) != 7 {
 		t.Fatalf("got %d items, %v", len(l.Items), err)
 	}
-	if *got != [2]string{"/api/analytics/install-on-request/30d.json", "github.com/dillo/brewery/1.2.3"} {
+	if *got != [2]string{"/api/analytics/install-on-request/30d.json", "brewery/1.2.3"} {
 		t.Errorf("asked for %q", *got)
 	}
 	cached, at, err := s.Cached(Tools30)
@@ -88,7 +88,7 @@ func TestCachedWithoutACopy(t *testing.T) {
 
 func TestNewStore(t *testing.T) {
 	s := NewStore("/x", "dev")
-	if s.Base != BaseURL || s.Client.Timeout != 30*time.Second || s.UserAgent != "github.com/dillo/brewery/dev" {
+	if s.Base != BaseURL || s.Client.Timeout != 30*time.Second || s.UserAgent != "brewery/dev" {
 		t.Errorf("got %+v", s)
 	}
 	if len(Lists) != 5 || Lists[0] != Tools30 || Lists[1] != Apps30 {
