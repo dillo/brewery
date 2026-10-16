@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"context"
+	"maps"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -85,5 +87,31 @@ func TestSizesRunAtOnceWhenRequestedAlone(t *testing.T) {
 	keys(t, a, "c", "y") // cleanup: no installed query to wait for
 	if src.calls["sizes"] != 1 || src.calls["installed"] != 0 || a.sizesAfterInstalled {
 		t.Errorf("sizes should run straight away: %v waiting=%v", src.calls, a.sizesAfterInstalled)
+	}
+}
+
+func TestSizesKeepWhatWasMeasuredInTime(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	before := maps.Clone(a.snap.Sizes)
+	if len(before) < 2 {
+		t.Fatalf("the fixture needs sizes: %v", before)
+	}
+	a.Update(resultMsg{q: qSizes, sizes: map[string]int64{"formula/fd": 7}, err: context.DeadlineExceeded})
+	if a.errs[qSizes] != nil {
+		t.Errorf("a partial measure is no failure: %v", a.errs[qSizes])
+	}
+	for k, n := range before {
+		want := n
+		if k == "formula/fd" {
+			want = 7
+		}
+		if a.snap.Sizes[k] != want {
+			t.Errorf("%s = %d, want %d", k, a.snap.Sizes[k], want)
+		}
+	}
+
+	a.Update(resultMsg{q: qSizes, err: context.DeadlineExceeded}) // nothing measured in time
+	if a.errs[qSizes] == nil || a.snap.Sizes["formula/fd"] != 7 {
+		t.Errorf("err %v, sizes %v: nothing measured is a failure, and the sizes stay", a.errs[qSizes], a.snap.Sizes)
 	}
 }

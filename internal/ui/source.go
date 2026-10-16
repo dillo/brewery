@@ -60,7 +60,8 @@ type resultMsg struct {
 var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
 
 // fetch runs one query. ctx is the App's root context, so quitting stops
-// any brew process still running. Sizes are measured for pkgs.
+// any brew process still running. Sizes are measured for pkgs, which
+// only qSizes is given.
 func fetch(ctx context.Context, src Source, q query, pkgs []brew.Package) tea.Cmd {
 	return func() tea.Msg {
 		m := resultMsg{q: q}

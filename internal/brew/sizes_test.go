@@ -68,3 +68,26 @@ func TestPrefixOf(t *testing.T) {
 		t.Errorf("got %s", got)
 	}
 }
+
+func TestSizesKeepsWhatItMeasuredInTime(t *testing.T) {
+	prefix := t.TempDir()
+	write(t, filepath.Join(prefix, "Cellar", "fd", "1", "f"), 100)
+	write(t, filepath.Join(prefix, "Cellar", "git", "1", "f"), 200)
+	c := NewClient(fakeRunner{})
+	c.Prefix, c.Timeout = prefix, time.Minute
+	ctx, cancel := context.WithCancel(context.Background())
+	// Time runs out once fd is measured: the first file of git's walk sees it.
+	pkgs := []Package{{Name: "fd", FullName: "fd"}, {Name: "git", FullName: "git"}}
+	c.measured = func(p Package) {
+		if p.Name == "fd" {
+			cancel()
+		}
+	}
+	got, err := c.Sizes(ctx, pkgs)
+	if err == nil {
+		t.Error("want the error that stopped it")
+	}
+	if len(got) != 1 || got["formula/fd"] != 100 {
+		t.Errorf("got %v, want fd alone", got)
+	}
+}

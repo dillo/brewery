@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os/exec"
 	"slices"
 	"strings"
@@ -231,7 +232,11 @@ func (a *App) request(qs ...query) tea.Cmd {
 			continue
 		}
 		a.inflight[q] = true
-		cmds = append(cmds, fetch(a.ctx, a.src, q, slices.Clone(a.snap.Packages)))
+		var pkgs []brew.Package
+		if q == qSizes {
+			pkgs = slices.Clone(a.snap.Packages) // measured in the background
+		}
+		cmds = append(cmds, fetch(a.ctx, a.src, q, pkgs))
 	}
 	return tea.Batch(cmds...)
 }
@@ -295,6 +300,14 @@ func (a *App) sync() {
 }
 
 func (a *App) apply(m resultMsg) {
+	if m.q == qSizes && m.err != nil && len(m.sizes) > 0 {
+		// Measuring ran out of time: keep what it measured, and the older
+		// sizes for the rest, which the next run measures again.
+		merged := make(map[string]int64, len(a.snap.Sizes)+len(m.sizes))
+		maps.Copy(merged, a.snap.Sizes)
+		maps.Copy(merged, m.sizes)
+		m.sizes, m.err = merged, nil
+	}
 	a.errs[m.q] = m.err
 	a.home.doctorErr = a.errs[qDoctor]
 	if m.err != nil {

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -152,5 +153,46 @@ func TestClientDataUpdated(t *testing.T) {
 	c = NewClient(fakeRunner{out: map[string][]byte{"--cache": []byte(t.TempDir()), "--repository": []byte(t.TempDir())}})
 	if _, err := c.DataUpdated(context.Background()); err == nil {
 		t.Error("with none of the files, it's an error")
+	}
+}
+
+// countingRunner counts each command it runs.
+type countingRunner struct {
+	fakeRunner
+	mu sync.Mutex
+	n  map[string]int
+}
+
+func (c *countingRunner) Run(ctx context.Context, args ...string) ([]byte, []byte, error) {
+	c.mu.Lock()
+	c.n[strings.Join(args, " ")]++
+	c.mu.Unlock()
+	return c.fakeRunner.Run(ctx, args...)
+}
+
+func TestClientDataUpdatedAsksForDirsOnce(t *testing.T) {
+	cache := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(cache, "api"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cache, "api", "formula_names.txt"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	r := &countingRunner{n: map[string]int{}, fakeRunner: fakeRunner{
+		out: map[string][]byte{"--cache": []byte(cache + "\n"), "--repository": []byte(t.TempDir() + "\n")},
+		err: map[string]error{"--repository": errors.New("exit status 1")},
+	}}
+	c := NewClient(r)
+	if _, err := c.DataUpdated(context.Background()); err == nil {
+		t.Fatal("brew --repository failed: want an error")
+	}
+	delete(r.err, "--repository")
+	for range 3 {
+		if _, err := c.DataUpdated(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if r.n["--cache"] != 2 || r.n["--repository"] != 2 {
+		t.Errorf("ran %v: a failure asks again, then the dirs are kept", r.n)
 	}
 }
