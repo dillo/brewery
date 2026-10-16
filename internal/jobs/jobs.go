@@ -4,6 +4,7 @@ package jobs
 
 import (
 	"regexp"
+	"slices"
 	"time"
 
 	"github.com/charmbracelet/x/ansi"
@@ -88,6 +89,17 @@ func (q *Queue) Queued() int {
 		}
 	}
 	return n
+}
+
+// Pending is the unfinished job (queued, running or waiting) with exactly
+// args, or nil.
+func (q *Queue) Pending(args []string) *Job {
+	for _, j := range q.jobs {
+		if !j.Finished() && slices.Equal(j.Args, args) {
+			return j
+		}
+	}
+	return nil
 }
 
 // Finish records how a job's run ended. If brew refused to run because

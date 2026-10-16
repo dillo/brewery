@@ -317,6 +317,8 @@ func (t *discoverTab) setHave(pkgs []brew.Package) {
 	t.have = make(map[string]bool, len(pkgs))
 	for _, p := range pkgs {
 		t.have[entryKey(p.Name, p.Kind)] = true
+		// brew deps names a tap's packages in full: user/tap/foo.
+		t.have[entryKey(p.FullName, p.Kind)] = true
 	}
 	t.apply()
 }

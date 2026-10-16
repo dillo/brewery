@@ -113,3 +113,23 @@ func TestStateString(t *testing.T) {
 		t.Error("state names wrong")
 	}
 }
+
+func TestPending(t *testing.T) {
+	var q Queue
+	a := q.Add("install fd", []string{"install", "fd"})
+	q.Add("install --cask fd", []string{"install", "--cask", "fd"})
+	if q.Pending([]string{"install", "fd"}) != a {
+		t.Error("a queued job is pending")
+	}
+	q.Next(t0)
+	if q.Pending([]string{"install", "fd"}) != a {
+		t.Error("a running job is pending")
+	}
+	q.Finish(a, 0, false, "", t0)
+	if j := q.Pending([]string{"install", "fd"}); j != nil {
+		t.Errorf("a finished job isn't pending: %+v", j)
+	}
+	if q.Pending([]string{"install"}) != nil {
+		t.Error("args must match exactly")
+	}
+}
