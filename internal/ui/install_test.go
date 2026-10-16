@@ -175,3 +175,34 @@ func TestInstallSaysWhenDependenciesCouldntBeChecked(t *testing.T) {
 		t.Errorf("opened after the failure:\n%s", got)
 	}
 }
+
+func TestInstallKnowsTapDependencies(t *testing.T) {
+	a, _, _, cat := newInstallApp(t)
+	rg := ripgrep
+	rg.Needs = []string{"oniguruma", "acme/tools/rgx"} // brew deps names tap packages in full
+	cat.details["ripgrep"] = rg
+	a.discover.setHave(append(slices.Clone(a.snap.Packages), brew.Package{Name: "rgx", FullName: "acme/tools/rgx", Kind: brew.KindFormula}))
+	selectDiscover(t, a, "ripgrep")
+	keys(t, a, "a")
+	if got := confirmText(a); !strings.HasSuffix(got, "also installs 1 dependency: oniguruma") {
+		t.Errorf("rgx from acme/tools is installed:\n%s", got)
+	}
+}
+
+func TestInstallSaysWhenQueued(t *testing.T) {
+	a, fs, _, _ := newInstallApp(t)
+	fs.procs = []*fakeProc{newFakeProc(0)} // the install keeps running
+	selectDiscover(t, a, "ripgrep")
+	keys(t, a, "a", "y", "a")
+	if a.confirm != nil || len(fs.calls) != 1 || !strings.Contains(stripANSI(a.statusBar()), "ripgrep is already queued") {
+		t.Errorf("confirm %v, calls %v, status %q", a.confirm, fs.calls, stripANSI(a.statusBar()))
+	}
+	keys(t, a, ":")
+	for _, k := range "install ripgrep" {
+		keys(t, a, string(k))
+	}
+	keys(t, a, "enter")
+	if len(fs.calls) != 1 || !strings.Contains(stripANSI(a.statusBar()), "install ripgrep is already queued") {
+		t.Errorf("calls %v, status %q", fs.calls, stripANSI(a.statusBar()))
+	}
+}

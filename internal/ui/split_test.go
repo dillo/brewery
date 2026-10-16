@@ -116,3 +116,53 @@ func TestStalePreviewFlagDoesNotSwallowEsc(t *testing.T) {
 	p.exit()
 	resume(t, a, waiting)
 }
+
+func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	a.readLog = (&fakeLogs{}).read
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
+	var copied string
+	a.UseClipboard(func(text string) error { copied = text; return nil })
+	keys(t, a, "4", "j")
+	before := a.services.cursor()
+	keys(t, a, "enter", "j", "space", "S", "g", "g", "/")
+	if a.services.cursor() != before || a.marks() != 0 || a.confirm != nil || len(fs.calls) != 0 {
+		t.Errorf("keys reached the hidden list: cursor %d→%d, marks %d, confirm %v, calls %v",
+			before, a.services.cursor(), a.marks(), a.confirm, fs.calls)
+	}
+	if a.mode != modeNormal {
+		t.Errorf("/ opened a filter on the hidden list: mode %d", a.mode)
+	}
+	if !a.services.previewShown() {
+		t.Fatal("the preview should still show")
+	}
+	name, _, _ := a.selection()
+	_, cmd := a.Update(press("y")) // y copies the service the preview shows
+	if cmd != nil {
+		cmd()
+	}
+	if name == "" || copied != name {
+		t.Errorf("y copied %q, want the selected service %q", copied, name)
+	}
+	keys(t, a, "tab")
+	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
+		t.Errorf("tab goes back to the list:\n%s", out)
+	}
+	keys(t, a, "enter", "2")
+	if a.tab != tabInstalled {
+		t.Errorf("tab keys still work under the preview: on %d", a.tab)
+	}
+}
+
+func TestServicesPreviewFlagClearsWhenThereIsRoom(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
+	keys(t, a, "4", "enter")
+	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40}) // room beside the list
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})  // and narrow again
+	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") || strings.Contains(out, "End of the log") {
+		t.Errorf("after shrinking again, the list shows first:\n%s", out)
+	}
+}

@@ -156,6 +156,9 @@ func (a *App) execute(line string) tea.Cmd {
 	case "jobs":
 		return a.openJobs()
 	}
+	if args[0] == "install" && a.queue.Pending(args) != nil {
+		return a.note(strings.Join(args, " ") + " is already queued")
+	}
 	refresh, all := refreshAfter(args)
 	return a.run(action{title: strings.Join(args, " "), args: args, refresh: refresh, full: all, typed: true})
 }

@@ -2,11 +2,14 @@ package jobs
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 	"unicode/utf8"
 )
@@ -78,7 +81,10 @@ func (s *State) UnmarshalText(b []byte) error {
 
 // History stores finished jobs as one JSON file each in Dir, named by
 // start time so they sort oldest first.
-type History struct{ Dir string }
+type History struct {
+	Dir  string
+	link func(oldname, newname string) error // os.Link; tests make it fail
+}
 
 // DefaultHistoryDir is $XDG_STATE_HOME/brewery/jobs, falling back to
 // ~/.local/state/brewery/jobs.
@@ -124,14 +130,14 @@ func (h History) Save(r Record) error {
 		os.Remove(tmp)
 		return werr
 	}
-	// Jobs that start within the clock's precision share a name. Linking
-	// fails if the name is taken, so a concurrent save is never replaced:
-	// try "-1", "-2", … instead. (The order among records with the same
-	// start time is unspecified.)
+	// Jobs that start within the clock's precision share a name. publish
+	// fails if the name is taken, so another save is never replaced: try
+	// "-1", "-2", … instead. (The order among records with the same start
+	// time is unspecified.)
 	stem := filepath.Join(h.Dir, r.Started.UTC().Format("20060102T150405.000000000"))
 	name := stem + ".json"
 	for i := 1; ; i++ {
-		err := os.Link(tmp, name)
+		err := h.publish(tmp, name)
 		if err == nil {
 			break
 		}
@@ -141,7 +147,7 @@ func (h History) Save(r Record) error {
 		}
 		name = fmt.Sprintf("%s-%d.json", stem, i)
 	}
-	os.Remove(tmp)
+	os.Remove(tmp) // still there after a link; already gone after a rename
 	files, err := h.files()
 	if err != nil {
 		return err
@@ -150,6 +156,39 @@ func (h History) Save(r Record) error {
 		os.Remove(f)
 	}
 	return nil
+}
+
+// publish puts the file tmp at name, failing with fs.ErrExist if name is
+// taken. A hard link does that atomically. Some file systems (network
+// shares, FUSE) have no hard links: there it checks, then renames, which a
+// save at the same instant could race.
+func (h History) publish(tmp, name string) error {
+	link := h.link
+	if link == nil {
+		link = os.Link
+	}
+	err := link(tmp, name)
+	if !noHardLinks(err) {
+		return err
+	}
+	switch _, err := os.Lstat(name); {
+	case err == nil:
+		return fs.ErrExist
+	case !errors.Is(err, fs.ErrNotExist):
+		return err
+	}
+	return os.Rename(tmp, name)
+}
+
+// noHardLinks reports whether err says the file system can't make hard
+// links.
+func noHardLinks(err error) bool {
+	for _, no := range []syscall.Errno{syscall.EPERM, syscall.ENOTSUP, syscall.EOPNOTSUPP, syscall.EXDEV} {
+		if errors.Is(err, no) {
+			return true
+		}
+	}
+	return false
 }
 
 // Load reads the history, newest first. A missing directory is an empty

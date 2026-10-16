@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/atotto/clipboard"
@@ -38,7 +39,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("brewery", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	showVersion := fs.Bool("version", false, "print the version and exit")
-	noIcons := fs.Bool("no-icons", false, "draw plain text instead of Nerd Font icons (or set BREWERY_NO_ICONS=1)")
+	noIcons := fs.Bool("no-icons", false, "draw plain text instead of Nerd Font icons (or set BREWERY_NO_ICONS to any value)")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -71,11 +72,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseCatalog(client)
 	// Discover's analytics are kept beside the snapshot.
 	app.UseAnalytics(analytics.NewStore(filepath.Join(filepath.Dir(cachePath), "analytics"), version))
-	// Full-screen commands get the real stderr: while the TUI runs,
-	// os.Stderr is the crash log.
-	realStderr := os.Stderr
+	// Full-screen commands get the terminal's stderr: while the TUI runs,
+	// os.Stderr and file descriptor 2 are the crash log. terminal is set
+	// once the crash log starts, before the program runs any command.
+	var terminal *os.File
 	fullScreen := func(cmd *exec.Cmd) *exec.Cmd {
-		cmd.Stderr = realStderr
+		if terminal != nil {
+			cmd.Stderr = terminal
+		} else {
+			cmd.Stderr = os.Stderr
+		}
 		return cmd
 	}
 	app.UseTakeover(func(args []string) *exec.Cmd { return fullScreen(exec.Command(bin, args...)) })
@@ -87,11 +93,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseOpener(func(url string) error { return exec.Command("open", url).Run() }) // macOS's open
 	app.UseClipboard(clipboard.WriteAll)
 
-	crash, crashErr := startCrashLog(filepath.Join(jobs.DefaultStateDir(), "crash.log"))
+	crash, crashErr := startCrashLog(jobs.DefaultStateDir())
+	if crashErr == nil {
+		terminal = crash.terminal
+	}
 	_, err = tea.NewProgram(app).Run()
-	if crashErr == nil && crash.stop() {
-		fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", crash.path)
-		return 1
+	if crashErr == nil {
+		if path := crash.stop(time.Now()); path != "" {
+			fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", path)
+			return 1
+		}
+		for _, path := range crash.earlier {
+			fmt.Fprintf(stderr, "brewery crashed last time. What happened is in %s; please include it when reporting this.\n", path)
+		}
 	}
 	if err != nil {
 		fmt.Fprintln(stderr, "brewery:", err)

@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -90,6 +91,11 @@ type Client struct {
 	r       Runner
 	Timeout time.Duration
 	Prefix  string // where brew is installed (/opt/homebrew): Cellar and Caskroom are in it
+
+	dirsMu      sync.Mutex
+	cache, repo string // brew --cache and --repository, once asked
+
+	measured func(Package) // tests: called after Sizes measures each package
 }
 
 func NewClient(r Runner) *Client {
@@ -215,19 +221,15 @@ var dataFiles = []struct {
 // DataUpdated is when brew last fetched package data (brew update, or its
 // auto-update): the newest of its data files.
 func (c *Client) DataUpdated(ctx context.Context) (time.Time, error) {
-	cache, err := c.query(ctx, "--cache")
-	if err != nil {
-		return time.Time{}, err
-	}
-	repo, err := c.query(ctx, "--repository")
+	cache, repo, err := c.dataDirs(ctx)
 	if err != nil {
 		return time.Time{}, err
 	}
 	var newest time.Time
 	for _, f := range dataFiles {
-		dir := strings.TrimSpace(string(repo))
+		dir := repo
 		if f.inCache {
-			dir = strings.TrimSpace(string(cache))
+			dir = cache
 		}
 		if info, err := os.Stat(filepath.Join(dir, f.path)); err == nil && info.ModTime().After(newest) {
 			newest = info.ModTime()
@@ -237,4 +239,24 @@ func (c *Client) DataUpdated(ctx context.Context) (time.Time, error) {
 		return time.Time{}, errors.New("found none of brew's data files")
 	}
 	return newest, nil
+}
+
+// dataDirs are brew's cache and repository. They don't move while brewery
+// runs, so brew is asked once; a failure is asked again next time.
+func (c *Client) dataDirs(ctx context.Context) (cache, repo string, err error) {
+	c.dirsMu.Lock()
+	defer c.dirsMu.Unlock()
+	if c.cache != "" && c.repo != "" {
+		return c.cache, c.repo, nil
+	}
+	cb, err := c.query(ctx, "--cache")
+	if err != nil {
+		return "", "", err
+	}
+	rb, err := c.query(ctx, "--repository")
+	if err != nil {
+		return "", "", err
+	}
+	c.cache, c.repo = strings.TrimSpace(string(cb)), strings.TrimSpace(string(rb))
+	return c.cache, c.repo, nil
 }

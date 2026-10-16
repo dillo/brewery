@@ -14,7 +14,8 @@ func PrefixOf(bin string) string { return filepath.Dir(filepath.Dir(bin)) }
 // Sizes measures the disk space each package uses, keyed by Package.Key: a
 // formula's kegs in the Cellar, or a cask's files (its app in /Applications,
 // fonts…) and its Caskroom folder. It walks the files itself rather than
-// asking brew, which has no such command.
+// asking brew, which has no such command. If it runs out of time, it
+// returns the packages measured so far with the error.
 func (c *Client) Sizes(ctx context.Context, pkgs []Package) (map[string]int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()
@@ -28,11 +29,14 @@ func (c *Client) Sizes(ctx context.Context, pkgs []Package) (map[string]int64, e
 		for _, path := range paths {
 			size, err := dirSize(ctx, path)
 			if err != nil {
-				return nil, err
+				return sizes, err // p is half measured: leave it out
 			}
 			n += size
 		}
 		sizes[p.Key()] = n
+		if c.measured != nil {
+			c.measured(p)
+		}
 	}
 	return sizes, nil
 }

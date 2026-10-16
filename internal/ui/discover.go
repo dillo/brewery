@@ -2,6 +2,8 @@ package ui
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -48,6 +50,10 @@ func loadCatalogue(ctx context.Context, c Catalog) tea.Cmd {
 // showTab switches to tab t. Discover reads the catalogue the first time
 // it opens, and the analytics as wantStats says.
 func (a *App) showTab(t int) tea.Cmd {
+	if t != a.tab {
+		// Coming back to a tab starts on its list, not a preview left focused.
+		a.installed.pv.focus, a.discover.pv.focus = false, false
+	}
 	a.tab = t
 	if t != tabDiscover {
 		return nil
@@ -317,6 +323,8 @@ func (t *discoverTab) setHave(pkgs []brew.Package) {
 	t.have = make(map[string]bool, len(pkgs))
 	for _, p := range pkgs {
 		t.have[entryKey(p.Name, p.Kind)] = true
+		// brew deps names a tap's packages in full: user/tap/foo.
+		t.have[entryKey(p.FullName, p.Kind)] = true
 	}
 	t.apply()
 }
@@ -500,11 +508,23 @@ func (t *discoverTab) empty() string {
 	case t.fetching:
 		return "fetching analytics from formulae.brew.sh…"
 	case t.fetchErr != nil:
-		return "couldn't reach formulae.brew.sh · r retries"
+		return fetchFailure(t.fetchErr) + " · r retries"
 	case len(t.stats) == 0:
 		return "no analytics yet · r fetches them"
 	}
 	return "nothing here yet"
+}
+
+// fetchFailure says why the analytics couldn't be fetched.
+func fetchFailure(err error) string {
+	var status *analytics.StatusError
+	switch {
+	case errors.As(err, &status):
+		return fmt.Sprintf("formulae.brew.sh answered %d", status.Code)
+	case errors.Is(err, analytics.ErrBadList):
+		return "couldn't read formulae.brew.sh's lists"
+	}
+	return "couldn't reach formulae.brew.sh"
 }
 
 // rankCell is a row's place in a ranked view, blank for none.

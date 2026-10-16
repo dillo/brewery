@@ -216,7 +216,7 @@ func (c *cmdline) popup(st theme.Styles, w int) string {
 		desc := ansi.Truncate(it.desc, max(inner-nameW-2, 0), "…")
 		row := name + strings.Repeat(" ", nameW-lipgloss.Width(name)+2)
 		if i == c.sel {
-			rows = append(rows, st.TableSelected.Width(inner).Render(row+desc))
+			rows = append(rows, st.TableSelected.Foreground(st.P.Text).Width(inner).Render(row+desc))
 		} else {
 			rows = append(rows, st.Text.Render(row)+st.Muted.Render(desc))
 		}

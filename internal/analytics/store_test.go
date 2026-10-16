@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -66,8 +67,12 @@ func TestFetchFailureKeepsTheCache(t *testing.T) {
 		if err == nil {
 			t.Errorf("%s: want an error", name)
 		}
-		if name == "missing" && !strings.Contains(err.Error(), "404") {
+		var status *StatusError
+		if name == "missing" && (!errors.As(err, &status) || status.Code != http.StatusNotFound || !strings.Contains(err.Error(), "404")) {
 			t.Errorf("missing: %v should give the status", err)
+		}
+		if got := errors.Is(err, ErrBadList); got != (name == "broken") {
+			t.Errorf("%s: errors.Is(%v, ErrBadList) = %v", name, err, got)
 		}
 		if l, _, err := s.Cached(Apps30); err != nil || len(l.Items) != 6 {
 			t.Errorf("%s: the cache has %d items, %v", name, len(l.Items), err)
@@ -88,5 +93,18 @@ func TestNewStore(t *testing.T) {
 	}
 	if len(Lists) != 5 || Lists[0] != Tools30 || Lists[1] != Apps30 {
 		t.Errorf("Lists = %v: the 30-day lists come first, for Popular", Lists)
+	}
+}
+
+func TestTried(t *testing.T) {
+	s := NewStore(filepath.Join(t.TempDir(), "analytics"), "dev")
+	if got := s.Tried(); got != "" {
+		t.Errorf("nothing tried yet, got %q", got)
+	}
+	if err := s.SetTried("2026-10-16"); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.Tried(); got != "2026-10-16" {
+		t.Errorf("got %q", got)
 	}
 }

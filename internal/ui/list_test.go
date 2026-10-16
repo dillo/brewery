@@ -128,7 +128,7 @@ func TestSizeTableShrinksTheRoomiestColumnsFirst(t *testing.T) {
 func TestSizeTableDropsTrailingColumns(t *testing.T) {
 	tbl := newTable(testStyles, outdatedCols)
 	sizeTable(&tbl, outdatedCols, 30, 10)
-	// NAME 8 + INSTALLED 9 + LATEST 6 + padding 6 = 29; TYPE and PINNED don't fit.
+	// NAME 8 + INSTALLED 8 + LATEST 8 + padding 6 = 30; TYPE and PINNED don't fit.
 	if w := tableWidth(tbl); w > 30 {
 		t.Errorf("table is %d wide, want <= 30", w)
 	}
@@ -262,15 +262,20 @@ func TestSelectedRowStaysHighlighted(t *testing.T) {
 	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
 	lt.resize(60, 10)
 	lt.setRows(serviceRows(testStyles, fixtureSnapshot(t).Services))
+	found := false
 	for _, line := range strings.Split(lt.table.View(), "\n") {
 		if !strings.Contains(line, "postgresql@16") {
 			continue
 		}
+		found = true
 		// One full reset, at the very end: anything earlier would end the
 		// highlight partway along the row.
 		if n := strings.Count(line, "\x1b[m"); n != 1 || !strings.HasSuffix(line, "\x1b[m") {
 			t.Errorf("the selected row resets %d times: %q", n, line)
 		}
+	}
+	if !found {
+		t.Errorf("the selected row isn't shown:\n%s", lt.table.View())
 	}
 }
 
@@ -287,4 +292,11 @@ func TestSkeletonOnTinyPanes(t *testing.T) {
 	it.resize(40, 4)
 	it.setData(nil, state.NewIndex(nil))
 	_ = it.view(nil)
+}
+
+func TestServiceStatusFitsWithAnIcon(t *testing.T) {
+	widest := theme.With(theme.Nerd.Failed, "error (exit 127)")
+	if w := lipgloss.Width(widest); w > serviceCols[1].width {
+		t.Errorf("%q is %d wide; STATUS has %d", widest, w, serviceCols[1].width)
+	}
 }

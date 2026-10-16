@@ -3,10 +3,12 @@ package ui
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,13 +16,16 @@ import (
 )
 
 // fakeStats serves the analytics fixtures. cached are the copies kept from
-// earlier downloads, fetched at cachedAt; err makes downloads fail.
+// earlier downloads, fetched at cachedAt; err makes downloads fail. tried
+// is the day a fetch last started.
 type fakeStats struct {
 	fresh    map[string]analytics.List
 	cached   map[string]analytics.List
 	cachedAt time.Time
 	err      error
 	fetched  []string // lists downloaded, in order
+	mu       sync.Mutex
+	tried    string
 }
 
 func statsFixture(t *testing.T, list string) analytics.List {
@@ -57,6 +62,19 @@ func (f *fakeStats) Fetch(_ context.Context, list string) (analytics.List, error
 		return analytics.List{}, f.err
 	}
 	return f.fresh[list], nil
+}
+
+func (f *fakeStats) Tried() string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.tried
+}
+
+func (f *fakeStats) SetTried(day string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.tried = day
+	return nil
 }
 
 // newStatsApp is a Discover app with analytics to read, still on Home.
@@ -199,6 +217,47 @@ func TestDiscoverFetchesOnceADay(t *testing.T) {
 	keys(t, a, "6", "1", "6")
 	if len(st.fetched) != 1 {
 		t.Errorf("fetched %v: a failed fetch isn't retried by opening Discover again the same day", st.fetched)
+	}
+	if st.tried != "2026-10-13" {
+		t.Errorf("tried %q: the day is kept for the next start", st.tried)
+	}
+
+	// The next start the same day remembers the failed try.
+	a, st2 := newStatsApp(t)
+	st2.tried, st2.err = st.tried, st.err
+	keys(t, a, "6")
+	if len(st2.fetched) != 0 {
+		t.Errorf("fetched %v after a restart, though a fetch failed earlier today", st2.fetched)
+	}
+	keys(t, a, "r")
+	if len(st2.fetched) != 1 {
+		t.Errorf("r fetched %v: it fetches anyway", st2.fetched)
+	}
+
+	// A try on an earlier day doesn't count.
+	a, st3 := newStatsApp(t)
+	st3.tried = "2026-10-12"
+	keys(t, a, "6")
+	if len(st3.fetched) != 5 {
+		t.Errorf("fetched %v, want every list", st3.fetched)
+	}
+}
+
+func TestDiscoverSaysWhyTheFetchFailed(t *testing.T) {
+	for _, c := range []struct {
+		err  error
+		want string
+	}{
+		{errors.New("dial tcp: no route to host"), "couldn't reach formulae.brew.sh · r retries"},
+		{&analytics.StatusError{List: analytics.Tools30, Code: 404}, "formulae.brew.sh answered 404 · r retries"},
+		{fmt.Errorf("%s: %w: eof", analytics.Tools30, analytics.ErrBadList), "couldn't read formulae.brew.sh's lists · r retries"},
+	} {
+		a, st := newStatsApp(t)
+		st.err = c.err
+		keys(t, a, "6")
+		if out := stripANSI(a.render()); !strings.Contains(out, c.want) {
+			t.Errorf("%v: want %q in\n%s", c.err, c.want, out)
+		}
 	}
 }
 

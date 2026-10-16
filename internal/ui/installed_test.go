@@ -244,3 +244,15 @@ func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
 		t.Errorf("a view that hides the selection should still select a row, got %+v", p)
 	}
 }
+
+func TestPreviewFocusIsLeftBehind(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "tab")
+	if !a.installed.pv.focus {
+		t.Fatal("tab should focus the preview")
+	}
+	keys(t, a, "3", "2")
+	if a.installed.pv.focus {
+		t.Error("coming back to Installed starts on the list")
+	}
+}

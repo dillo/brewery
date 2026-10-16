@@ -20,6 +20,9 @@ func (a *App) askInstall() tea.Cmd {
 	if a.discover.have[entryKey(r.Name, r.Kind)] {
 		return a.note(r.Name + " is already installed")
 	}
+	if a.queue.Pending(kindArgs("install", r.Kind, r.Name)) != nil {
+		return a.note(r.Name + " is already queued")
+	}
 	a.installing = r
 	a.confirm = a.installBox(r)
 	return nil

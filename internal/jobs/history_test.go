@@ -1,12 +1,14 @@
 package jobs
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -143,6 +145,40 @@ func TestHistoryKeepsRecordsWithTheSameStart(t *testing.T) {
 	got, err := h.Load()
 	if err != nil || len(got) != 3 {
 		t.Fatalf("Load = %d records, %v; want 3", len(got), err)
+	}
+}
+
+func TestHistoryWithoutHardLinks(t *testing.T) {
+	for _, errno := range []syscall.Errno{syscall.EPERM, syscall.ENOTSUP, syscall.EOPNOTSUPP, syscall.EXDEV} {
+		h := History{
+			Dir:  filepath.Join(t.TempDir(), "jobs"),
+			link: func(o, n string) error { return &os.LinkError{Op: "link", Old: o, New: n, Err: errno} },
+		}
+		for _, title := range []string{"one", "two"} {
+			if err := h.Save(record(title, t0)); err != nil {
+				t.Fatalf("%v: %v", errno, err)
+			}
+		}
+		got, err := h.Load()
+		if err != nil || len(got) != 2 {
+			t.Errorf("%v: Load = %d records, %v; want 2", errno, len(got), err)
+		}
+		if left, _ := filepath.Glob(filepath.Join(h.Dir, "*.tmp")); len(left) != 0 {
+			t.Errorf("%v: temp files left: %v", errno, left)
+		}
+	}
+}
+
+func TestHistoryLinkFailureIsAnError(t *testing.T) {
+	h := History{
+		Dir:  filepath.Join(t.TempDir(), "jobs"),
+		link: func(o, n string) error { return &os.LinkError{Op: "link", Old: o, New: n, Err: syscall.EIO} },
+	}
+	if err := h.Save(record("one", t0)); !errors.Is(err, syscall.EIO) {
+		t.Errorf("Save = %v, want the I/O error", err)
+	}
+	if left, _ := os.ReadDir(h.Dir); len(left) != 0 {
+		t.Errorf("files left: %v", left)
 	}
 }
 

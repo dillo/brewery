@@ -74,8 +74,10 @@ func New(p Palette) Styles {
 			BorderStyle(lipgloss.NormalBorder()).BorderBottom(true).BorderForeground(p.Surface1),
 		// No colors on cells: a cell's closing reset would cut the selected
 		// row's highlight short. Color inside a cell goes through Tint.
-		TableCell:     lipgloss.NewStyle().Padding(0, 1),
-		TableSelected: lipgloss.NewStyle().Foreground(p.Text).Background(p.Surface0).Bold(true),
+		TableCell: lipgloss.NewStyle().Padding(0, 1),
+		// The selected row keeps the terminal's text color, as the other rows
+		// do: Tint goes back to it, so text after a tinted cell matches.
+		TableSelected: lipgloss.NewStyle().Background(p.Surface0).Bold(true),
 	}
 }
 

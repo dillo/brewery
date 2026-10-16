@@ -210,3 +210,20 @@ func TestCompletesFromTheCatalogue(t *testing.T) {
 		t.Errorf("info fo: %q", candidateTexts(cs))
 	}
 }
+
+// The popup has no Tint, so its selected row keeps the theme's text color
+// (TableSelected itself carries no foreground).
+func TestPopupSelectedRowKeepsTextColor(t *testing.T) {
+	c := cmdline{items: []candidate{{text: "install", desc: "Install"}, {text: "pin", desc: "Pin"}}, sel: 0}
+	want := lipgloss.NewStyle().Foreground(testStyles.P.Text).Render("x")
+	seq := strings.TrimSuffix(strings.TrimPrefix(want[:strings.Index(want, "x")], "\x1b["), "m") // SGR parameters; styles merge into one sequence
+	var sel string
+	for _, l := range strings.Split(c.popup(testStyles, 80), "\n") {
+		if strings.Contains(l, "install") {
+			sel = l
+		}
+	}
+	if sel == "" || !strings.Contains(sel, seq) {
+		t.Errorf("selected popup row %q lacks the Text foreground %q", sel, seq)
+	}
+}
