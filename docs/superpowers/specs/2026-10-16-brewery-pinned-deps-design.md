@@ -43,4 +43,4 @@ The check uses the dependencies of the installed version. An upgrade can add or 
 
 ## Testing
 
-Unit tests in `state` (PinnedBehind) and `ui` (preview labels and warning; `u` on both tabs; marked upgrade partly and fully blocked; the `U` dialog line; the Discover dialog before and after brew answers). Tests that need a pinned, outdated dependency build one from `fixtureSnapshot`, in both the app's snapshot and the fake source (a refresh after a job reloads from the source). No real installs.
+Unit tests in `state` (PinnedBehind) and `ui` (preview labels and warning; `u` on both tabs; marked upgrade partly and fully blocked; the upgrade-all (`A`) dialog line; the Discover dialog before and after brew answers). Tests that need a pinned, outdated dependency build one from `fixtureSnapshot`, in both the app's snapshot and the fake source (a refresh after a job reloads from the source). No real installs.
