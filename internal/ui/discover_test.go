@@ -181,10 +181,23 @@ func TestRefreshDuringReadIsNotDropped(t *testing.T) {
 func TestOpeningDuringReadReadsOnce(t *testing.T) {
 	a, cat := newDiscoverApp(t)
 	_, first := a.Update(press("6"))
-	keys(t, a, "1", "6")
-	a.wantCatalogue()
+	keys(t, a, "1", "6", ":", "esc") // the : line wants the catalogue too
 	drain(t, a, first)
 	if cat.calls != 1 {
 		t.Errorf("read the catalogue %d times, want 1", cat.calls)
+	}
+}
+
+func TestRefreshBeforeDiscoverOpens(t *testing.T) {
+	a, cat := newDiscoverApp(t)
+	st := newFakeStats(t)
+	a.UseAnalytics(st)
+	keys(t, a, "r")
+	if cat.calls != 0 || len(st.fetched) != 0 {
+		t.Errorf("r on Home read the catalogue %d times and fetched %v: Discover hasn't opened", cat.calls, st.fetched)
+	}
+	keys(t, a, "6")
+	if cat.calls != 1 || len(st.fetched) != 5 {
+		t.Errorf("opening Discover read the catalogue %d times and fetched %v", cat.calls, st.fetched)
 	}
 }
