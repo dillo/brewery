@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,8 +29,30 @@ var version = "dev"
 // --no-icons was given or BREWERY_NO_ICONS is set to anything.
 func wantIcons(noIcons bool, env string) bool { return !noIcons && env == "" }
 
-// locateBrew is swapped out in tests.
-var locateBrew = brew.Locate
+// locateBrew and brewVersion are swapped out in tests.
+var (
+	locateBrew  = brew.Locate
+	brewVersion = readBrewVersion
+)
+
+// readBrewVersion asks the brew at bin for its version. It takes about
+// 50ms; a brew that hangs is given 5 seconds.
+func readBrewVersion(bin string) (brew.Version, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return brew.NewClient(brew.ExecRunner{Bin: bin, Env: brew.QueryEnv}).BrewVersion(ctx)
+}
+
+// versionProblem says why the brew at bin is too old for brewery, or
+// returns "". A version brewery can't read doesn't stop it: anything really
+// broken shows in the tabs.
+func versionProblem(bin string) string {
+	v, err := brewVersion(bin)
+	if err != nil || !v.TooOld() {
+		return ""
+	}
+	return fmt.Sprintf("brewery needs Homebrew %d.%d or newer (you have %s). Update it with `brew update`.", brew.MinMajor, brew.MinMinor, v.Text)
+}
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
@@ -52,6 +75,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if errors.Is(err, brew.ErrNotFound) {
 		fmt.Fprintln(stderr, "brewery: Homebrew isn't installed (looked in $HOMEBREW_PREFIX, /opt/homebrew, /usr/local and $PATH).")
 		fmt.Fprintln(stderr, "Install it from https://brew.sh, then run brewery again.")
+		return 1
+	}
+	if msg := versionProblem(bin); msg != "" {
+		fmt.Fprintln(stderr, msg)
 		return 1
 	}
 
