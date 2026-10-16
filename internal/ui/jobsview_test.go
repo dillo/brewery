@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/jobs"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // pastJobs are two finished jobs: a failed upgrade an hour ago and a pin

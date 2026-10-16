@@ -14,8 +14,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 // fakeSource serves the fixture snapshot. servicesErr, doctorErr and

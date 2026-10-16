@@ -68,7 +68,7 @@ func startCrashLog(dir string) (*crashLog, error) {
 // log named for now, and stop returns its path; otherwise the file is
 // removed and stop returns "".
 func (c *crashLog) stop(now time.Time) string {
-	unix.Dup2(int(c.terminal.Fd()), 2)
+	_ = unix.Dup2(int(c.terminal.Fd()), 2) // best effort: brewery is on its way out
 	c.terminal.Close()
 	os.Stderr = c.stderr
 	info, err := c.f.Stat()

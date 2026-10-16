@@ -8,8 +8,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // Proc is a running brew command. *brew.Proc satisfies it; tests use a fake.
@@ -232,7 +232,7 @@ func (a *App) stopJob() tea.Cmd {
 	}
 	a.canceled = true
 	if a.proc != nil {
-		a.proc.Interrupt() // the exit message follows
+		_ = a.proc.Interrupt() // the exit message follows
 		return nil
 	}
 	a.queue.Finish(j, -1, true, "", a.now())

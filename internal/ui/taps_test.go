@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 func TestUntapAsksFirst(t *testing.T) {

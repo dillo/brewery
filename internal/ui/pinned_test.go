@@ -9,8 +9,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 // pinBehind pins pcre2 at 10.49 while 10.50 is out, and makes git, which

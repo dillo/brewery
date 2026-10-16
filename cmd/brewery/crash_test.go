@@ -39,7 +39,9 @@ func TestCrashLogKeepsWhatWasWritten(t *testing.T) {
 	}
 	fmt.Fprint(os.Stderr, "Caught panic:\r\n\r\nboom\r\n")
 	// The runtime's fatal errors write to file descriptor 2 directly.
-	unix.Write(2, []byte("fatal error: concurrent map writes\n"))
+	if _, err := unix.Write(2, []byte("fatal error: concurrent map writes\n")); err != nil {
+		t.Fatal(err)
+	}
 	path := c.stop(crashAt)
 	if path != filepath.Join(dir, "crash-20261016-150405.log") {
 		t.Fatalf("stop returned %q", path)

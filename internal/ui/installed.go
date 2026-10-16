@@ -7,9 +7,9 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 type installedFilter int

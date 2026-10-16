@@ -11,7 +11,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/state"
 )
 
 func TestHumanSize(t *testing.T) {

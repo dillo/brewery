@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // fakeCatalog serves the catalogue fixture; added is what brew's last

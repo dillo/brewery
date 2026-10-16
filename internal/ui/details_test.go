@@ -9,7 +9,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 var ripgrep = brew.Details{

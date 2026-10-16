@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/analytics"
+	"github.com/dillo/brewery/internal/analytics"
 )
 
 // fakeStats serves the analytics fixtures. cached are the copies kept from

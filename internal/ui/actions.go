@@ -7,7 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // action is something the user asked brew to do from a pane.

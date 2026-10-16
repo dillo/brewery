@@ -7,8 +7,8 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // listTab is a table used by the Outdated, Services and Taps tabs, full

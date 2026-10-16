@@ -8,7 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/analytics"
+	"github.com/dillo/brewery/internal/analytics"
 )
 
 // Analytics are Homebrew's install counts, downloaded and kept between

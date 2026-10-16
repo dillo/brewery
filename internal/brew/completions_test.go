@@ -150,9 +150,13 @@ func TestFishTokens(t *testing.T) {
 func TestClientCompletionsReadsBrewsFishFile(t *testing.T) {
 	repo := t.TempDir()
 	dir := filepath.Join(repo, "completions", "fish")
-	os.MkdirAll(dir, 0o755)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	b, _ := os.ReadFile(filepath.Join("testdata", "brew.fish"))
-	os.WriteFile(filepath.Join(dir, "brew.fish"), b, 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "brew.fish"), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	c := NewClient(fakeRunner{out: map[string][]byte{"--repository": []byte(repo + "\n")}})
 	got, err := c.Completions(context.Background())

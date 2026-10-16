@@ -8,8 +8,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 // Source provides brew data. *brew.Client satisfies it; tests use a fake.

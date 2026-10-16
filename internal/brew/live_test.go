@@ -156,3 +156,18 @@ func TestLiveCompletions(t *testing.T) {
 		t.Error("services t is an alias of stop and should be skipped")
 	}
 }
+
+func TestLiveBrewVersion(t *testing.T) {
+	bin, err := Locate()
+	if err != nil {
+		t.Skip("brew not installed")
+	}
+	v, err := NewClient(ExecRunner{Bin: bin, Env: QueryEnv}).BrewVersion(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v.TooOld() {
+		t.Errorf("this machine's brew %s is older than brewery's floor", v.Text)
+	}
+	t.Logf("brew %s", v.Text)
+}

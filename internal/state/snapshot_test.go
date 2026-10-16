@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 func TestSaveLoadRoundTrip(t *testing.T) {
@@ -42,7 +42,9 @@ func TestLoadMissingFile(t *testing.T) {
 
 func TestLoadIgnoresOtherVersions(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "snapshot.json")
-	os.WriteFile(path, []byte(`{"version": 999, "packages": [{"name": "fd"}]}`), 0o644)
+	if err := os.WriteFile(path, []byte(`{"version": 999, "packages": [{"name": "fd"}]}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	if s, err := Load(path); err == nil || len(s.Packages) != 0 {
 		t.Errorf("want version mismatch error, got %+v, %v", s, err)
 	}

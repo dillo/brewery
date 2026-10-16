@@ -8,7 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // takeoverDoneMsg reports that a full-screen command has exited.

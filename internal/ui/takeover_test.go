@@ -10,7 +10,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // fakeTakeover records the commands handed the whole terminal.

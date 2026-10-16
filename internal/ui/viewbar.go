@@ -7,7 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // viewBarHeight is the bar of views plus the line about the active one.

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // newHistoryApp is newJobApp with its job history kept in a temp dir.
@@ -72,7 +72,9 @@ func TestNewestRecordComesFirstAndHistoryIsCapped(t *testing.T) {
 func TestHistorySaveFailureShowsInStatusBar(t *testing.T) {
 	a, _ := newHistoryApp(t, &fakeStarter{})
 	file := filepath.Join(t.TempDir(), "file")
-	os.WriteFile(file, nil, 0o644)
+	if err := os.WriteFile(file, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
 	a.UseHistory(jobs.History{Dir: filepath.Join(file, "jobs")}, nil) // can't make a dir under a file
 	settle(t, a, a.run(action{title: "pin git", args: []string{"pin", "git"}}))
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "history not saved") {

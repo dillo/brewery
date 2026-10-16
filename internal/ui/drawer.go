@@ -11,8 +11,8 @@ import (
 	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/vt"
 
-	"brewery/internal/jobs"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/jobs"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // promptRe matches a terminal line that is waiting for the user: a
@@ -49,7 +49,7 @@ func newDrawer(st theme.Styles) drawer {
 	d.term = vt.NewSafeEmulator(d.cols, d.rows)
 	// The emulator answers terminal queries ("where is the cursor?") on its
 	// read side and blocks if nobody reads, so replies are always drained.
-	go io.Copy(d.reply, d.term)
+	go func() { _, _ = io.Copy(d.reply, d.term) }()
 	return d
 }
 
@@ -65,7 +65,7 @@ func (r *replyTo) Write(b []byte) (int, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.w != nil {
-		r.w.Write(b) // a write error only means the reply is lost
+		_, _ = r.w.Write(b) // a write error only means the reply is lost
 	}
 	return len(b), nil
 }
@@ -94,7 +94,7 @@ func drawerHeight(bodyH int) int {
 func (d *drawer) start(j *jobs.Job, reply io.Writer) {
 	d.job, d.open = j, true
 	d.raw.Reset()
-	d.term.Write([]byte("\x1bc")) // full terminal reset: screen, cursor, colors
+	_, _ = d.term.Write([]byte("\x1bc")) // full terminal reset: screen, cursor, colors
 	d.term.ClearScrollback()
 	d.reply.set(reply)
 }
@@ -110,7 +110,7 @@ func (d *drawer) stop() { d.reply.set(nil) }
 
 // write feeds process output to the terminal.
 func (d *drawer) write(b []byte) {
-	d.term.Write(b)
+	_, _ = d.term.Write(b)
 	d.raw.Write(b)
 }
 

@@ -8,7 +8,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // cmdline is the ":" prompt: a one-line editor that remembers the

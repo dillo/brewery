@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"brewery/internal/brew"
+	"github.com/dillo/brewery/internal/brew"
 )
 
 // git -> pcre2 -> json-c, git also depends on json-c indirectly; fd has no deps.

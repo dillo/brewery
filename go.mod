@@ -1,4 +1,4 @@
-module brewery
+module github.com/dillo/brewery
 
 go 1.26.0
 

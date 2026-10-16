@@ -14,8 +14,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"brewery/internal/brew"
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // logTailBytes is how much of the end of a log the services preview reads.

@@ -9,7 +9,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"brewery/internal/theme"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // pane draws a rounded box of exactly w×h cells with a title on its first

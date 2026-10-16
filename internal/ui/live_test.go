@@ -10,8 +10,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"brewery/internal/brew"
-	"brewery/internal/state"
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 // Runs a harmless brew command as a job through the real pseudo-terminal
