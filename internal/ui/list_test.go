@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"brewery/internal/brew"
 	"brewery/internal/state"
 	"brewery/internal/theme"
 )
@@ -79,9 +81,9 @@ func TestSetRowsRecoversCursorAfterEmpty(t *testing.T) {
 func TestSizeTableSplitsFlexWidth(t *testing.T) {
 	tbl := newTable(testStyles, outdatedCols)
 	sizeTable(&tbl, outdatedCols, 100, 10)
-	// fixed: 18+18+7+6 = 49, plus 2 padding per column (10) = 59; flex gets 100-59.
-	if got := tbl.Columns()[0].Width; got != 41 {
-		t.Errorf("flex column width = %d, want 41", got)
+	// fixed: 18+18+8+9 = 53, plus 2 padding per column (10) = 63; flex gets 100-63.
+	if got := tbl.Columns()[0].Width; got != 37 {
+		t.Errorf("flex column width = %d, want 37", got)
 	}
 }
 
@@ -238,7 +240,7 @@ func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 func TestIconsInRows(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.UseIcons(true)
-	if got := a.outdated.all[1][3]; got != theme.Nerd.Cask+" cask" {
+	if got := a.outdated.all[1][4]; got != theme.Nerd.Cask+" cask" {
 		t.Errorf("outdated TYPE with icons = %q", got)
 	}
 	if got := stripANSI(a.services.all[0][1]); got != theme.Nerd.Failed+" error (exit 1)" {
@@ -253,7 +255,7 @@ func TestIconsInRows(t *testing.T) {
 		t.Errorf("installed row with icons = %q", row)
 	}
 	a.UseIcons(false)
-	if got := a.outdated.all[1][3]; got != "cask" {
+	if got := a.outdated.all[1][4]; got != "cask" {
 		t.Errorf("icons off: %q", got)
 	}
 }
@@ -298,5 +300,26 @@ func TestServiceStatusFitsWithAnIcon(t *testing.T) {
 	widest := theme.With(theme.Nerd.Failed, "error (exit 127)")
 	if w := lipgloss.Width(widest); w > serviceCols[1].width {
 		t.Errorf("%q is %d wide; STATUS has %d", widest, w, serviceCols[1].width)
+	}
+}
+
+func TestOutdatedKeepsPinnedLongerThanType(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.Update(tea.WindowSizeMsg{Width: 46, Height: 24})
+	keys(t, a, "3")
+	if out := stripANSI(a.render()); !strings.Contains(out, "PINNED") || strings.Contains(out, "TYPE") {
+		t.Errorf("a narrow Outdated should drop TYPE before PINNED:\n%s", out)
+	}
+}
+
+func TestOutdatedCellsFitWithIcons(t *testing.T) {
+	ic := theme.Nerd
+	for _, c := range []struct {
+		col  int
+		cell string
+	}{{3, theme.With(ic.Pinned, "pinned")}, {4, kindCell(ic, brew.KindFormula)}} {
+		if w := lipgloss.Width(c.cell); w > outdatedCols[c.col].width {
+			t.Errorf("%q is %d wide; %s has %d", c.cell, w, outdatedCols[c.col].title, outdatedCols[c.col].width)
+		}
 	}
 }

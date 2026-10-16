@@ -89,7 +89,7 @@ func (t *listTab) cursor() int {
 func firstCell(r table.Row) string { return r[0] }
 
 // outdatedKey identifies an Outdated row by name and type.
-func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[3] }
+func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[4] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	if k := msg.String(); t.previewAlone() && (k == "tab" || k == "enter") {
@@ -189,7 +189,7 @@ func outdatedRows(ic theme.Icons, items []brew.Outdated) []table.Row {
 		if o.Pinned {
 			pinned = theme.With(ic.Pinned, "pinned")
 		}
-		rows[i] = table.Row{o.Name, o.Installed, o.Current, kindCell(ic, o.Kind), pinned}
+		rows[i] = table.Row{o.Name, o.Installed, o.Current, pinned, kindCell(ic, o.Kind)}
 	}
 	return rows
 }
@@ -215,7 +215,9 @@ func tapRows(items []brew.Tap) []table.Row {
 }
 
 var (
-	outdatedCols = []col{{"NAME", 0, 16}, {"INSTALLED", 18, 8}, {"LATEST", 18, 8}, {"TYPE", 7, 4}, {"PINNED", 6, 0}}
+	// PINNED comes before TYPE so a narrow window hides TYPE first: a pin
+	// decides what U upgrades.
+	outdatedCols = []col{{"NAME", 0, 16}, {"INSTALLED", 18, 8}, {"LATEST", 18, 8}, {"PINNED", 8, 0}, {"TYPE", 9, 4}}
 	serviceCols  = []col{{"NAME", 0, 16}, {"STATUS", 18, 10}} // fits "error (exit 127)" after an icon
 	tapCols      = []col{{"NAME", 24, 12}, {"FORMULAE", 8, 0}, {"CASKS", 6, 0}, {"OFFICIAL", 8, 0}, {"REMOTE", 0, 0}}
 )
