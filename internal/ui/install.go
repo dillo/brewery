@@ -36,6 +36,20 @@ func installTag(key string) string { return "install " + key }
 // needs, it says it's checking; y works either way.
 func (a *App) installBox(r discRow) *confirmBox {
 	key := entryKey(r.Name, r.Kind)
+	if det, ok := a.discover.details[key]; ok && r.Kind == brew.KindFormula {
+		if behind := a.ix.PinnedBehind(det.Needs...); len(behind) > 0 {
+			it, is := "it", "is"
+			if len(behind) > 1 {
+				it, is = "them", "are"
+			}
+			return &confirmBox{
+				title:   "Can't install " + r.Name,
+				body:    []string{fmt.Sprintf("It needs %s, which %s pinned and outdated.", strings.Join(behind, ", "), is), "Unpin " + it + " on Installed first, or brew will refuse."},
+				choices: []choice{{"n", "close", nil}},
+				tag:     installTag(key),
+			}
+		}
+	}
 	about := []string{r.Desc}
 	if r.Kind == brew.KindCask {
 		what := "app"

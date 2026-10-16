@@ -121,3 +121,45 @@ func TestUpgradeAllNamesWhatBrewWillRefuse(t *testing.T) {
 		t.Errorf("dialog:\n%s", got)
 	}
 }
+
+func TestInstallRefusesWhileADependencyIsPinnedBehind(t *testing.T) {
+	a, fs, _, cat := newInstallApp(t)
+	pinBehind(&a.snap)
+	a.sync()
+	rg := ripgrep
+	rg.Needs = []string{"pcre2", "oniguruma"}
+	cat.details["ripgrep"] = rg
+	selectDiscover(t, a, "ripgrep")
+	keys(t, a, "a")
+	want := "Can't install ripgrep\nIt needs pcre2, which is pinned and outdated.\nUnpin it on Installed first, or brew will refuse."
+	if got := confirmText(a); got != want {
+		t.Errorf("asked\n%s\nwant\n%s", got, want)
+	}
+	keys(t, a, "y")
+	if len(fs.calls) != 0 {
+		t.Errorf("y ran %v", fs.calls)
+	}
+}
+
+func TestInstallDialogLearnsOfAPinnedDependency(t *testing.T) {
+	a, fs, _, cat := newInstallApp(t)
+	pinBehind(&a.snap)
+	a.sync()
+	rg := ripgrep
+	rg.Needs = []string{"pcre2"}
+	cat.details["ripgrep"] = rg
+	selectDiscover(t, a, "python@3.15")
+	a.Update(press("j")) // to ripgrep; brew hasn't been asked yet
+	a.Update(press("a"))
+	if got := confirmText(a); !strings.Contains(got, "checking dependencies…") {
+		t.Fatalf("asked\n%s", got)
+	}
+	drain(t, a, a.detailsDue(detailsDueMsg{key: entryKey("ripgrep", brew.KindFormula)}))
+	if got := confirmText(a); !strings.HasPrefix(got, "Can't install ripgrep\n") {
+		t.Errorf("the open dialog didn't learn of pcre2:\n%s", got)
+	}
+	keys(t, a, "y")
+	if len(fs.calls) != 0 {
+		t.Errorf("y ran %v", fs.calls)
+	}
+}
