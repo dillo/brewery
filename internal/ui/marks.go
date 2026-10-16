@@ -114,13 +114,40 @@ func (a *App) upgradeMarked() tea.Cmd {
 			}
 		}
 	}
+	// brew would refuse those with a dependency pinned behind: leave them out.
+	var skipped, behind []string
+	ts = slices.DeleteFunc(ts, func(t target) bool {
+		b := a.pinnedBehind(t.name, t.kind)
+		if len(b) > 0 {
+			skipped, behind = append(skipped, t.name), append(behind, b...)
+		}
+		return len(b) > 0
+	})
+	why := ""
+	if len(skipped) > 0 {
+		why = "skipped " + strings.Join(skipped, ", ") + ": needs " + strings.Join(a.ix.PinnedBehind(behind...), ", ") + " unpinned"
+	}
 	if len(ts) == 0 {
+		if why != "" {
+			return a.note(why)
+		}
 		return a.note("nothing marked needs upgrading (pinned or up to date)")
 	}
 	a.clearMarks()
-	return a.byKind(ts, func(kind brew.Kind, names []string) action {
+	if why != "" {
+		a.flash = "" // so only what run() sets below is kept
+	}
+	cmd := a.byKind(ts, func(kind brew.Kind, names []string) action {
 		return action{title: "upgrade " + strings.Join(names, " "), args: kindArgs("upgrade", kind, names...), refresh: diskQueries}
 	})
+	if why != "" {
+		note := a.st.Warn.Render(why)
+		if a.flash != "" { // run() queued the job or couldn't start it
+			note = a.flash + " · " + note
+		}
+		a.flash = note
+	}
+	return cmd
 }
 
 // askUninstallMarked confirms uninstalling the marked packages. If an

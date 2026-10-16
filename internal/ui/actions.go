@@ -94,6 +94,9 @@ func (a *App) upgradeSelected() tea.Cmd {
 		if p.Pinned {
 			return a.note(p.Name + " is pinned · p unpins it")
 		}
+		if behind := a.pinnedBehind(p.FullName, p.Kind); len(behind) > 0 {
+			return a.note(p.Name + " needs " + strings.Join(behind, ", ") + " unpinned first")
+		}
 		name, kind = p.FullName, p.Kind
 	case tabOutdated:
 		i := a.outdated.cursor()
@@ -103,6 +106,9 @@ func (a *App) upgradeSelected() tea.Cmd {
 		o := a.snap.Outdated[i]
 		if o.Pinned {
 			return a.note(o.Name + " is pinned · unpin it on Installed")
+		}
+		if behind := a.pinnedBehind(o.Name, o.Kind); len(behind) > 0 {
+			return a.note(o.Name + " needs " + strings.Join(behind, ", ") + " unpinned first")
 		}
 		name, kind = o.Name, o.Kind
 	}
@@ -183,6 +189,20 @@ func (a *App) askUpgradeAll() tea.Cmd {
 	body := []string{strings.Join(names, ", ")}
 	if pinned > 0 {
 		body = append(body, fmt.Sprintf("%d pinned will be skipped.", pinned))
+	}
+	var refused, behind []string
+	for _, o := range a.snap.Outdated {
+		if b := a.pinnedBehind(o.Name, o.Kind); !o.Pinned && len(b) > 0 {
+			refused, behind = append(refused, o.Name), append(behind, b...)
+		}
+	}
+	if len(refused) > 0 {
+		they := "they need"
+		if len(refused) == 1 {
+			they = "it needs"
+		}
+		behind = a.ix.PinnedBehind(behind...) // sorted, once each
+		body = append(body, fmt.Sprintf("brew will refuse %s: %s %s unpinned", strings.Join(refused, ", "), they, strings.Join(behind, ", ")))
 	}
 	// This dialog is the confirmation, so brew 7 needn't ask again. The
 	// variable, unlike --no-ask, is ignored by older brews.
@@ -342,4 +362,19 @@ func (a *App) actionHints() string {
 		return "a install · f/F view · / search · tab preview · r refetch"
 	}
 	return "1-6 tabs · r refresh · U update · c clean up"
+}
+
+// pinnedBehind lists the pinned, outdated dependencies of the installed
+// formula with the full name name. brew refuses to upgrade it until they're
+// unpinned. It goes by the installed version's dependencies, which an
+// upgrade can change.
+func (a *App) pinnedBehind(name string, kind brew.Kind) []string {
+	if kind != brew.KindFormula {
+		return nil // brew checks formulae only
+	}
+	p, ok := a.ix.Get(name)
+	if !ok {
+		return nil
+	}
+	return a.ix.PinnedBehind(p.Deps...)
 }
