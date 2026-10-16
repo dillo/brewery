@@ -93,7 +93,7 @@ func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[3] }
 
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	if k := msg.String(); t.previewAlone() && (k == "tab" || k == "enter") {
-		t.pvOpen = !t.pvOpen // the list stands alone: the preview takes turns with it
+		t.pvOpen = true // the list stands alone: the preview takes turns with it
 		return nil
 	}
 	var cmd tea.Cmd
@@ -129,8 +129,14 @@ func (t *listTab) previewAlone() bool {
 	return t.preview != nil && splitFor(t.w, t.h, false).pvW == 0
 }
 
+// previewShown reports whether the preview stands in for the list.
+func (t *listTab) previewShown() bool { return t.pvOpen && t.previewAlone() }
+
 func (t *listTab) resize(w, h int) {
 	t.w, t.h = w, h
+	if !t.previewAlone() {
+		t.pvOpen = false // the preview has room beside the list: a later shrink starts on the list
+	}
 	sp := t.layout()
 	if sp.listW == 0 {
 		sp = splitFor(w, h, false) // the table keeps its size while the preview shows

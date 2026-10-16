@@ -50,6 +50,10 @@ func loadCatalogue(ctx context.Context, c Catalog) tea.Cmd {
 // showTab switches to tab t. Discover reads the catalogue the first time
 // it opens, and the analytics as wantStats says.
 func (a *App) showTab(t int) tea.Cmd {
+	if t != a.tab {
+		// Coming back to a tab starts on its list, not a preview left focused.
+		a.installed.pv.focus, a.discover.pv.focus = false, false
+	}
 	a.tab = t
 	if t != tabDiscover {
 		return nil

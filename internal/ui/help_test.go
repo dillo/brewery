@@ -75,3 +75,21 @@ func TestHelpClosesWithoutActing(t *testing.T) {
 		t.Errorf("the key that closes help does nothing else: help %v, confirm %+v", a.help, a.confirm)
 	}
 }
+
+func TestHelpClosesWhenBrewAsks(t *testing.T) {
+	p := newFakeProc(0)
+	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
+	waiting := settle(t, a, a.run(action{title: "install x", args: []string{"install", "x"}}))
+	keys(t, a, "?")
+	p.out <- []byte("Password:")
+	waiting = resume(t, a, waiting)
+	if a.help || a.mode != modeInsert {
+		t.Fatalf("help %v, mode %v: brew's question closes help", a.help, a.mode)
+	}
+	keys(t, a, "s")
+	if got := p.input(); got != "s" {
+		t.Errorf("brew got %q: the first key of the answer must reach it", got)
+	}
+	p.exit()
+	resume(t, a, waiting)
+}

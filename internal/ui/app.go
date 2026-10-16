@@ -477,9 +477,10 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 
 // typeIntoJob switches to INSERT with the drawer open, so keys go to the
 // running job. A g pressed just before is forgotten: after INSERT, the next
-// key mustn't complete a gg or gx.
+// key mustn't complete a gg or gx. Help closes, so it can't eat the first
+// key of the answer.
 func (a *App) typeIntoJob() {
-	a.mode, a.drawer.open, a.gPending = modeInsert, true, false
+	a.mode, a.drawer.open, a.gPending, a.help = modeInsert, true, false, false
 }
 
 // handleKey routes a key press by mode first: an open confirmation gets
@@ -566,7 +567,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.installed.pv.focus = false // back to the list first
 		case a.tab == tabDiscover && a.discover.pv.focus:
 			a.discover.pv.focus = false
-		case a.tab == tabServices && a.services.pvOpen && a.services.previewAlone():
+		case a.tab == tabServices && a.services.previewShown():
 			a.services.pvOpen = false
 		case a.marks() > 0 && !a.drawerShown():
 			a.clearMarks()
@@ -595,6 +596,14 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			return tea.Batch(a.refresh(), a.fetchStats(true))
 		}
 		return a.refresh()
+	}
+	if a.tab == tabServices && !a.jobsOpen && a.services.previewShown() {
+		// The list is hidden behind the preview: its keys would act on rows
+		// you can't see. tab and enter go back to it.
+		if k == "tab" || k == "enter" {
+			a.services.pvOpen = false
+		}
+		return nil
 	}
 	if cmd, ok := a.actionKey(k); ok {
 		return cmd
