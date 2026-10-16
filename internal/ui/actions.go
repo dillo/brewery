@@ -365,20 +365,16 @@ func (a *App) actionHints() string {
 }
 
 // pinnedBehind lists the pinned, outdated dependencies of the installed
-// formula name (a full name, or the short name Outdated rows carry). brew
-// refuses to upgrade it until they're unpinned. It goes by the installed
-// version's dependencies, which an upgrade can change.
+// formula with the full name name. brew refuses to upgrade it until they're
+// unpinned. It goes by the installed version's dependencies, which an
+// upgrade can change.
 func (a *App) pinnedBehind(name string, kind brew.Kind) []string {
 	if kind != brew.KindFormula {
 		return nil // brew checks formulae only
 	}
 	p, ok := a.ix.Get(name)
 	if !ok {
-		i := slices.IndexFunc(a.snap.Packages, func(p brew.Package) bool { return p.Name == name && p.Kind == kind })
-		if i < 0 {
-			return nil
-		}
-		p = a.snap.Packages[i]
+		return nil
 	}
 	return a.ix.PinnedBehind(p.Deps...)
 }

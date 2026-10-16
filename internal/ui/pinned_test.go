@@ -114,6 +114,27 @@ func TestMarkedUpgradeSkipsBlockedFormulae(t *testing.T) {
 	resume(t, a, waiting)
 }
 
+func TestSkippedNoteKeepsTheQueuedMessage(t *testing.T) {
+	a, fs := pinnedApp(t)
+	busy := newFakeProc(0) // a long job is already running
+	fs.procs = []*fakeProc{busy}
+	waiting := settle(t, a, a.run(action{title: "update", args: []string{"update"}}))
+	selectOutdated(t, a, "git")
+	keys(t, a, "space")
+	selectOutdated(t, a, "lua-language-server")
+	keys(t, a, "space")
+	keys(t, a, "u")
+	got := stripANSI(a.statusBar())
+	for _, want := range []string{"queued upgrade lua-language-server", "skipped git: needs pcre2 unpinned"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("status %q lacks %q", got, want)
+		}
+	}
+	busy.exit()
+	fs.procs = append(fs.procs, newFakeProc(0))
+	resume(t, a, waiting)
+}
+
 func TestUpgradeAllNamesWhatBrewWillRefuse(t *testing.T) {
 	a, _ := pinnedApp(t)
 	keys(t, a, "3", "A")

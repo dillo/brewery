@@ -39,7 +39,7 @@ The check uses the dependencies of the installed version. An upgrade can add or 
 
 - Once brew has answered about a formula, if `PinnedBehind(details.Needs...)` isn't empty, the dialog is `Can't install <name>`, with the body `It needs openssl@3, which is pinned and outdated.` / `Unpin it on Installed first, or brew will refuse.` (`them`/`are` for several), and only `n close`.
 - Before brew answers, the dialog is as today ("checking dependencies…"); when the answer arrives, the open dialog updates as it already does.
-- `Needs` comes from `brew deps` for the version being installed, so this check is exact.
+- `Needs` comes from `brew deps` for the version being installed, so a refusal is never wrong; `brew deps` without `--full-name` can name a tap formula's same-tap dependency by its short name, which the full-name lookup misses, so the worst case is a missed warning.
 
 ## Testing
 
