@@ -65,7 +65,7 @@ TOOLS appears in step 3. Until then `:jobs` opens the job list as it does today.
 
 ### Look
 
-- The sidebar is a bordered column 20 characters wide, including its border, on the left. It replaces the tab bar and the rule under it, so the body gains two rows.
+- The sidebar is a bordered column 22 characters wide, including its border, on the left, titled `brewery`. (22 fits " Dependencies  145 " inside the border and padding.) It replaces the tab bar and the rule under it, so the body gains two rows.
 - Section headings are muted capitals. The selected entry is a solid block in the active tab's style (`TabActive`); the others are plain.
 - Counts are right-aligned and muted. The tab bar's chips move to their entries: `↑N` on Outdated (`ChipWarn`), `✗N` on Services (`ChipErr`), and `⚠` (`ChipStale`) on every entry whose data failed to refresh. A chip takes the place of the count.
 - The focused column has the purple border that the focused pane has today; the others have the plain border.
@@ -77,7 +77,7 @@ Focus is one of: sidebar, list, details.
 
 | Where | Key | What it does |
 |---|---|---|
-| Sidebar | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move between entries, skipping headings; the list follows at once |
+| Sidebar | `j` `k`, `gg` `G` | move between entries, skipping headings; the list follows at once |
 | Sidebar | `l` `enter` | focus the list |
 | List | `h` | focus the sidebar |
 | List | `l` `tab` `enter` | focus the details |
@@ -105,6 +105,10 @@ When Home is selected, today's dashboard fills the list and details columns: the
 - With the focus on Home's content, `j` and `k` move between the tiles.
 - `enter` on a tile selects the matching sidebar entry and focuses the list: Installed → All, Outdated → Outdated, Services → Services. Doctor and Cleanup: see step 3. Until then they keep today's behaviour.
 
+### Narrow terminals in step 1
+
+Until step 2 brings the column rule: from 82 columns the sidebar sits beside the tab. Narrower, the sidebar fills the screen while it has the focus, and the tab fills it otherwise.
+
 ### Status bar and help
 
 - The status bar's trail names the entry instead of the tab: `Casks › bitwarden`, `Popular tools › pipx`.
@@ -113,20 +117,20 @@ When Home is selected, today's dashboard fills the list and details columns: the
 
 ## 2. The sliding columns
 
-Minimum widths: sidebar 20, list 60, details 40. Home's content counts as one column with a minimum of 60, in the list's place, with no details column.
+Minimum widths: sidebar 22, list 60, details 40. Home's content counts as one column with a minimum of 60, in the list's place, with no details column.
 
 The rule:
 
 1. The focused column is always shown, at full width if it's the only one.
 2. Add the column to its right if the minimum widths still fit, then the column to its left.
-3. The sidebar keeps 20. What's left is split 55/45 between the list and the details, as today, or goes to Home's content.
+3. The sidebar keeps 22. What's left is split 55/45 between the list and the details, as today, or goes to Home's content.
 
 | Width | Focus: sidebar | Focus: list | Focus: details |
 |---|---|---|---|
-| ≥ 120 | sidebar, list, details | sidebar, list, details | sidebar, list, details |
-| 100–119 | sidebar, list | list, details | list, details |
-| 80–99 | sidebar, list | sidebar, list | details |
-| < 80 | sidebar | list | details |
+| ≥ 122 | sidebar, list, details | sidebar, list, details | sidebar, list, details |
+| 102–121 | sidebar, list | list, details | list, details |
+| 82–101 | sidebar, list | sidebar, list | details |
+| < 82 | sidebar | list | details |
 
 At the narrowest widths `h` and `l` turn pages, and the status bar's trail says where you are.
 
