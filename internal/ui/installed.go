@@ -23,7 +23,7 @@ const (
 	filterPinned
 )
 
-// views are the Installed tab's views, in the order f steps through them,
+// views are the Installed tab's views, in the sidebar's order,
 // with a short name for narrow panes and a line saying what each shows.
 var views = [...]struct{ name, short, about string }{
 	filterTop:      {"Top-level", "Top", "Things you installed that nothing else needs."},
@@ -181,19 +181,10 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	case k == "tab" || (k == "enter" && !t.pv.focus):
 		t.pv.focus = !t.pv.focus
 		return nil
-	case t.pv.focus && k != "f" && k != "F":
+	case t.pv.focus:
 		sp := splitFor(t.w, t.h, true)
 		_, ih := paneInner(sp.pvW, sp.pvH)
 		t.pv.scroll(k, ih/2)
-		return nil
-	}
-	if k == "f" || k == "F" {
-		step := installedFilter(1)
-		if k == "F" {
-			step = installedFilter(len(views) - 1)
-		}
-		t.filter = (t.filter + step) % installedFilter(len(views))
-		t.apply() // keeps the selected package if the new view shows it
 		return nil
 	}
 	before := t.selectedKey()

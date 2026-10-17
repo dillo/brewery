@@ -30,7 +30,8 @@ func lastCall(fs *fakeStarter) []string {
 func TestUpgradeFromInstalled(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "u") // fd, up to date
+	show(t, a, "Top-level")
+	keys(t, a, "j", "u") // fd, up to date
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "fd is up to date") {
 		t.Errorf("u on an up-to-date package should just say so: %v %q", fs.calls, stripANSI(a.statusBar()))
 	}
@@ -50,11 +51,13 @@ func TestUpgradeSkipsPinned(t *testing.T) {
 	}
 	a.snap.Outdated[0].Pinned = true
 	a.sync()
-	keys(t, a, "2", "j", "j", "j", "j", "u") // lua-language-server
+	show(t, a, "Top-level")
+	keys(t, a, "j", "j", "j", "j", "u") // lua-language-server
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "lua-language-server is pinned · p unpins it") {
 		t.Errorf("u on a pinned package should say so: %v %q", fs.calls, stripANSI(a.statusBar()))
 	}
-	keys(t, a, "3", "u")
+	show(t, a, "Outdated")
+	keys(t, a, "u")
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "is pinned · unpin it on Installed") {
 		t.Errorf("u on a pinned outdated row should say so: %v", fs.calls)
 	}
@@ -63,7 +66,8 @@ func TestUpgradeSkipsPinned(t *testing.T) {
 func TestUpgradeCaskFromOutdated(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "j", "u")
+	show(t, a, "Outdated")
+	keys(t, a, "j", "u")
 	if want := []string{"upgrade", "--cask", "docker-desktop"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -72,7 +76,8 @@ func TestUpgradeCaskFromOutdated(t *testing.T) {
 func TestUpgradeAllAsksFirst(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "A")
+	show(t, a, "Outdated")
+	keys(t, a, "A")
 	if a.confirm == nil || a.confirm.title != "Upgrade all 2 outdated?" {
 		t.Fatalf("A should ask: %+v", a.confirm)
 	}
@@ -91,7 +96,8 @@ func TestUpgradeAllAsksFirst(t *testing.T) {
 func TestUninstallOffersOrphans(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "j", "j", "x") // git: leaves pcre2 and json-c behind
+	show(t, a, "Top-level")
+	keys(t, a, "j", "j", "j", "x") // git: leaves pcre2 and json-c behind
 	if a.confirm == nil || a.confirm.title != "Uninstall git 2.51.0?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
 	}
@@ -110,7 +116,8 @@ func TestUninstallOffersOrphans(t *testing.T) {
 func TestUninstallWithoutOrphans(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "x") // fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "x") // fd
 	if len(a.confirm.choices) != 2 {
 		t.Errorf("fd has no orphans: offer only uninstall and cancel, got %+v", a.confirm.choices)
 	}
@@ -127,7 +134,8 @@ func TestUninstallWithoutOrphans(t *testing.T) {
 func TestUninstallCask(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "f", "g", "g", "x") // apps: docker-desktop
+	show(t, a, "Casks")
+	keys(t, a, "g", "g", "x") // docker-desktop
 	if a.confirm == nil || a.confirm.title != "Uninstall docker-desktop 4.39.0,184744?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
 	}
@@ -146,7 +154,8 @@ func TestUninstallRefusesWhatACaskNeeds(t *testing.T) {
 		}
 	}
 	a.sync()
-	keys(t, a, "2", "f", "j", "x") // all: fd
+	show(t, a, "All")
+	keys(t, a, "j", "x") // fd
 	if a.confirm == nil || a.confirm.title != "Can't uninstall fd" {
 		t.Fatalf("want an explanation, got %+v", a.confirm)
 	}
@@ -158,7 +167,8 @@ func TestUninstallRefusesWhatACaskNeeds(t *testing.T) {
 func TestUninstallRefusesWhatOthersNeed(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "f", "f", "g", "g", "x") // deps filter, top row: json-c, used by git and pcre2
+	show(t, a, "Dependencies")
+	keys(t, a, "g", "g", "x") // top row: json-c, used by git and pcre2
 	if a.confirm == nil || a.confirm.title != "Can't uninstall json-c" {
 		t.Fatalf("want an explanation, got %+v", a.confirm)
 	}
@@ -178,7 +188,8 @@ func TestUninstallRefusesWhatOthersNeed(t *testing.T) {
 func TestPinToggles(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "p") // fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "p") // fd
 	if want := []string{"pin", "fd"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -186,7 +197,8 @@ func TestPinToggles(t *testing.T) {
 	if want := []string{"unpin", "git"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
-	keys(t, a, "f", "f", "g", "g", "p") // casks: docker-desktop
+	show(t, a, "Casks")
+	keys(t, a, "g", "g", "p") // docker-desktop
 	if want := []string{"pin", "--cask", "docker-desktop"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -195,7 +207,8 @@ func TestPinToggles(t *testing.T) {
 func TestServiceKeys(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "4", "s")
+	show(t, a, "Services")
+	keys(t, a, "s")
 	if want := []string{"services", "start", "postgresql@16"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
@@ -233,7 +246,12 @@ func TestUpdateRefreshesEverything(t *testing.T) {
 func TestActionKeysOnlyWorkOnTheirTab(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "x", "p", "l", "4", "u", "A", "x", "5", "s", "l")
+	show(t, a, "Outdated")
+	keys(t, a, "x", "p", "L")
+	show(t, a, "Services")
+	keys(t, a, "u", "A", "x")
+	show(t, a, "Taps")
+	keys(t, a, "s", "L")
 	if len(fs.calls) != 0 || a.confirm != nil {
 		t.Errorf("keys off their tab must do nothing: %v %+v", fs.calls, a.confirm)
 	}
@@ -242,16 +260,16 @@ func TestActionKeysOnlyWorkOnTheirTab(t *testing.T) {
 func TestStatusHintsFollowTheTab(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.Update(tea.WindowSizeMsg{Width: 160, Height: 40})
-	for _, tt := range []struct{ key, want string }{
-		{"2", "u upgrade · x uninstall · p pin · f/F view"},
-		{"3", "u upgrade · A upgrade all"},
-		{"4", "s start · S stop · R restart · l log"},
-		{"5", "x untap"},
-		{"1", "U update · c clean up"},
+	for _, tt := range []struct{ entry, want string }{
+		{"Top-level", "u upgrade · x uninstall · p pin · l details"},
+		{"Outdated", "u upgrade · A upgrade all"},
+		{"Services", "s start · S stop · R restart · L log"},
+		{"Taps", "x untap"},
+		{"Home", "U update · c clean up"},
 	} {
-		keys(t, a, tt.key)
+		show(t, a, tt.entry)
 		if bar := stripANSI(a.statusBar()); !strings.Contains(bar, tt.want) {
-			t.Errorf("tab %s hints: %q", tt.key, bar)
+			t.Errorf("%s hints: %q", tt.entry, bar)
 		}
 	}
 }
@@ -259,7 +277,8 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 func TestUpgradeAllCountsOnlyUnpinned(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.snap.Outdated[0].Pinned = true
-	keys(t, a, "3", "A")
+	show(t, a, "Outdated")
+	keys(t, a, "A")
 	if a.confirm == nil || a.confirm.title != "Upgrade all 1 outdated?" {
 		t.Fatalf("pinned rows must not be counted: %+v", a.confirm)
 	}

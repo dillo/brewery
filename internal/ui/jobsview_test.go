@@ -90,7 +90,7 @@ func TestReplayWaitsWhileAJobRuns(t *testing.T) {
 func TestJobsViewKeys(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobsViewApp(t, fs)
-	keys(t, a, "2")
+	show(t, a, "Top-level")
 	a.openJobs()
 	keys(t, a, "u", "x", "p") // Installed actions must not reach the hidden tab
 	if len(fs.calls) != 0 || a.confirm != nil {
@@ -102,7 +102,7 @@ func TestJobsViewKeys(t *testing.T) {
 	}
 	a.openJobs()
 	keys(t, a, "3")
-	if a.jobsOpen || a.tab != tabOutdated {
+	if a.jobsOpen || a.tab != tabServices {
 		t.Errorf("a tab key closes the view and switches: open %v, tab %d", a.jobsOpen, a.tab)
 	}
 	a.openJobs()

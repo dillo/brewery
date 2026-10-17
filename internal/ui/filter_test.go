@@ -8,7 +8,8 @@ import (
 
 func TestFilterInstalled(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "/")
+	show(t, a, "Top-level")
+	keys(t, a, "/")
 	if bar := stripANSI(a.statusBar()); a.mode != modeFilter || !strings.Contains(bar, "FILTER") || !strings.Contains(bar, "enter keep · esc clear") {
 		t.Fatalf("/ should open the filter: mode %d, bar %q", a.mode, stripANSI(a.statusBar()))
 	}
@@ -36,7 +37,8 @@ func TestFilterInstalled(t *testing.T) {
 func TestFilterKeysEditTheLine(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "/")
+	show(t, a, "Top-level")
+	keys(t, a, "/")
 	typeText(t, a, "qux")
 	if len(fs.calls) != 0 || a.tab != tabInstalled || a.confirm != nil {
 		t.Errorf("letters edit the filter, never act: %v", fs.calls)
@@ -49,7 +51,8 @@ func TestFilterKeysEditTheLine(t *testing.T) {
 func TestFilterOutdatedActsOnTheShownRow(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "/")
+	show(t, a, "Outdated")
+	keys(t, a, "/")
 	typeText(t, a, "dock")
 	keys(t, a, "enter", "u")
 	if want := []string{"upgrade", "--cask", "docker-desktop"}; !reflect.DeepEqual(lastCall(fs), want) {
@@ -59,17 +62,18 @@ func TestFilterOutdatedActsOnTheShownRow(t *testing.T) {
 
 func TestFilterIsPerList(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "5", "/")
+	show(t, a, "Taps")
+	keys(t, a, "/")
 	typeText(t, a, "zzz")
 	keys(t, a, "enter")
 	if out := stripANSI(a.render()); !strings.Contains(out, "nothing matches /zzz") {
 		t.Errorf("no tap matches:\n%s", out)
 	}
-	keys(t, a, "4")
+	show(t, a, "Services")
 	if a.services.n != 2 {
 		t.Errorf("Services keeps its own filter: %d rows", a.services.n)
 	}
-	keys(t, a, "5")
+	show(t, a, "Taps")
 	if a.taps.n != 0 || a.taps.match != "zzz" {
 		t.Errorf("Taps' filter survives switching tabs: %d rows, %q", a.taps.n, a.taps.match)
 	}
@@ -99,7 +103,8 @@ func TestPromptWaitsForTheFilter(t *testing.T) {
 	p := newFakeProc(0, "==> Installing docker-desktop\r\n")
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
 	waiting := settle(t, a, a.run(action{title: "upgrade docker-desktop", args: []string{"upgrade", "--cask", "docker-desktop"}}))
-	keys(t, a, "2", "/")
+	show(t, a, "Top-level")
+	keys(t, a, "/")
 	typeText(t, a, "gi")
 	p.out <- []byte("Password:")
 	waiting = resume(t, a, waiting)

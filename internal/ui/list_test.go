@@ -246,7 +246,8 @@ func TestIconsInRows(t *testing.T) {
 	if got := stripANSI(a.services.all[0][1]); got != theme.Nerd.Failed+" error (exit 1)" {
 		t.Errorf("service status with icons = %q", got)
 	}
-	keys(t, a, "2", "j", "j", "j") // git, pinned
+	show(t, a, "Top-level")
+	keys(t, a, "j", "j", "j") // git, pinned
 	if p, _ := a.installed.selected(); p.Name != "git" {
 		t.Fatalf("selected %s", p.Name)
 	}
@@ -306,7 +307,7 @@ func TestServiceStatusFitsWithAnIcon(t *testing.T) {
 func TestOutdatedKeepsPinnedLongerThanType(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.Update(tea.WindowSizeMsg{Width: 46, Height: 24})
-	keys(t, a, "3")
+	show(t, a, "Outdated")
 	if out := stripANSI(a.render()); !strings.Contains(out, "PINNED") || strings.Contains(out, "TYPE") {
 		t.Errorf("a narrow Outdated should drop TYPE before PINNED:\n%s", out)
 	}

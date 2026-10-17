@@ -61,8 +61,8 @@ func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
 			t.Errorf("missing %q:\n%s", want, out)
 		}
 	}
-	it.update(press("f"))
-	it.update(press("f"))
+	it.filter = filterCasks
+	it.apply()
 	if out := stripANSI(it.view(nil)); !strings.Contains(out, "macOS apps and fonts (casks)") {
 		t.Errorf("the Casks view should explain itself:\n%s", out)
 	}
@@ -109,7 +109,8 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 
 func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 	it := newFixtureInstalled(t)
-	it.update(press("f")) // All: docker-desktop stays selected
+	it.filter = filterAll // docker-desktop stays selected
+	it.apply()
 	for range 4 {
 		it.update(press("j")) // [docker-desktop] fd fontbase git json-c
 	}
@@ -233,11 +234,13 @@ func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
 	for range 3 {
 		it.update(press("j")) // git
 	}
-	it.update(press("f")) // All
+	it.filter = filterAll
+	it.apply()
 	if p, _ := it.selected(); p.Name != "git" {
 		t.Errorf("switching to all should keep git selected, got %q", p.Name)
 	}
-	it.update(press("f")) // Apps: git isn't shown
+	it.filter = filterCasks // git isn't shown
+	it.apply()
 	if p, ok := it.selected(); !ok || p.Kind != brew.KindCask {
 		t.Errorf("a view that hides the selection should still select a row, got %+v", p)
 	}
@@ -245,11 +248,13 @@ func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
 
 func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "tab")
+	show(t, a, "Top-level")
+	keys(t, a, "tab")
 	if !a.installed.pv.focus {
 		t.Fatal("tab should focus the preview")
 	}
-	keys(t, a, "3", "2")
+	show(t, a, "Outdated")
+	show(t, a, "Top-level")
 	if a.installed.pv.focus {
 		t.Error("coming back to Installed starts on the list")
 	}

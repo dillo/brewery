@@ -25,7 +25,7 @@ func newInstallApp(t *testing.T) (*App, *fakeStarter, *fakeSource, *fakeCatalog)
 	a.UseCatalog(cat)
 	a.detailsDelay = 0
 	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
-	keys(t, a, "6", "F")
+	show(t, a, "Search all")
 	return a, fs, src, cat
 }
 

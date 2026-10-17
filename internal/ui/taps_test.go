@@ -11,7 +11,8 @@ import (
 func TestUntapAsksFirst(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "5", "x") // anomalyco/tap: nothing installed from it
+	show(t, a, "Taps")
+	keys(t, a, "x") // anomalyco/tap: nothing installed from it
 	if a.confirm == nil || a.confirm.title != "Untap anomalyco/tap?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
 	}
@@ -30,7 +31,8 @@ func TestUntapAsksFirst(t *testing.T) {
 func TestUntapRefusesATapInUse(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "5", "j", "x") // homebrew/core: fd, git, … came from it
+	show(t, a, "Taps")
+	keys(t, a, "j", "x") // homebrew/core: fd, git, … came from it
 	if a.confirm == nil || a.confirm.title != "Can't untap homebrew/core" {
 		t.Fatalf("want an explanation, got %+v", a.confirm)
 	}

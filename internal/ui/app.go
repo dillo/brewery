@@ -553,6 +553,12 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		}
 	}
 
+	if a.sideFocus {
+		if cmd, ok := a.sidebarKey(k); ok {
+			return cmd
+		}
+	}
+
 	switch k {
 	case "q":
 		return a.askQuit()
@@ -594,12 +600,20 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.typeIntoJob()
 		}
 		return nil
-	case "1", "2", "3", "4", "5", "6":
-		return a.showTab(int(k[0] - '1'))
+	case "1", "2", "3", "4":
+		return a.selectSection(section(k[0] - '1'))
 	case "]":
-		return a.showTab((a.tab + 1) % len(tabNames))
+		return a.stepEntry(1)
 	case "[":
-		return a.showTab((a.tab + len(tabNames) - 1) % len(tabNames))
+		return a.stepEntry(-1)
+	case "h", "left":
+		if !a.unfocusDetails() {
+			a.sideFocus = true
+		}
+		return nil
+	case "l", "right":
+		a.focusDetails()
+		return nil
 	case "r":
 		if a.tab == tabDiscover {
 			return tea.Batch(a.refresh(), a.fetchStats(true))
@@ -622,7 +636,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	case tabHome:
 		switch t := a.home.update(msg, a.snap); {
 		case t >= 0:
-			a.tab = t
+			return a.selectEntry(entryIndex(tileEntries[t]))
 		case t == openCleanup:
 			return a.askCleanup()
 		}

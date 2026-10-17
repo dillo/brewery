@@ -173,3 +173,63 @@ func (a *App) sidebarView(w, h int) string {
 	}
 	return pane(st, "brewery", strings.Join(lines, "\n"), w, h, a.sideFocus)
 }
+
+// sidebarKey handles a key while the sidebar has the focus. ok is false
+// for the keys that work the same from any column.
+func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "j", "down":
+		return a.selectEntry(min(a.sel+1, len(entries)-1)), true
+	case "k", "up":
+		return a.selectEntry(max(a.sel-1, 0)), true
+	case "G", "end":
+		return a.selectEntry(len(entries) - 1), true
+	case "home":
+		return a.selectEntry(0), true
+	case "l", "right", "enter", "tab":
+		a.sideFocus = false
+		return nil, true
+	case "/":
+		a.sideFocus = false // the filter is the list's: go there to type it
+		return nil, false
+	case "A":
+		return nil, a.tab != tabOutdated // upgrade all needs no row
+	case "q", ":", "?", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4":
+		return nil, false
+	}
+	return nil, true // the rest act on a row, and the sidebar has none
+}
+
+// focusDetails moves the focus from the list to the details, on tabs
+// that have them.
+func (a *App) focusDetails() {
+	switch a.tab {
+	case tabInstalled:
+		a.installed.pv.focus = true
+	case tabDiscover:
+		a.discover.pv.focus = true
+	case tabServices:
+		if a.services.previewAlone() {
+			a.services.pvOpen = true
+		}
+	}
+}
+
+// unfocusDetails moves the focus from the details back to the list. ok is
+// false when the list had it already.
+func (a *App) unfocusDetails() (ok bool) {
+	switch {
+	case a.tab == tabInstalled && a.installed.pv.focus:
+		a.installed.pv.focus = false
+	case a.tab == tabDiscover && a.discover.pv.focus:
+		a.discover.pv.focus = false
+	case a.servicesPreviewAlone():
+		a.services.pvOpen = false
+	default:
+		return false
+	}
+	return true
+}
+
+// tileEntries are the entries Home's tiles open, by the tab they name.
+var tileEntries = map[int]string{tabInstalled: "All", tabOutdated: "Outdated", tabServices: "Services"}

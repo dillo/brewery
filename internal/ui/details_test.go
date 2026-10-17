@@ -37,7 +37,7 @@ func selectDiscover(t *testing.T, a *App, name string) {
 func TestDiscoverPreview(t *testing.T) {
 	a, cat := newDiscoverApp(t)
 	cat.details = map[string]brew.Details{"ripgrep": ripgrep}
-	keys(t, a, "6", "F") // All
+	show(t, a, "Search all")
 	selectDiscover(t, a, "ripgrep")
 	out := stripANSI(a.render())
 	for _, want := range []string{
@@ -61,14 +61,14 @@ func TestDiscoverPreview(t *testing.T) {
 
 func TestDiscoverPreviewInstalls(t *testing.T) {
 	a, _ := newStatsApp(t)
-	keys(t, a, "6") // Popular tools, gh first
+	show(t, a, "Popular tools") // Popular tools, gh first
 	out := stripANSI(a.render())
 	for _, want := range []string{"Installs", "30 days    217,104", "90 days    710,524", "365 days   2,994,048"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("preview is missing %q:\n%s", want, out)
 		}
 	}
-	keys(t, a, "f") // codex: apps have no 365-day list
+	show(t, a, "Popular apps") // codex: apps have no 365-day list
 	if out := stripANSI(a.render()); !strings.Contains(out, "90 days    345,161") || strings.Contains(out, "365 days") {
 		t.Errorf("cask installs wrong:\n%s", out)
 	}
@@ -76,7 +76,7 @@ func TestDiscoverPreviewInstalls(t *testing.T) {
 
 func TestDiscoverAsksBrewOnlyWhereTheCursorRests(t *testing.T) {
 	a, cat := newDiscoverApp(t)
-	keys(t, a, "6", "F") // asks about abcl, the first row
+	show(t, a, "Search all") // asks about abcl, the first row
 	cat.asked = nil
 	var cmds []func()
 	for range 3 {
@@ -98,14 +98,14 @@ func TestDiscoverAsksBrewOnlyWhereTheCursorRests(t *testing.T) {
 func TestDiscoverPreviewFailsAndWaits(t *testing.T) {
 	a, cat := newDiscoverApp(t)
 	cat.detailsErr = errors.New("brew info: exit status 1")
-	keys(t, a, "6", "F")
+	show(t, a, "Search all")
 	if out := stripANSI(a.render()); !strings.Contains(out, "couldn't ask brew") {
 		t.Errorf("the failure isn't shown:\n%s", out)
 	}
 
 	a, _ = newDiscoverApp(t)
-	keys(t, a, "6")
-	a.Update(press("F")) // to All, and brew's answer about abcl hasn't come
+	show(t, a, "Popular tools")
+	a.selectEntry(entryIndex("Search all")) // to All, and brew's answer about abcl hasn't come
 	if out := stripANSI(a.render()); !strings.Contains(out, "asking brew…") {
 		t.Errorf("want a note while brew is asked:\n%s", out)
 	}
@@ -117,7 +117,7 @@ func TestDiscoverPreviewFocusAndLinks(t *testing.T) {
 	var opened, copied string
 	a.UseOpener(func(url string) error { opened = url; return nil })
 	a.UseClipboard(func(text string) error { copied = text; return nil })
-	keys(t, a, "6", "F")
+	show(t, a, "Search all")
 	selectDiscover(t, a, "ripgrep")
 	keys(t, a, "g", "x", "y")
 	if opened != "https://github.com/BurntSushi/ripgrep" || copied != "ripgrep" {
@@ -142,7 +142,7 @@ func TestDiscoverFitsSmallTerminals(t *testing.T) {
 		a, cat := newDiscoverApp(t)
 		cat.details = map[string]brew.Details{"ripgrep": ripgrep}
 		a.Update(tea.WindowSizeMsg{Width: size.w, Height: size.h})
-		keys(t, a, "6", "F")
+		show(t, a, "Search all")
 		selectDiscover(t, a, "ripgrep")
 		for _, focus := range []bool{false, true} {
 			a.discover.pv.focus = focus

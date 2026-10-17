@@ -263,7 +263,7 @@ func TestCachedSnapshotShowsBeforeRefresh(t *testing.T) {
 	cached := state.Snapshot{Packages: []brew.Package{{Name: "neovim", FullName: "neovim", Kind: brew.KindFormula, Version: "0.11.4", OnRequest: true}}}
 	a := New(newFakeSource(t), nil, cached, filepath.Join(t.TempDir(), "s.json"))
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
-	a.Update(press("2"))
+	show(t, a, "Top-level")
 	if !strings.Contains(stripANSI(a.render()), "neovim") {
 		t.Error("cached package should render before any query returns")
 	}
@@ -275,8 +275,8 @@ func TestTabKeys(t *testing.T) {
 		key  string
 		want int
 	}{
-		{"3", tabOutdated}, {"]", tabServices}, {"]", tabTaps}, {"]", tabDiscover}, {"]", tabHome}, {"[", tabDiscover},
-		{"5", tabTaps}, {"6", tabDiscover}, {"1", tabHome},
+		{"3", tabServices}, {"]", tabTaps}, {"]", tabDiscover}, {"[", tabTaps},
+		{"4", tabDiscover}, {"2", tabInstalled}, {"1", tabHome}, {"[", tabDiscover}, // wraps from Home to the last entry
 	}
 	for _, s := range steps {
 		a.Update(press(s.key))
@@ -302,12 +302,13 @@ func TestQuit(t *testing.T) {
 func TestKeysReachActiveTab(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	a.Update(press("l")) // home: select Outdated tile
+	a.Update(press("l")) // home: into the tiles
+	a.Update(press("j")) // select the Outdated tile
 	a.Update(press("enter"))
 	if a.tab != tabOutdated {
 		t.Fatalf("enter on Outdated tile went to tab %d", a.tab)
 	}
-	a.Update(press("2"))
+	show(t, a, "Top-level")
 	a.Update(press("j"))
 	if out := stripANSI(a.render()); !strings.Contains(out, "Installed › fd") {
 		t.Errorf("status bar should name the selected package:\n%s", out)
@@ -320,7 +321,7 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	a := newTestApp(t, src)
 	drain(t, a, a.Init())
 
-	a.Update(press("4"))
+	show(t, a, "Services")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "couldn't load this view") || !strings.Contains(out, "exit status 1") {
 		t.Errorf("services tab should show the error:\n%s", out)
@@ -328,7 +329,7 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ services failed") {
 		t.Errorf("status bar should name the failed query: %q", bar)
 	}
-	a.Update(press("5"))
+	show(t, a, "Taps")
 	if out := stripANSI(a.render()); !strings.Contains(out, "anomalyco/tap") {
 		t.Error("taps tab should still work")
 	}
@@ -433,8 +434,7 @@ func TestViewFitsTerminal(t *testing.T) {
 // the cursor to name.
 func selectInstalled(t *testing.T, a *App, name string) {
 	t.Helper()
-	a.Update(press("2"))
-	a.Update(press("f")) // all
+	show(t, a, "All")
 	a.Update(press("g"))
 	a.Update(press("g"))
 	for range len(a.installed.rows) {
@@ -518,7 +518,7 @@ func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	if bar := squash(stripANSI(a.tabBar())); !strings.Contains(bar, "4 Services ⚠") {
 		t.Errorf("tab bar should mark Services as stale: %q", bar)
 	}
-	a.Update(press("4"))
+	show(t, a, "Services")
 	out := stripANSI(a.render())
 	for _, want := range []string{"postgresql@16", "refresh failed · r to retry", "exit status 1"} {
 		if !strings.Contains(out, want) {
@@ -551,7 +551,7 @@ func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
 	if strings.Contains(out, "up to date") || strings.Contains(out, "registered") {
 		t.Errorf("home should not report health before any query returns:\n%s", out)
 	}
-	a.Update(press("3"))
+	show(t, a, "Outdated")
 	out = stripANSI(a.render())
 	if !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
 		t.Errorf("outdated tab before its first result:\n%s", out)

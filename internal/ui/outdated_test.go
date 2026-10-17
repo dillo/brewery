@@ -9,7 +9,7 @@ import (
 func TestOutdatedSaysHowOldBrewsDataIs(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	keys(t, a, "3")
+	show(t, a, "Outdated")
 	if out := stripANSI(a.render()); !strings.Contains(out, "Outdated · 2 · brew's data from 6h ago") {
 		t.Errorf("the title should say how old the data is:\n%s", out)
 	}

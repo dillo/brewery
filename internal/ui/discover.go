@@ -121,7 +121,7 @@ const (
 	discAll
 )
 
-// discoverViews are Discover's views, in the order f steps through them.
+// discoverViews are Discover's views, in the sidebar's order.
 var discoverViews = [...]struct{ name, short, about string }{
 	discTools:  {"Popular tools", "Tools", "The most-installed tools of the last 30 days."},
 	discApps:   {"Popular apps", "Apps", "The most-installed apps of the last 30 days."},
@@ -414,19 +414,10 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	case k == "tab" || (k == "enter" && !t.pv.focus):
 		t.pv.focus = !t.pv.focus
 		return nil
-	case t.pv.focus && k != "f" && k != "F":
+	case t.pv.focus:
 		sp := splitFor(t.w, t.h, true)
 		_, ih := paneInner(sp.pvW, sp.pvH)
 		t.pv.scroll(k, ih/2)
-		return nil
-	}
-	if k == "f" || k == "F" {
-		step := discoverView(1)
-		if k == "F" {
-			step = discoverView(len(discoverViews) - 1)
-		}
-		t.showing = (t.showing + step) % discoverView(len(discoverViews))
-		t.apply()
 		return nil
 	}
 	before := t.selectedKey()

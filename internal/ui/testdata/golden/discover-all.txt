@@ -37,4 +37,4 @@
 │                                                                ││                                                    │
 │                                                                ││                                                    │
 ╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Discover › gh          a install · f/F view · / search · tab preview · r refetch · : command · ? help · q quit 
+ NORMAL  Discover › gh                       a install · / search · l details · r refetch · : command · ? help · q quit 

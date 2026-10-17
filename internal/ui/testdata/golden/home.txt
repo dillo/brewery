@@ -37,4 +37,4 @@
 │                                                                      ││                                              │
 │                                                                      ││                                              │
 ╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────╯
- NORMAL  Home                                1-6 tabs · r refresh · U update · c clean up · : command · ? help · q quit 
+ NORMAL  Home                   j/k tiles · h sidebar · r refresh · U update · c clean up · : command · ? help · q quit 

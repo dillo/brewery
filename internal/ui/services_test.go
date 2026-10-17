@@ -69,7 +69,7 @@ func TestServicesPreview(t *testing.T) {
 		"/opt/homebrew/var/log/redis.log":         "Ready to accept connections",
 	}}
 	a.readLog = logs.read
-	keys(t, a, "4") // postgresql@16
+	show(t, a, "Services") // postgresql@16
 	out := stripANSI(a.render())
 	for _, want := range []string{
 		"error (exit 1)", "LC_ALL=", "/opt/homebrew/var/log/postgresql@16.log",
@@ -102,7 +102,7 @@ func TestServicesPreviewRereadsAfterARefresh(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	logs := &fakeLogs{text: map[string]string{"/opt/homebrew/var/log/postgresql@16.log": "old"}}
 	a.readLog = logs.read
-	keys(t, a, "4")
+	show(t, a, "Services")
 	logs.text["/opt/homebrew/var/log/postgresql@16.log"] = "new"
 	_, cmd := a.Update(resultMsg{q: qServices, services: a.snap.Services})
 	settle(t, a, cmd)
@@ -116,7 +116,7 @@ func TestServicesPreviewWithoutALog(t *testing.T) {
 	a.readLog = (&fakeLogs{}).read
 	a.snap.Services[1].Log, a.snap.Services[1].ErrorLog = "", "/tmp/redis.err"
 	a.sync()
-	keys(t, a, "4")
+	show(t, a, "Services")
 	if out := stripANSI(a.render()); !strings.Contains(out, "nothing logged yet") {
 		t.Errorf("a log that doesn't exist yet says so:\n%s", out)
 	}
@@ -131,7 +131,7 @@ func TestServicesPreviewAt80Columns(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
 	a.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
-	keys(t, a, "4")
+	show(t, a, "Services")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "postgresql@16  ") || !strings.Contains(out, "error (exit 1)") {
 		t.Errorf("names and statuses fit beside the preview:\n%s", out)
@@ -174,12 +174,13 @@ func TestLogKeyOpensTheLogs(t *testing.T) {
 	a.snap.Services[0].Log, a.snap.Services[0].ErrorLog = out, errs // postgresql@16
 	a.snap.Services[1].Log, a.snap.Services[1].ErrorLog = out, out  // redis
 	a.sync()
-	keys(t, a, "4", "l", "j", "l")
+	show(t, a, "Services")
+	keys(t, a, "L", "j", "L")
 	if want := [][]string{{out, errs}, {out}}; !reflect.DeepEqual(pg.calls, want) {
 		t.Errorf("opened %v, want %v", pg.calls, want)
 	}
-	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "l log") {
-		t.Errorf("the hint should name l: %q", bar)
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "L log") {
+		t.Errorf("the hint should name L: %q", bar)
 	}
 }
 
@@ -192,11 +193,12 @@ func TestLogKeyExplainsMissingLogs(t *testing.T) {
 	a.snap.Services[0].ErrorLog = ""
 	a.snap.Services[1].Log, a.snap.Services[1].ErrorLog = "", ""
 	a.sync()
-	keys(t, a, "4", "l")
+	show(t, a, "Services")
+	keys(t, a, "L")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "postgresql@16 hasn't logged anything yet") {
 		t.Errorf("status bar %q", bar)
 	}
-	keys(t, a, "j", "l")
+	keys(t, a, "j", "L")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "brew knows no log for redis") {
 		t.Errorf("status bar %q", bar)
 	}
@@ -217,7 +219,9 @@ func TestLogKeyWaitsForTheRunningJob(t *testing.T) {
 	a.UsePager(pg.cmd)
 	a.snap.Services[0].Log = log
 	a.sync()
-	keys(t, a, "U", "4", "l")
+	keys(t, a, "U")
+	show(t, a, "Services")
+	keys(t, a, "L")
 	if len(pg.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "wait for update to finish") {
 		t.Errorf("the viewer must wait for the job: %v %q", pg.calls, stripANSI(a.statusBar()))
 	}
@@ -227,7 +231,7 @@ func TestPagerDoneRereadsTheLog(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	logs := &fakeLogs{text: map[string]string{"/opt/homebrew/var/log/postgresql@16.log": "x"}}
 	a.readLog = logs.read
-	keys(t, a, "4")
+	show(t, a, "Services")
 	_, cmd := a.Update(pagerDoneMsg{err: errors.New("exec: \"less\": executable file not found in $PATH")})
 	settle(t, a, cmd)
 	if logs.reads["/opt/homebrew/var/log/postgresql@16.log"] != 2 {
@@ -242,7 +246,8 @@ func TestServiceActionsFollowTheName(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
 	a.readLog = (&fakeLogs{}).read
-	keys(t, a, "4", "j") // redis
+	show(t, a, "Services")
+	keys(t, a, "j") // redis
 	// A refresh lists redis first now: the cursor follows it.
 	a.snap.Services = []brew.Service{a.snap.Services[1], a.snap.Services[0]}
 	a.sync()
@@ -258,7 +263,8 @@ func TestServicesPreviewRereadsAfterAServiceWithoutALog(t *testing.T) {
 	a.readLog = logs.read
 	a.snap.Services[1].Log = "" // redis
 	a.sync()
-	keys(t, a, "4", "j", "k") // postgresql@16, redis, postgresql@16
+	show(t, a, "Services")
+	keys(t, a, "j", "k") // postgresql@16, redis, postgresql@16
 	if n := logs.reads["/opt/homebrew/var/log/postgresql@16.log"]; n != 2 {
 		t.Errorf("coming back to a service reads its log again: %d reads", n)
 	}
@@ -267,7 +273,8 @@ func TestServicesPreviewRereadsAfterAServiceWithoutALog(t *testing.T) {
 func TestLogKeyWithoutAViewer(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
-	keys(t, a, "4", "l")
+	show(t, a, "Services")
+	keys(t, a, "L")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "the log viewer isn't available") {
 		t.Errorf("status bar %q", bar)
 	}

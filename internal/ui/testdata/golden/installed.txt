@@ -37,4 +37,4 @@
 │                                                                ││                                                    │
 │                                                                ││                                                    │
 ╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Installed › git         u upgrade · x uninstall · p pin · f/F view · tab preview · : command · ? help · q quit 
+ NORMAL  Installed › git                      u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 

@@ -127,9 +127,9 @@ func (h *homeTab) markUnknown(t *tile, q query) {
 func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) (openTab int) {
 	n := len(h.tiles(snap))
 	switch msg.String() {
-	case "l", "right":
+	case "j", "down":
 		h.sel = min(h.sel+1, n-1)
-	case "h", "left":
+	case "k", "up":
 		h.sel = max(h.sel-1, 0)
 	case "enter":
 		return h.tiles(snap)[h.sel].tab

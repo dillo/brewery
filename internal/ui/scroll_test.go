@@ -40,7 +40,7 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 	selectInstalled(t, a, "git")
 	before := stripANSI(a.render())
 	keys(t, a, "tab")
-	if !a.installed.pv.focus || !strings.Contains(stripANSI(a.statusBar()), "j/k scroll · tab back to the list") {
+	if !a.installed.pv.focus || !strings.Contains(stripANSI(a.statusBar()), "j/k scroll · h back to the list") {
 		t.Fatalf("tab should focus the preview: %q", stripANSI(a.statusBar()))
 	}
 	keys(t, a, "j", "j", "j")

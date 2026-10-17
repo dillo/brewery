@@ -31,7 +31,7 @@ func TestSplitFor(t *testing.T) {
 func TestInstalledStacksThenHidesThePreview(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
-	keys(t, a, "2")
+	show(t, a, "Top-level")
 	out := stripANSI(a.render())
 	lines := strings.Split(out, "\n")
 	list, preview := -1, -1
@@ -65,7 +65,7 @@ func TestServicesPreviewTakesTurnsWhenNarrow(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
 	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
-	keys(t, a, "4")
+	show(t, a, "Services")
 	if out := stripANSI(a.render()); strings.Contains(out, "End of the log") {
 		t.Errorf("at 50 columns only the list shows:\n%s", out)
 	}
@@ -83,7 +83,7 @@ func TestServicesPreviewTakesTurnsWhenShort(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
 	a.Update(tea.WindowSizeMsg{Width: 80, Height: 14})
-	keys(t, a, "4")
+	show(t, a, "Services")
 	if s := splitFor(a.services.w, a.services.h, false); s.pvW != 0 {
 		t.Fatalf("test needs a short tab, got %dx%d: %+v", a.services.w, a.services.h, s)
 	}
@@ -104,7 +104,7 @@ func TestStalePreviewFlagDoesNotSwallowEsc(t *testing.T) {
 	p := newFakeProc(0)
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
 	waiting := settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
-	keys(t, a, "4")
+	show(t, a, "Services")
 	a.services.pvOpen = true // left over from a narrower layout
 	if !a.drawer.open {
 		t.Fatal("the drawer should be open")
@@ -124,7 +124,8 @@ func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
 	var copied string
 	a.UseClipboard(func(text string) error { copied = text; return nil })
-	keys(t, a, "4", "j")
+	show(t, a, "Services")
+	keys(t, a, "j")
 	before := a.services.cursor()
 	keys(t, a, "enter", "j", "space", "S", "g", "g", "/")
 	if a.services.cursor() != before || a.marks() != 0 || a.confirm != nil || len(fs.calls) != 0 {
@@ -159,7 +160,8 @@ func TestServicesPreviewFlagClearsWhenThereIsRoom(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
 	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
-	keys(t, a, "4", "enter")
+	show(t, a, "Services")
+	keys(t, a, "enter")
 	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40}) // room beside the list
 	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})  // and narrow again
 	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") || strings.Contains(out, "End of the log") {

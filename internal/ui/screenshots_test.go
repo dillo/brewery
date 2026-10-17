@@ -208,21 +208,21 @@ func shoot(t *testing.T, a *App, name string) {
 
 func TestScreenshots(t *testing.T) {
 	a := demoApp(t, &fakeStarter{})
-	keys(t, a, "1")
+	show(t, a, "Home")
 	shoot(t, a, "home")
 
 	selectInstalled(t, a, "git") // on All
-	keys(t, a, "F")              // back to Top-level: the tools, not their libraries
+	show(t, a, "Top-level")      // back to the tools, not their libraries
 	shoot(t, a, "installed")
 
-	keys(t, a, "6") // Popular tools
+	show(t, a, "Popular tools") // Popular tools
 	selectDiscover(t, a, "pipx")
 	shoot(t, a, "discover")
 
 	p := newFakeProc(0, upgradeGh) // still running when the picture is taken
 	fs := &fakeStarter{procs: []*fakeProc{p}}
 	a = demoApp(t, fs)
-	keys(t, a, "3")
+	show(t, a, "Outdated")
 	for range len(a.snap.Outdated) {
 		if i := a.outdated.cursor(); i >= 0 && a.snap.Outdated[i].Name == "gh" {
 			break
