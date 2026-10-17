@@ -5,7 +5,7 @@ what's running; upgrade, uninstall, pin, start and stop services, clean up,
 and find new formulae, apps and fonts to install — with brew's own output
 live in a drawer, and any brew command a `:` away.
 
-![brewery's Home tab: counts of what's installed, outdated and running, doctor's warnings and recent jobs](docs/screenshots/home.png)
+![brewery's Home: counts of what's installed, outdated and running, doctor's warnings and recent jobs](docs/screenshots/home.png)
 
 ## Install
 
@@ -19,11 +19,11 @@ Then run `brewery`.
 
 Everything installed, with what it needs and what needs it.
 
-![The Installed tab: a list of packages with versions, sizes and status, and a preview of git with its dependency tree](docs/screenshots/installed.png)
+![Top-level: a list of packages with versions, sizes and status, and a preview of git with its dependency tree](docs/screenshots/installed.png)
 
 Find popular and rising packages, and install them.
 
-![The Discover tab: Homebrew's most-installed tools, with a preview of pipx showing what installing it would add and its install counts](docs/screenshots/discover.png)
+![Popular tools: Homebrew's most-installed tools, with a preview of pipx showing what installing it would add and its install counts](docs/screenshots/discover.png)
 
 brew's own output, live — answer its questions right in the drawer.
 
@@ -36,15 +36,14 @@ brew's own output, live — answer its questions right in the drawer.
 - A [Nerd Font](https://www.nerdfonts.com) for icons — optional. Without one,
   run `brewery --no-icons`, or set `BREWERY_NO_ICONS` to any value.
 
-## Tabs
+## Sidebar
 
-1. **Home** — counts, doctor's warnings, recent jobs
-2. **Installed** — everything installed, with a preview of each package
-3. **Outdated** — what has a newer version
-4. **Services** — `brew services`, with each service's log
-5. **Taps** — the taps you've added; `x` untaps one
-6. **Discover** — popular and rising packages from Homebrew's analytics, what's
-   new, and the whole catalogue to search
+- **Home**: counts, doctor's warnings, recent jobs
+- **Packages**: All, Top-level, Formulae, Casks, Dependencies, Outdated, Pinned,
+  each with a preview of the selected package
+- **Manage**: Services, with each service's log; Taps, where `x` untaps one
+- **Discover**: Popular tools, Popular apps, Rising, New, Fonts, and Search all
+  for the whole catalogue
 
 ## Keys
 
@@ -52,19 +51,20 @@ Press `?` anywhere for the keys that work there.
 
 | Key | What it does |
 |---|---|
-| `1`–`6`, `[` `]` | switch tabs |
-| `h` `l` | move between Home's tiles; `enter` opens one |
+| `h` `l` | move between the sidebar, the list and the preview |
+| `1`–`4` | Home, Packages, Manage, Discover |
+| `[` `]` | previous or next entry |
+| `j` `k` on Home | move between its tiles; `enter` opens one |
 | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move in a list |
 | `/` | filter the list |
-| `f` `F` | next or previous view (Installed, Discover) |
 | `u` | upgrade (Installed, Outdated) |
 | `A` | upgrade all (Outdated) |
 | `x` | uninstall (Installed), untap (Taps) |
 | `p` | pin or unpin (Installed) |
 | `space` | mark several for `u` or `x` |
-| `s` `S` `R` | start, stop, restart a service; `l` follows its log |
+| `s` `S` `R` | start, stop, restart a service; `L` follows its log |
 | `a` | install (Discover) |
-| `tab` `enter` | preview, then `j` `k` scroll |
+| `l` `tab` `enter` | preview, then `j` `k` scroll |
 | `y` | copy the name |
 | `gx` | open the homepage |
 | `:` | run any brew command |
