@@ -5,6 +5,8 @@ what's running; upgrade, uninstall, pin, start and stop services, clean up,
 and find new formulae, apps and fonts to install — with brew's own output
 live in a drawer, and any brew command a `:` away.
 
+![brewery's Home tab: counts of what's installed, outdated and running, doctor's warnings and recent jobs](docs/screenshots/home.png)
+
 ## Install
 
 ```sh
@@ -12,6 +14,20 @@ brew install dillo/tap/brewery
 ```
 
 Then run `brewery`.
+
+## A look around
+
+Everything installed, with what it needs and what needs it.
+
+![The Installed tab: a list of packages with versions, sizes and status, and a preview of git with its dependency tree](docs/screenshots/installed.png)
+
+Find popular and rising packages, and install them.
+
+![The Discover tab: Homebrew's most-installed tools, with a preview of pipx showing what installing it would add and its install counts](docs/screenshots/discover.png)
+
+brew's own output, live — answer its questions right in the drawer.
+
+![An upgrade of gh running, with brew's output in the drawer below the Outdated list](docs/screenshots/upgrade.png)
 
 ## Requirements
 
@@ -73,6 +89,12 @@ Press `?` anywhere for the keys that work there.
 make build   # ./brewery
 make test
 ```
+
+`make screenshots` regenerates the images above from a made-up machine
+(`internal/ui/testdata/demo`). It needs Charm's
+[freeze](https://github.com/charmbracelet/freeze)
+(`go install github.com/charmbracelet/freeze@v0.2.2`) and the JetBrains Mono
+Nerd Font (`brew install --cask font-jetbrains-mono-nerd-font`).
 
 ## Licence
 

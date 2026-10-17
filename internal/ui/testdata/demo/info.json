@@ -1,0 +1,3085 @@
+{
+ "formulae": [
+  {
+   "name": "abseil",
+   "full_name": "abseil",
+   "tap": "homebrew/core",
+   "desc": "C++ Common Libraries",
+   "homepage": "https://abseil.io",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "20260817.0"
+   },
+   "installed": [
+    {
+     "version": "20260817.0",
+     "time": 1785000000,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "ada-url",
+   "full_name": "ada-url",
+   "tap": "homebrew/core",
+   "desc": "WHATWG-compliant and fast URL parser written in modern C++",
+   "homepage": "https://ada-url.com",
+   "license": "Apache-2.0 OR MIT",
+   "versions": {
+    "stable": "4.0.0"
+   },
+   "installed": [
+    {
+     "version": "4.0.0",
+     "time": 1785172800,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "fmt",
+       "version": "12.2.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "icu4c@78",
+       "version": "78.3",
+       "declared_directly": false
+      },
+      {
+       "full_name": "simdutf",
+       "version": "9.3.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "bat",
+   "full_name": "bat",
+   "tap": "homebrew/core",
+   "desc": "Clone of cat(1) with syntax highlighting and Git integration",
+   "homepage": "https://github.com/sharkdp/bat",
+   "license": "Apache-2.0 OR MIT",
+   "versions": {
+    "stable": "0.26.1"
+   },
+   "installed": [
+    {
+     "version": "0.26.1",
+     "time": 1785345600,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libgit2",
+       "version": "1.9.7",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libssh2",
+       "version": "1.11.1",
+       "declared_directly": false
+      },
+      {
+       "full_name": "llhttp",
+       "version": "9.4.3",
+       "declared_directly": false
+      },
+      {
+       "full_name": "oniguruma",
+       "version": "6.9.10",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": false
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "brotli",
+   "full_name": "brotli",
+   "tap": "homebrew/core",
+   "desc": "Generic-purpose lossless compression algorithm by Google",
+   "homepage": "https://github.com/google/brotli",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.2.0"
+   },
+   "installed": [
+    {
+     "version": "1.2.0",
+     "time": 1785518400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "c-ares",
+   "full_name": "c-ares",
+   "tap": "homebrew/core",
+   "desc": "Asynchronous DNS library",
+   "homepage": "https://c-ares.org/",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.34.8"
+   },
+   "installed": [
+    {
+     "version": "1.34.8",
+     "time": 1785691200,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "ca-certificates",
+   "full_name": "ca-certificates",
+   "tap": "homebrew/core",
+   "desc": "Mozilla CA certificate store",
+   "homepage": "https://curl.se/docs/caextract.html",
+   "license": "MPL-2.0",
+   "versions": {
+    "stable": "2026-09-25"
+   },
+   "installed": [
+    {
+     "version": "2026-09-25",
+     "time": 1785864000,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "fd",
+   "full_name": "fd",
+   "tap": "homebrew/core",
+   "desc": "Simple, fast and user-friendly alternative to find",
+   "homepage": "https://github.com/sharkdp/fd",
+   "license": "Apache-2.0 OR MIT",
+   "versions": {
+    "stable": "10.5.0"
+   },
+   "installed": [
+    {
+     "version": "10.5.0",
+     "time": 1786036800,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "fmt",
+   "full_name": "fmt",
+   "tap": "homebrew/core",
+   "desc": "Open-source formatting library for C++",
+   "homepage": "https://fmt.dev/",
+   "license": "MIT",
+   "versions": {
+    "stable": "12.2.0"
+   },
+   "installed": [
+    {
+     "version": "12.2.0",
+     "time": 1786209600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "fzf",
+   "full_name": "fzf",
+   "tap": "homebrew/core",
+   "desc": "Command-line fuzzy finder written in Go",
+   "homepage": "https://junegunn.github.io/fzf/",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.74.5"
+   },
+   "installed": [
+    {
+     "version": "0.74.5",
+     "time": 1786382400,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "To set up shell integration, see:\n  https://github.com/junegunn/fzf#setting-up-shell-integration\nTo use fzf in Vim, add the following line to your .vimrc:\n  set rtp+=$HOMEBREW_PREFIX/opt/fzf\n"
+  },
+  {
+   "name": "gettext",
+   "full_name": "gettext",
+   "tap": "homebrew/core",
+   "desc": "GNU internationalization (i18n) and localization (l10n) library",
+   "homepage": "https://www.gnu.org/software/gettext/",
+   "license": "GPL-3.0-or-later AND LGPL-2.1-or-later",
+   "versions": {
+    "stable": "1.0"
+   },
+   "installed": [
+    {
+     "version": "1.0",
+     "time": 1786555200,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "gh",
+   "full_name": "gh",
+   "tap": "homebrew/core",
+   "desc": "GitHub command-line tool",
+   "homepage": "https://cli.github.com/",
+   "license": "MIT",
+   "versions": {
+    "stable": "2.102.0"
+   },
+   "installed": [
+    {
+     "version": "2.101.0",
+     "time": 1786728000,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": true,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "git",
+   "full_name": "git",
+   "tap": "homebrew/core",
+   "desc": "Distributed revision control system",
+   "homepage": "https://git-scm.com",
+   "license": "GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause AND MIT",
+   "versions": {
+    "stable": "2.56.0"
+   },
+   "installed": [
+    {
+     "version": "2.56.0",
+     "time": 1786900800,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "gettext",
+       "version": "1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": false
+      },
+      {
+       "full_name": "pcre2",
+       "version": "10.49",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "The Tcl/Tk GUIs (e.g. gitk, git-gui) are now in the `git-gui` formula.\nSubversion interoperability (git-svn) is now in the `git-svn` formula.\n"
+  },
+  {
+   "name": "go",
+   "full_name": "go",
+   "tap": "homebrew/core",
+   "desc": "Open source programming language to build simple/reliable/efficient software",
+   "homepage": "https://go.dev/",
+   "license": "BSD-3-Clause",
+   "versions": {
+    "stable": "1.27.2"
+   },
+   "installed": [
+    {
+     "version": "1.27.2",
+     "time": 1787073600,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "hdrhistogram_c",
+   "full_name": "hdrhistogram_c",
+   "tap": "homebrew/core",
+   "desc": "C port of the HdrHistogram",
+   "homepage": "https://github.com/HdrHistogram/HdrHistogram_c",
+   "license": "CC0-1.0 OR BSD-2-Clause",
+   "versions": {
+    "stable": "0.12.1"
+   },
+   "installed": [
+    {
+     "version": "0.12.1",
+     "time": 1787246400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "highway",
+   "full_name": "highway",
+   "tap": "homebrew/core",
+   "desc": "Performance-portable, length-agnostic SIMD with runtime dispatch",
+   "homepage": "https://github.com/google/highway",
+   "license": "Apache-2.0 OR BSD-3-Clause",
+   "versions": {
+    "stable": "1.4.0"
+   },
+   "installed": [
+    {
+     "version": "1.4.0",
+     "time": 1787419200,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "htop",
+   "full_name": "htop",
+   "tap": "homebrew/core",
+   "desc": "Improved top (interactive process viewer)",
+   "homepage": "https://htop.dev/",
+   "license": "GPL-2.0-or-later",
+   "versions": {
+    "stable": "3.5.3"
+   },
+   "installed": [
+    {
+     "version": "3.5.3",
+     "time": 1787592000,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ncurses",
+       "version": "6.6",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "htop requires root privileges to correctly display all running processes,\nso you will need to run `sudo htop`.\nYou should be certain that you trust any software you grant root privileges.\n"
+  },
+  {
+   "name": "icu4c@78",
+   "full_name": "icu4c@78",
+   "tap": "homebrew/core",
+   "desc": "C/C++ and Java libraries for Unicode and globalization",
+   "homepage": "https://icu.unicode.org/home",
+   "license": "Unicode-3.0",
+   "versions": {
+    "stable": "78.3"
+   },
+   "installed": [
+    {
+     "version": "78.3",
+     "time": 1787764800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "jemalloc",
+   "full_name": "jemalloc",
+   "tap": "homebrew/core",
+   "desc": "Implementation of malloc emphasizing fragmentation avoidance",
+   "homepage": "https://jemalloc.net/",
+   "license": "BSD-2-Clause",
+   "versions": {
+    "stable": "5.4.0"
+   },
+   "installed": [
+    {
+     "version": "5.4.0",
+     "time": 1787937600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "jq",
+   "full_name": "jq",
+   "tap": "homebrew/core",
+   "desc": "Lightweight and flexible command-line JSON processor",
+   "homepage": "https://jqlang.github.io/jq/",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.8.2"
+   },
+   "installed": [
+    {
+     "version": "1.8.2",
+     "time": 1788110400,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "oniguruma",
+       "version": "6.9.10",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "json-c",
+   "full_name": "json-c",
+   "tap": "homebrew/core",
+   "desc": "JSON parser for C",
+   "homepage": "https://github.com/json-c/json-c/wiki",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.19"
+   },
+   "installed": [
+    {
+     "version": "0.19",
+     "time": 1788283200,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "krb5",
+   "full_name": "krb5",
+   "tap": "homebrew/core",
+   "desc": "Network authentication protocol",
+   "homepage": "https://web.mit.edu/kerberos/",
+   "license": "BSD-2-Clause AND BSD-2-Clause-first-lines AND BSD-3-Clause AND BSD-4-Clause AND Brian-Gladman-2-Clause AND CMU-Mach-nodoc AND FSFULLRWD AND HPND AND HPND-export2-US AND HPND-export-US AND HPND-export-US-acknowledgement AND HPND-export-US-modify AND ISC AND MIT AND MIT-CMU AND OLDAP-2.8 AND OpenVision AND (BSD-2-Clause OR GPL-2.0-or-later)",
+   "versions": {
+    "stable": "1.22.2"
+   },
+   "installed": [
+    {
+     "version": "1.22.2",
+     "time": 1788456000,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "lazygit",
+   "full_name": "lazygit",
+   "tap": "homebrew/core",
+   "desc": "Simple terminal UI for git commands",
+   "homepage": "https://github.com/jesseduffield/lazygit/",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.66.2"
+   },
+   "installed": [
+    {
+     "version": "0.66.2",
+     "time": 1788628800,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libevent",
+   "full_name": "libevent",
+   "tap": "homebrew/core",
+   "desc": "Asynchronous event library",
+   "homepage": "https://libevent.org/",
+   "license": "BSD-3-Clause",
+   "versions": {
+    "stable": "2.1.13"
+   },
+   "installed": [
+    {
+     "version": "2.1.13",
+     "time": 1788801600,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libffi",
+   "full_name": "libffi",
+   "tap": "homebrew/core",
+   "desc": "Portable Foreign Function Interface library",
+   "homepage": "https://sourceware.org/libffi/",
+   "license": "MIT",
+   "versions": {
+    "stable": "3.8.0"
+   },
+   "installed": [
+    {
+     "version": "3.8.0",
+     "time": 1788974400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libgit2",
+   "full_name": "libgit2",
+   "tap": "homebrew/core",
+   "desc": "C library of Git core methods that is re-entrant and linkable",
+   "homepage": "https://libgit2.org/",
+   "license": "GPL-2.0-only WITH GCC-exception-2.0",
+   "versions": {
+    "stable": "1.9.7"
+   },
+   "installed": [
+    {
+     "version": "1.9.7",
+     "time": 1789147200,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libssh2",
+       "version": "1.11.1",
+       "declared_directly": true
+      },
+      {
+       "full_name": "llhttp",
+       "version": "9.4.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libidn2",
+   "full_name": "libidn2",
+   "tap": "homebrew/core",
+   "desc": "International domain name library (IDNA2008, Punycode and TR46)",
+   "homepage": "https://www.gnu.org/software/libidn/#libidn2",
+   "license": "(GPL-2.0-or-later OR LGPL-3.0-or-later) AND (Unicode-TOU AND Unicode-DFS-2016) AND GPL-3.0-or-later AND LGPL-2.1-or-later AND FSFAP-no-warranty-disclaimer",
+   "versions": {
+    "stable": "2.3.8"
+   },
+   "installed": [
+    {
+     "version": "2.3.8",
+     "time": 1789320000,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "gettext",
+       "version": "1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libnghttp2",
+   "full_name": "libnghttp2",
+   "tap": "homebrew/core",
+   "desc": "HTTP/2 C Library",
+   "homepage": "https://nghttp2.org/",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.70.0"
+   },
+   "installed": [
+    {
+     "version": "1.70.0",
+     "time": 1789492800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libpsl",
+   "full_name": "libpsl",
+   "tap": "homebrew/core",
+   "desc": "C library for the Public Suffix List",
+   "homepage": "https://rockdaboot.github.io/libpsl",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.23.3"
+   },
+   "installed": [
+    {
+     "version": "0.23.3",
+     "time": 1789665600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libssh2",
+   "full_name": "libssh2",
+   "tap": "homebrew/core",
+   "desc": "C library implementing the SSH2 protocol",
+   "homepage": "https://libssh2.org/",
+   "license": "BSD-3-Clause",
+   "versions": {
+    "stable": "1.11.1"
+   },
+   "installed": [
+    {
+     "version": "1.11.1",
+     "time": 1789838400,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libunistring",
+   "full_name": "libunistring",
+   "tap": "homebrew/core",
+   "desc": "C string library for manipulating Unicode strings",
+   "homepage": "https://www.gnu.org/software/libunistring/",
+   "license": "GPL-2.0-or-later OR LGPL-3.0-or-later",
+   "versions": {
+    "stable": "1.4.2"
+   },
+   "installed": [
+    {
+     "version": "1.4.2",
+     "time": 1790011200,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "libuv",
+   "full_name": "libuv",
+   "tap": "homebrew/core",
+   "desc": "Multi-platform support library with a focus on asynchronous I/O",
+   "homepage": "https://libuv.org/",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.53.0"
+   },
+   "installed": [
+    {
+     "version": "1.53.0",
+     "time": 1790184000,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "llhttp",
+   "full_name": "llhttp",
+   "tap": "homebrew/core",
+   "desc": "Port of http_parser to llparse",
+   "homepage": "https://llhttp.org/",
+   "license": "MIT",
+   "versions": {
+    "stable": "9.4.3"
+   },
+   "installed": [
+    {
+     "version": "9.4.3",
+     "time": 1790356800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "lpeg",
+   "full_name": "lpeg",
+   "tap": "homebrew/core",
+   "desc": "Parsing Expression Grammars For Lua",
+   "homepage": "https://www.inf.puc-rio.br/~roberto/lpeg/",
+   "license": "MIT",
+   "versions": {
+    "stable": "1.1.0"
+   },
+   "installed": [
+    {
+     "version": "1.1.0",
+     "time": 1790529600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "luajit",
+   "full_name": "luajit",
+   "tap": "homebrew/core",
+   "desc": "Just-In-Time Compiler (JIT) for the Lua programming language",
+   "homepage": "https://luajit.org/luajit.html",
+   "license": "MIT",
+   "versions": {
+    "stable": "2.1.1791988261"
+   },
+   "installed": [
+    {
+     "version": "2.1.1791988261",
+     "time": 1790702400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "luv",
+   "full_name": "luv",
+   "tap": "homebrew/core",
+   "desc": "Bare libuv bindings for lua",
+   "homepage": "https://github.com/luvit/luv",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "1.53.0-0"
+   },
+   "installed": [
+    {
+     "version": "1.53.0-0",
+     "time": 1790875200,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "libuv",
+       "version": "1.53.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "lz4",
+   "full_name": "lz4",
+   "tap": "homebrew/core",
+   "desc": "Extremely Fast Compression algorithm",
+   "homepage": "https://lz4.github.io/lz4/",
+   "license": "BSD-2-Clause",
+   "versions": {
+    "stable": "1.10.0"
+   },
+   "installed": [
+    {
+     "version": "1.10.0",
+     "time": 1791048000,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "merve",
+   "full_name": "merve",
+   "tap": "homebrew/core",
+   "desc": "C++ lexer for extracting named exports from CommonJS modules",
+   "homepage": "https://github.com/nodejs/merve",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "1.2.2"
+   },
+   "installed": [
+    {
+     "version": "1.2.2",
+     "time": 1791220800,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "icu4c@78",
+       "version": "78.3",
+       "declared_directly": false
+      },
+      {
+       "full_name": "simdutf",
+       "version": "9.3.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "mpdecimal",
+   "full_name": "mpdecimal",
+   "tap": "homebrew/core",
+   "desc": "Library for decimal floating point arithmetic",
+   "homepage": "https://www.bytereef.org/mpdecimal/",
+   "license": "BSD-2-Clause",
+   "versions": {
+    "stable": "4.0.1"
+   },
+   "installed": [
+    {
+     "version": "4.0.1",
+     "time": 1791393600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "nbytes",
+   "full_name": "nbytes",
+   "tap": "homebrew/core",
+   "desc": "Library of byte handling functions extracted from Node.js core",
+   "homepage": "https://github.com/nodejs/nbytes",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.1.4"
+   },
+   "installed": [
+    {
+     "version": "0.1.4",
+     "time": 1791566400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "ncurses",
+   "full_name": "ncurses",
+   "tap": "homebrew/core",
+   "desc": "Text-based UI library",
+   "homepage": "https://invisible-island.net/ncurses/announce.html",
+   "license": "X11-distribute-modifications-variant",
+   "versions": {
+    "stable": "6.6"
+   },
+   "installed": [
+    {
+     "version": "6.6",
+     "time": 1791739200,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "neovim",
+   "full_name": "neovim",
+   "tap": "homebrew/core",
+   "desc": "Ambitious Vim-fork focused on extensibility and agility",
+   "homepage": "https://neovim.io/",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "0.12.6"
+   },
+   "installed": [
+    {
+     "version": "0.12.6",
+     "time": 1791912000,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "gettext",
+       "version": "1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libuv",
+       "version": "1.53.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "lpeg",
+       "version": "1.1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "luajit",
+       "version": "2.1.1791988261",
+       "declared_directly": true
+      },
+      {
+       "full_name": "luv",
+       "version": "1.53.0-0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "tree-sitter",
+       "version": "0.27.1",
+       "declared_directly": true
+      },
+      {
+       "full_name": "unibilium",
+       "version": "2.1.4",
+       "declared_directly": true
+      },
+      {
+       "full_name": "utf8proc",
+       "version": "2.12.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "node",
+   "full_name": "node",
+   "tap": "homebrew/core",
+   "desc": "Open-source, cross-platform JavaScript runtime environment",
+   "homepage": "https://nodejs.org/",
+   "license": "MIT",
+   "versions": {
+    "stable": "26.12.0"
+   },
+   "installed": [
+    {
+     "version": "26.11.1",
+     "time": 1792084800,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "abseil",
+       "version": "20260817.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "ada-url",
+       "version": "4.0.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "brotli",
+       "version": "1.2.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "c-ares",
+       "version": "1.34.8",
+       "declared_directly": true
+      },
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "fmt",
+       "version": "12.2.0",
+       "declared_directly": false
+      },
+      {
+       "full_name": "hdrhistogram_c",
+       "version": "0.12.1",
+       "declared_directly": true
+      },
+      {
+       "full_name": "highway",
+       "version": "1.4.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "icu4c@78",
+       "version": "78.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libffi",
+       "version": "3.8.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libnghttp2",
+       "version": "1.70.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libuv",
+       "version": "1.53.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "llhttp",
+       "version": "9.4.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "lz4",
+       "version": "1.10.0",
+       "declared_directly": false
+      },
+      {
+       "full_name": "merve",
+       "version": "1.2.2",
+       "declared_directly": true
+      },
+      {
+       "full_name": "nbytes",
+       "version": "0.1.4",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "readline",
+       "version": "8.3.6",
+       "declared_directly": false
+      },
+      {
+       "full_name": "simdjson",
+       "version": "5.0.5",
+       "declared_directly": true
+      },
+      {
+       "full_name": "simdutf",
+       "version": "9.3.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "sqlite",
+       "version": "3.54.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "uvwasi",
+       "version": "0.0.23",
+       "declared_directly": true
+      },
+      {
+       "full_name": "xz",
+       "version": "5.8.4",
+       "declared_directly": false
+      },
+      {
+       "full_name": "zstd",
+       "version": "1.5.7",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": true,
+   "outdated": true,
+   "deprecated": false,
+   "caveats": "Single Executable Application is disabled as it doesn't work with shared libnode.\n"
+  },
+  {
+   "name": "oniguruma",
+   "full_name": "oniguruma",
+   "tap": "homebrew/core",
+   "desc": "Regular expressions library",
+   "homepage": "https://github.com/kkos/oniguruma/",
+   "license": "BSD-2-Clause",
+   "versions": {
+    "stable": "6.9.10"
+   },
+   "installed": [
+    {
+     "version": "6.9.10",
+     "time": 1792257600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "openssl@3",
+   "full_name": "openssl@3",
+   "tap": "homebrew/core",
+   "desc": "Cryptography and SSL/TLS Toolkit",
+   "homepage": "https://openssl-library.org",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "3.5.9"
+   },
+   "installed": [
+    {
+     "version": "3.5.9",
+     "time": 1792430400,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "To add additional certificates, place .pem files in\n  $HOMEBREW_PREFIX/etc/openssl@3/certs\n\nand run\n  $HOMEBREW_PREFIX/opt/openssl@3/bin/c_rehash\n"
+  },
+  {
+   "name": "openssl@4",
+   "full_name": "openssl@4",
+   "tap": "homebrew/core",
+   "desc": "Cryptography and SSL/TLS Toolkit",
+   "homepage": "https://openssl-library.org",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "4.0.3"
+   },
+   "installed": [
+    {
+     "version": "4.0.3",
+     "time": 1792603200,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "To add additional certificates, place .pem, .crt, .cer, or .crl files in\n  $HOMEBREW_PREFIX/etc/openssl@4/certs\n\nand run\n  $HOMEBREW_PREFIX/Cellar/openssl@4/4.0.3/bin/openssl rehash $HOMEBREW_PREFIX/etc/openssl@4/certs\n"
+  },
+  {
+   "name": "pcre2",
+   "full_name": "pcre2",
+   "tap": "homebrew/core",
+   "desc": "Perl compatible regular expressions library with a new API",
+   "homepage": "https://www.pcre.org/",
+   "license": "BSD-3-Clause",
+   "versions": {
+    "stable": "10.49"
+   },
+   "installed": [
+    {
+     "version": "10.49",
+     "time": 1792776000,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "postgresql@16",
+   "full_name": "postgresql@16",
+   "tap": "homebrew/core",
+   "desc": "Object-relational database system",
+   "homepage": "https://www.postgresql.org/",
+   "license": "PostgreSQL",
+   "versions": {
+    "stable": "16.15"
+   },
+   "installed": [
+    {
+     "version": "16.15",
+     "time": 1792948800,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "gettext",
+       "version": "1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "icu4c@78",
+       "version": "78.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": false
+      },
+      {
+       "full_name": "krb5",
+       "version": "1.22.2",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": false
+      },
+      {
+       "full_name": "lz4",
+       "version": "1.10.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "readline",
+       "version": "8.3.6",
+       "declared_directly": true
+      },
+      {
+       "full_name": "xz",
+       "version": "5.8.4",
+       "declared_directly": false
+      },
+      {
+       "full_name": "zstd",
+       "version": "1.5.7",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "This formula has created a default database cluster with:\n  initdb --locale=en_US.UTF-8 -E UTF-8 $HOMEBREW_PREFIX/var/postgresql@16\n"
+  },
+  {
+   "name": "python@3.13",
+   "full_name": "python@3.13",
+   "tap": "homebrew/core",
+   "desc": "Interpreted, interactive, object-oriented programming language",
+   "homepage": "https://www.python.org/",
+   "license": "Python-2.0",
+   "versions": {
+    "stable": "3.13.16"
+   },
+   "installed": [
+    {
+     "version": "3.13.16",
+     "time": 1793121600,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "mpdecimal",
+       "version": "4.0.1",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@3",
+       "version": "3.5.9",
+       "declared_directly": true
+      },
+      {
+       "full_name": "readline",
+       "version": "8.3.6",
+       "declared_directly": false
+      },
+      {
+       "full_name": "sqlite",
+       "version": "3.54.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "xz",
+       "version": "5.8.4",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "Python is installed as\n  $HOMEBREW_PREFIX/bin/python3.13\n\nUnversioned and major-versioned symlinks `python`, `python3`, `python-config`, `python3-config`, `pip`, `pip3`, etc. pointing to\n`python3.13`, `python3.13-config`, `pip3.13` etc., respectively, are installed into\n  $HOMEBREW_PREFIX/opt/python@3.13/libexec/bin\n\nIf you do not need a specific version of Python, and always want Homebrew's `python3` in your PATH:\n  brew install python3\n\n`idle3.13` requires tkinter, which is available separately:\n  brew install python-tk@3.13\n\n`dbm.gnu` is available separately:\n  brew install python-gdbm@3.13\n\nFor more information about Homebrew and Python, see: https://docs.brew.sh/Homebrew-and-Python\n"
+  },
+  {
+   "name": "readline",
+   "full_name": "readline",
+   "tap": "homebrew/core",
+   "desc": "Library for command-line editing",
+   "homepage": "https://tiswww.case.edu/php/chet/readline/rltop.html",
+   "license": "GPL-3.0-or-later",
+   "versions": {
+    "stable": "8.3.6"
+   },
+   "installed": [
+    {
+     "version": "8.3.6",
+     "time": 1793294400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "redis",
+   "full_name": "redis",
+   "tap": "homebrew/core",
+   "desc": "Persistent key-value database, with built-in net interface",
+   "homepage": "https://redis.io/",
+   "license": "AGPL-3.0-only AND Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT AND (CC0-1.0 OR BSD-2-Clause) AND (Artistic-1.0-Perl OR GPL-1.0-or-later)",
+   "versions": {
+    "stable": "8.10.2"
+   },
+   "installed": [
+    {
+     "version": "8.10.2",
+     "time": 1793467200,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "ripgrep",
+   "full_name": "ripgrep",
+   "tap": "homebrew/core",
+   "desc": "Search tool like grep and The Silver Searcher",
+   "homepage": "https://github.com/BurntSushi/ripgrep",
+   "license": "Unlicense",
+   "versions": {
+    "stable": "15.2.0"
+   },
+   "installed": [
+    {
+     "version": "15.2.0",
+     "time": 1793640000,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "pcre2",
+       "version": "10.49",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "simdjson",
+   "full_name": "simdjson",
+   "tap": "homebrew/core",
+   "desc": "SIMD-accelerated C++ JSON parser",
+   "homepage": "https://simdjson.org",
+   "license": "Apache-2.0",
+   "versions": {
+    "stable": "5.0.5"
+   },
+   "installed": [
+    {
+     "version": "5.0.5",
+     "time": 1793812800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "simdutf",
+   "full_name": "simdutf",
+   "tap": "homebrew/core",
+   "desc": "Unicode conversion routines, fast",
+   "homepage": "https://simdutf.github.io/simdutf/",
+   "license": "Apache-2.0 OR MIT",
+   "versions": {
+    "stable": "9.3.0"
+   },
+   "installed": [
+    {
+     "version": "9.3.0",
+     "time": 1793985600,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "icu4c@78",
+       "version": "78.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "sqlite",
+   "full_name": "sqlite",
+   "tap": "homebrew/core",
+   "desc": "Command-line interface for SQLite",
+   "homepage": "https://sqlite.org/index.html",
+   "license": "blessing",
+   "versions": {
+    "stable": "3.54.0"
+   },
+   "installed": [
+    {
+     "version": "3.54.0",
+     "time": 1794158400,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "readline",
+       "version": "8.3.6",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "starship",
+   "full_name": "starship",
+   "tap": "homebrew/core",
+   "desc": "Cross-shell prompt for astronauts",
+   "homepage": "https://starship.rs/",
+   "license": "ISC",
+   "versions": {
+    "stable": "1.26.0"
+   },
+   "installed": [
+    {
+     "version": "1.26.0",
+     "time": 1794331200,
+     "installed_on_request": true,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "tmux",
+   "full_name": "tmux",
+   "tap": "homebrew/core",
+   "desc": "Terminal multiplexer",
+   "homepage": "https://tmux.github.io/",
+   "license": "ISC",
+   "versions": {
+    "stable": "3.8"
+   },
+   "installed": [
+    {
+     "version": "3.8",
+     "time": 1794504000,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "jemalloc",
+       "version": "5.4.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libevent",
+       "version": "2.1.13",
+       "declared_directly": true
+      },
+      {
+       "full_name": "ncurses",
+       "version": "6.6",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": false
+      },
+      {
+       "full_name": "utf8proc",
+       "version": "2.12.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "Example configuration has been installed to:\n  $HOMEBREW_PREFIX/opt/tmux/share/tmux\n"
+  },
+  {
+   "name": "tree-sitter",
+   "full_name": "tree-sitter",
+   "tap": "homebrew/core",
+   "desc": "Incremental parsing library",
+   "homepage": "https://tree-sitter.github.io/",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.27.1"
+   },
+   "installed": [
+    {
+     "version": "0.27.1",
+     "time": 1794676800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": "This formula now installs only the `tree-sitter` library (`libtree-sitter`).\nTo install the CLI tool:\n  brew install tree-sitter-cli\n"
+  },
+  {
+   "name": "unibilium",
+   "full_name": "unibilium",
+   "tap": "homebrew/core",
+   "desc": "Very basic terminfo library",
+   "homepage": "https://github.com/neovim/unibilium",
+   "license": "LGPL-3.0-or-later",
+   "versions": {
+    "stable": "2.1.4"
+   },
+   "installed": [
+    {
+     "version": "2.1.4",
+     "time": 1794849600,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "utf8proc",
+   "full_name": "utf8proc",
+   "tap": "homebrew/core",
+   "desc": "Clean C library for processing UTF-8 Unicode data",
+   "homepage": "https://juliastrings.github.io/utf8proc/",
+   "license": "MIT AND Unicode-DFS-2015",
+   "versions": {
+    "stable": "2.12.0"
+   },
+   "installed": [
+    {
+     "version": "2.12.0",
+     "time": 1795022400,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "uvwasi",
+   "full_name": "uvwasi",
+   "tap": "homebrew/core",
+   "desc": "WASI syscall API built atop libuv",
+   "homepage": "https://github.com/nodejs/uvwasi",
+   "license": "MIT",
+   "versions": {
+    "stable": "0.0.23"
+   },
+   "installed": [
+    {
+     "version": "0.0.23",
+     "time": 1795195200,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "libuv",
+       "version": "1.53.0",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "wget",
+   "full_name": "wget",
+   "tap": "homebrew/core",
+   "desc": "Internet file retriever",
+   "homepage": "https://www.gnu.org/software/wget/",
+   "license": "GPL-3.0-or-later",
+   "versions": {
+    "stable": "1.25.0"
+   },
+   "installed": [
+    {
+     "version": "1.25.0",
+     "time": 1795368000,
+     "installed_on_request": true,
+     "runtime_dependencies": [
+      {
+       "full_name": "ca-certificates",
+       "version": "2026-09-25",
+       "declared_directly": false
+      },
+      {
+       "full_name": "gettext",
+       "version": "1.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "json-c",
+       "version": "0.19",
+       "declared_directly": false
+      },
+      {
+       "full_name": "libidn2",
+       "version": "2.3.8",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libpsl",
+       "version": "0.23.3",
+       "declared_directly": true
+      },
+      {
+       "full_name": "libunistring",
+       "version": "1.4.2",
+       "declared_directly": true
+      },
+      {
+       "full_name": "openssl@4",
+       "version": "4.0.3",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "xz",
+   "full_name": "xz",
+   "tap": "homebrew/core",
+   "desc": "General-purpose data compression with high compression ratio",
+   "homepage": "https://tukaani.org/xz/",
+   "license": "0BSD AND GPL-2.0-or-later",
+   "versions": {
+    "stable": "5.8.4"
+   },
+   "installed": [
+    {
+     "version": "5.8.4",
+     "time": 1795540800,
+     "installed_on_request": false,
+     "runtime_dependencies": []
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  },
+  {
+   "name": "zstd",
+   "full_name": "zstd",
+   "tap": "homebrew/core",
+   "desc": "Zstandard is a real-time compression algorithm",
+   "homepage": "https://facebook.github.io/zstd/",
+   "license": "(BSD-3-Clause OR GPL-2.0-only) AND BSD-2-Clause AND MIT",
+   "versions": {
+    "stable": "1.5.7"
+   },
+   "installed": [
+    {
+     "version": "1.5.7",
+     "time": 1795713600,
+     "installed_on_request": false,
+     "runtime_dependencies": [
+      {
+       "full_name": "lz4",
+       "version": "1.10.0",
+       "declared_directly": true
+      },
+      {
+       "full_name": "xz",
+       "version": "5.8.4",
+       "declared_directly": true
+      }
+     ]
+    }
+   ],
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null
+  }
+ ],
+ "casks": [
+  {
+   "token": "firefox",
+   "full_token": "firefox",
+   "tap": "homebrew/cask",
+   "name": [
+    "Mozilla Firefox"
+   ],
+   "desc": "Web browser",
+   "homepage": "https://www.mozilla.org/firefox/",
+   "version": "158.0",
+   "installed": "157.0.2",
+   "installed_time": 1785003600,
+   "pinned": false,
+   "outdated": true,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "uninstall": [
+      {
+       "quit": "org.mozilla.firefox"
+      }
+     ]
+    },
+    {
+     "app": [
+      "Firefox.app"
+     ],
+     "target": "/Applications/Firefox.app"
+    },
+    {
+     "command_wrapper": [
+      "firefox",
+      {
+       "executable": "/Applications/Firefox.app/Contents/MacOS/firefox"
+      }
+     ],
+     "target": "/opt/homebrew/bin/firefox"
+    },
+    {
+     "zap": [
+      {
+       "trash": [
+        "/Library/Logs/DiagnosticReports/firefox_*",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/org.mozilla.firefox.sfl*",
+        "~/Library/Application Support/CrashReporter/firefox_*",
+        "~/Library/Application Support/Firefox",
+        "~/Library/Caches/Firefox",
+        "~/Library/Caches/Mozilla/updates/Applications/Firefox",
+        "~/Library/Caches/org.mozilla.crashreporter",
+        "~/Library/Caches/org.mozilla.firefox",
+        "~/Library/Preferences/org.mozilla.crashreporter.plist",
+        "~/Library/Preferences/org.mozilla.firefox.plist",
+        "~/Library/Saved Application State/org.mozilla.firefox.savedState",
+        "~/Library/WebKit/org.mozilla.firefox"
+       ],
+       "rmdir": [
+        "~/Library/Application Support/Mozilla",
+        "~/Library/Caches/Mozilla",
+        "~/Library/Caches/Mozilla/updates",
+        "~/Library/Caches/Mozilla/updates/Applications"
+       ]
+      }
+     ]
+    }
+   ],
+   "depends_on": {
+    "macos": {}
+   }
+  },
+  {
+   "token": "visual-studio-code",
+   "full_token": "visual-studio-code",
+   "tap": "homebrew/cask",
+   "name": [
+    "Microsoft Visual Studio Code",
+    "VS Code"
+   ],
+   "desc": "Open-source code editor",
+   "homepage": "https://code.visualstudio.com/",
+   "version": "1.142.0",
+   "installed": "1.142.0",
+   "installed_time": 1785435600,
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "uninstall": [
+      {
+       "launchctl": "com.microsoft.VSCode.ShipIt",
+       "quit": "com.microsoft.VSCode"
+      }
+     ]
+    },
+    {
+     "app": [
+      "Visual Studio Code.app"
+     ],
+     "target": "/Applications/Visual Studio Code.app"
+    },
+    {
+     "binary": [
+      "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+     ],
+     "target": "/opt/homebrew/bin/code"
+    },
+    {
+     "binary": [
+      "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code-tunnel"
+     ],
+     "target": "/opt/homebrew/bin/code-tunnel"
+    },
+    {
+     "zap": [
+      {
+       "trash": [
+        "~/.vscode",
+        "~/Library/Application Support/Code",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.microsoft.vscode.sfl*",
+        "~/Library/Caches/com.microsoft.VSCode",
+        "~/Library/Caches/com.microsoft.VSCode.ShipIt",
+        "~/Library/HTTPStorages/com.microsoft.VSCode",
+        "~/Library/Preferences/ByHost/com.microsoft.VSCode.ShipIt.*.plist",
+        "~/Library/Preferences/com.microsoft.VSCode.helper.plist",
+        "~/Library/Preferences/com.microsoft.VSCode.plist",
+        "~/Library/Saved Application State/com.microsoft.VSCode.savedState"
+       ]
+      }
+     ]
+    }
+   ],
+   "depends_on": {
+    "macos": {}
+   }
+  },
+  {
+   "token": "iterm2",
+   "full_token": "iterm2",
+   "tap": "homebrew/cask",
+   "name": [
+    "iTerm2"
+   ],
+   "desc": "Terminal emulator as alternative to Apple's Terminal app",
+   "homepage": "https://iterm2.com/",
+   "version": "3.7.6",
+   "installed": "3.7.6",
+   "installed_time": 1785867600,
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "uninstall": [
+      {
+       "quit": "com.googlecode.iterm2"
+      }
+     ]
+    },
+    {
+     "app": [
+      "iTerm.app"
+     ],
+     "target": "/Applications/iTerm.app"
+    },
+    {
+     "zap": [
+      {
+       "trash": [
+        "~/Library/Application Scripts/com.googlecode.iterm2.iTermFileProvider",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.googlecode.iterm2.itermai.sfl*",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.googlecode.iterm2.sfl*",
+        "~/Library/Application Support/iTerm",
+        "~/Library/Application Support/iTerm2",
+        "~/Library/Caches/com.googlecode.iterm2",
+        "~/Library/Containers/com.googlecode.iterm2.iTermFileProvider",
+        "~/Library/Containers/iTermAI",
+        "~/Library/Cookies/com.googlecode.iterm2.binarycookies",
+        "~/Library/HTTPStorages/com.googlecode.iterm2",
+        "~/Library/HTTPStorages/com.googlecode.iterm2.binarycookies",
+        "~/Library/Preferences/com.googlecode.iterm2.plist",
+        "~/Library/Preferences/com.googlecode.iterm2.private.plist",
+        "~/Library/Saved Application State/com.googlecode.iterm2*.savedState",
+        "~/Library/WebKit/com.googlecode.iterm2"
+       ]
+      }
+     ]
+    }
+   ],
+   "depends_on": {
+    "macos": {
+     ">=": [
+      "13"
+     ]
+    }
+   }
+  },
+  {
+   "token": "docker-desktop",
+   "full_token": "docker-desktop",
+   "tap": "homebrew/cask",
+   "name": [
+    "Docker Desktop",
+    "Docker Community Edition",
+    "Docker CE"
+   ],
+   "desc": "App to build and share containerised applications and microservices",
+   "homepage": "https://www.docker.com/products/docker-desktop",
+   "version": "4.95.0,242831",
+   "installed": "4.95.0,242831",
+   "installed_time": 1786299600,
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "uninstall": [
+      {
+       "launchctl": [
+        "com.docker.helper",
+        "com.docker.socket",
+        "com.docker.vmnetd"
+       ],
+       "quit": [
+        "com.docker.docker",
+        "com.electron.dockerdesktop"
+       ],
+       "delete": [
+        "/Library/PrivilegedHelperTools/com.docker.socket",
+        "/Library/PrivilegedHelperTools/com.docker.vmnetd"
+       ],
+       "rmdir": "~/.docker/bin"
+      }
+     ]
+    },
+    {
+     "app": [
+      "Docker.app"
+     ],
+     "target": "/Applications/Docker.app"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/bin/docker-credential-osxkeychain",
+      {
+       "target": "/usr/local/bin/docker-credential-osxkeychain"
+      }
+     ],
+     "target": "/usr/local/bin/docker-credential-osxkeychain"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/bin/kubectl",
+      {
+       "target": "/usr/local/bin/kubectl.docker"
+      }
+     ],
+     "target": "/usr/local/bin/kubectl.docker"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose",
+      {
+       "target": "/usr/local/cli-plugins/docker-compose"
+      }
+     ],
+     "target": "/usr/local/cli-plugins/docker-compose"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/bin/docker",
+      {
+       "target": "/usr/local/bin/docker"
+      }
+     ],
+     "target": "/usr/local/bin/docker"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/bin/docker-credential-desktop",
+      {
+       "target": "/usr/local/bin/docker-credential-desktop"
+      }
+     ],
+     "target": "/usr/local/bin/docker-credential-desktop"
+    },
+    {
+     "binary": [
+      "/Applications/Docker.app/Contents/Resources/bin/docker-credential-ecr-login",
+      {
+       "target": "/usr/local/bin/docker-credential-ecr-login"
+      }
+     ],
+     "target": "/usr/local/bin/docker-credential-ecr-login"
+    },
+    {
+     "bash_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker.bash-completion"
+     ],
+     "target": "/opt/homebrew/etc/bash_completion.d/docker"
+    },
+    {
+     "bash_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker-compose.bash-completion"
+     ],
+     "target": "/opt/homebrew/etc/bash_completion.d/docker-compose"
+    },
+    {
+     "zsh_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker-compose.zsh-completion"
+     ],
+     "target": "/opt/homebrew/share/zsh/site-functions/_docker-compose"
+    },
+    {
+     "zsh_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker.zsh-completion"
+     ],
+     "target": "/opt/homebrew/share/zsh/site-functions/_docker"
+    },
+    {
+     "fish_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker-compose.fish-completion"
+     ],
+     "target": "/opt/homebrew/share/fish/vendor_completions.d/docker-compose.fish"
+    },
+    {
+     "fish_completion": [
+      "/Applications/Docker.app/Contents/Resources/etc/docker.fish-completion"
+     ],
+     "target": "/opt/homebrew/share/fish/vendor_completions.d/docker.fish"
+    },
+    {
+     "postflight_steps": [
+      {
+       "steps": [
+        {
+         "source": {
+          "path": "{{appdir}}/Docker.app/Contents/Resources/bin/kubectl"
+         },
+         "target": {
+          "path": "/usr/local/bin/kubectl"
+         },
+         "force": true,
+         "uninstall": true,
+         "sudo": "if_needed",
+         "guards": [
+          {
+           "path": "/usr/local/bin/kubectl",
+           "condition": "unless_exists",
+           "id": "1"
+          }
+         ],
+         "type": "symlink"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "zap": [
+      {
+       "trash": [
+        "/usr/local/bin/docker-compose.backup",
+        "/usr/local/bin/docker.backup",
+        "~/.docker",
+        "~/Library/Application Scripts/com.docker.helper",
+        "~/Library/Application Scripts/group.com.docker",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.docker.helper.sfl*",
+        "~/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments/com.electron.dockerdesktop.sfl*",
+        "~/Library/Application Support/com.bugsnag.Bugsnag/com.docker.docker",
+        "~/Library/Application Support/Docker Desktop",
+        "~/Library/Application Support/docker-secrets-engine",
+        "~/Library/Caches/com.docker.docker",
+        "~/Library/Caches/com.plausiblelabs.crashreporter.data/com.docker.docker",
+        "~/Library/Caches/Docker Desktop",
+        "~/Library/Caches/docker-secrets-engine",
+        "~/Library/Caches/KSCrashReports/Docker",
+        "~/Library/Containers/com.docker.docker",
+        "~/Library/Containers/com.docker.helper",
+        "~/Library/Group Containers/group.com.docker",
+        "~/Library/HTTPStorages/com.docker.docker",
+        "~/Library/HTTPStorages/com.docker.docker.binarycookies",
+        "~/Library/Logs/Docker Desktop",
+        "~/Library/Preferences/com.docker.docker.plist",
+        "~/Library/Preferences/com.electron.docker-frontend.plist",
+        "~/Library/Preferences/com.electron.dockerdesktop.plist",
+        "~/Library/Saved Application State/com.electron.docker-frontend.savedState",
+        "~/Library/Saved Application State/com.electron.dockerdesktop.savedState"
+       ],
+       "rmdir": [
+        "~/Library/Caches/com.plausiblelabs.crashreporter.data",
+        "~/Library/Caches/KSCrashReports"
+       ]
+      }
+     ]
+    }
+   ],
+   "depends_on": {
+    "macos": {
+     ">=": [
+      "14"
+     ]
+    }
+   }
+  },
+  {
+   "token": "raycast",
+   "full_token": "raycast",
+   "tap": "homebrew/cask",
+   "name": [
+    "Raycast"
+   ],
+   "desc": "Control your tools with a few keystrokes",
+   "homepage": "https://raycast.com/",
+   "version": "2.8.1.0",
+   "installed": "2.8.1.0",
+   "installed_time": 1786731600,
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "uninstall": [
+      {
+       "quit": "com.raycast.macos",
+       "login_item": "Raycast"
+      }
+     ]
+    },
+    {
+     "app": [
+      "Raycast.app"
+     ],
+     "target": "/Applications/Raycast.app"
+    },
+    {
+     "zap": [
+      {
+       "trash": [
+        "~/.config/raycast",
+        "~/Library/Application Scripts/com.raycast.macos.BrowserExtension",
+        "~/Library/Application Scripts/SY64MV22J9.com.raycast.macos.shared",
+        "~/Library/Application Support/com.raycast.macos",
+        "~/Library/Application Support/com.raycast.shared",
+        "~/Library/Caches/com.raycast.macos",
+        "~/Library/Caches/SentryCrash/Raycast",
+        "~/Library/Containers/com.raycast.macos.BrowserExtension",
+        "~/Library/Cookies/com.raycast.macos.binarycookies",
+        "~/Library/Group Containers/SY64MV22J9.com.raycast.macos.shared",
+        "~/Library/HTTPStorages/com.raycast.macos",
+        "~/Library/Logs/com.raycast.macos",
+        "~/Library/Preferences/com.raycast.macos.plist",
+        "~/Library/WebKit/com.raycast.macos"
+       ]
+      }
+     ]
+    }
+   ],
+   "depends_on": {
+    "arch": [
+     {
+      "type": "arm",
+      "bits": 64
+     }
+    ],
+    "macos": {}
+   }
+  },
+  {
+   "token": "font-jetbrains-mono-nerd-font",
+   "full_token": "font-jetbrains-mono-nerd-font",
+   "tap": "homebrew/cask",
+   "name": [
+    "JetBrainsMono Nerd Font families (JetBrains Mono)"
+   ],
+   "desc": null,
+   "homepage": "https://github.com/ryanoasis/nerd-fonts",
+   "version": "3.5.1",
+   "installed": "3.5.1",
+   "installed_time": 1787163600,
+   "pinned": false,
+   "outdated": false,
+   "deprecated": false,
+   "caveats": null,
+   "artifacts": [
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFont-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFont-ThinItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontMono-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontMono-ThinItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFont-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFont-ThinItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontMono-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontMono-ThinItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Bold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Bold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-BoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-BoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-ExtraBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-ExtraBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-ExtraLight.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-ExtraLight.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Italic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Italic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Light.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Light.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-LightItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-LightItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Medium.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Medium.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-MediumItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-MediumItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Regular.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Regular.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-SemiBold.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-SemiBold.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-Thin.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-Thin.ttf"
+    },
+    {
+     "font": [
+      "JetBrainsMonoNerdFontPropo-ThinItalic.ttf"
+     ],
+     "target": "/Users/demo/Library/Fonts/JetBrainsMonoNerdFontPropo-ThinItalic.ttf"
+    }
+   ],
+   "depends_on": {}
+  }
+ ]
+}
