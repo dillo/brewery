@@ -500,124 +500,24 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if a.mode != modeCommand {
 		a.flash = "" // in COMMAND the bar shows only the prompt: keep it for when the line closes
 	}
-	if a.help {
-		a.help = false // any key closes help, and does nothing else
-		return nil
+	if cmd, ok := a.modalKey(msg); ok {
+		return cmd
 	}
-	if a.confirm != nil {
-		ch, ok := a.confirm.answer(k)
-		if !ok {
-			return nil
-		}
-		a.confirm = nil
-		if ch.run == nil {
-			return nil
-		}
-		return ch.run()
-	}
-	if a.mode == modeInsert {
-		if k == "esc" {
-			a.mode = modeNormal
-		} else if a.proc != nil {
-			if k == "ctrl+c" {
-				a.canceled = true // a ctrl+c the user sends marks the run as stopped, unless brew then finishes cleanly
-			}
-			_, _ = a.proc.Write(keyBytes(msg))
-		}
-		return nil
-	}
-	if a.mode == modeCommand {
-		return a.cmdKey(msg)
-	}
-	if a.mode == modeFilter {
-		return a.filterKey(msg)
-	}
-	if k == "g" || k == "/" {
-		if a.servicesPreviewAlone() {
-			return nil // they'd move or filter the list hidden behind the preview
-		}
-	}
-	if a.gPending {
-		a.gPending = false
-		if cmd, ok := a.gKey(k); ok {
-			return cmd
-		}
-	} else if k == "g" {
-		a.gPending = true
-		return nil
+	if cmd, ok := a.gPrefixKey(k); ok {
+		return cmd
 	}
 	if a.jobsOpen {
 		if cmd, ok := a.jobsKey(msg); ok {
 			return cmd
 		}
 	}
-
 	if a.sideFocus {
 		if cmd, ok := a.sidebarKey(k); ok {
 			return cmd
 		}
 	}
-
-	switch k {
-	case "q":
-		return a.askQuit()
-	case ":":
-		return a.openCmdline()
-	case "/":
-		return a.openFilter()
-	case "?":
-		a.help = true
-		return nil
-	case "y":
-		return a.copyName()
-	case "ctrl+c":
-		if a.queue.Current() != nil {
-			return a.askStop()
-		}
-		return a.quit()
-	case "esc":
-		switch {
-		case a.tab == tabInstalled && a.installed.pv.focus:
-			a.installed.pv.focus = false // back to the list first
-		case a.tab == tabDiscover && a.discover.pv.focus:
-			a.discover.pv.focus = false
-		case a.tab == tabServices && a.services.previewShown():
-			a.services.pvOpen = false
-		case a.marks() > 0 && !a.drawerShown():
-			a.clearMarks()
-		default:
-			a.drawer.open = false
-		}
-		return nil
-	case "o":
-		if a.drawer.job != nil {
-			a.drawer.open = !a.drawer.open
-		}
-		return nil
-	case "i":
-		if a.proc != nil {
-			a.typeIntoJob()
-		}
-		return nil
-	case "1", "2", "3", "4":
-		return a.selectSection(section(k[0] - '1'))
-	case "]":
-		return a.stepEntry(1)
-	case "[":
-		return a.stepEntry(-1)
-	case "h", "left":
-		if !a.unfocusDetails() {
-			a.sideFocus = true
-		}
-		return nil
-	case "l", "right":
-		a.focusDetails()
-		return nil
-	case "r":
-		if a.tab == tabDiscover {
-			return tea.Batch(a.refresh(), a.fetchStats(true))
-		}
-		return a.refresh()
+	if cmd, ok := a.globalKey(k); ok {
+		return cmd
 	}
 	if a.servicesPreviewAlone() {
 		// The list is hidden behind the preview: its keys would act on rows
@@ -630,7 +530,137 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if cmd, ok := a.actionKey(k); ok {
 		return cmd
 	}
+	return a.tabKey(msg)
+}
 
+// modalKey gives the key to whatever has taken over the keyboard: help,
+// an open confirmation, insert mode (brew), or a prompt being typed. ok is
+// false when nothing has.
+func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
+	k := msg.String()
+	switch {
+	case a.help:
+		a.help = false // any key closes help, and does nothing else
+		return nil, true
+	case a.confirm != nil:
+		ch, ok := a.confirm.answer(k)
+		if !ok {
+			return nil, true
+		}
+		a.confirm = nil
+		if ch.run == nil {
+			return nil, true
+		}
+		return ch.run(), true
+	case a.mode == modeInsert:
+		if k == "esc" {
+			a.mode = modeNormal
+		} else if a.proc != nil {
+			if k == "ctrl+c" {
+				a.canceled = true // a ctrl+c the user sends marks the run as stopped, unless brew then finishes cleanly
+			}
+			_, _ = a.proc.Write(keyBytes(msg))
+		}
+		return nil, true
+	case a.mode == modeCommand:
+		return a.cmdKey(msg), true
+	case a.mode == modeFilter:
+		return a.filterKey(msg), true
+	}
+	return nil, false
+}
+
+// gPrefixKey reads g as the start of gg or gx, and the key after it. ok is
+// false for a key that isn't part of one, which then does what it always
+// does.
+func (a *App) gPrefixKey(k string) (cmd tea.Cmd, ok bool) {
+	if (k == "g" || k == "/") && a.servicesPreviewAlone() {
+		return nil, true // they'd move or filter the list hidden behind the preview
+	}
+	if a.gPending {
+		a.gPending = false
+		return a.gKey(k)
+	}
+	if k == "g" {
+		a.gPending = true
+		return nil, true
+	}
+	return nil, false
+}
+
+// globalKey handles the keys that do the same on every tab. ok is false
+// for any other key.
+func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "q":
+		return a.askQuit(), true
+	case ":":
+		return a.openCmdline(), true
+	case "/":
+		return a.openFilter(), true
+	case "?":
+		a.help = true
+	case "y":
+		return a.copyName(), true
+	case "ctrl+c":
+		if a.queue.Current() != nil {
+			a.askStop()
+			return nil, true
+		}
+		return a.quit(), true
+	case "esc":
+		a.escape()
+	case "o":
+		if a.drawer.job != nil {
+			a.drawer.open = !a.drawer.open
+		}
+	case "i":
+		if a.proc != nil {
+			a.typeIntoJob()
+		}
+	case "1", "2", "3", "4":
+		return a.selectSection(section(k[0] - '1')), true
+	case "]":
+		return a.stepEntry(1), true
+	case "[":
+		return a.stepEntry(-1), true
+	case "h", "left":
+		if !a.unfocusDetails() {
+			a.sideFocus = true
+		}
+	case "l", "right":
+		a.focusDetails()
+	case "r":
+		if a.tab == tabDiscover {
+			return tea.Batch(a.refresh(), a.fetchStats(true)), true
+		}
+		return a.refresh(), true
+	default:
+		return nil, false
+	}
+	return nil, true
+}
+
+// escape backs out one step: from the details to the list, then clears
+// the marks, then hides the drawer.
+func (a *App) escape() {
+	switch {
+	case a.tab == tabInstalled && a.installed.pv.focus:
+		a.installed.pv.focus = false // back to the list first
+	case a.tab == tabDiscover && a.discover.pv.focus:
+		a.discover.pv.focus = false
+	case a.tab == tabServices && a.services.previewShown():
+		a.services.pvOpen = false
+	case a.marks() > 0 && !a.drawerShown():
+		a.clearMarks()
+	default:
+		a.drawer.open = false
+	}
+}
+
+// tabKey gives the key to the current tab: moving through its list, or
+// Home's tiles.
+func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 	switch a.tab {
 	case tabHome:
 		switch t := a.home.update(msg, a.snap); {

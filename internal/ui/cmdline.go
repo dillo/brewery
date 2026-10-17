@@ -56,29 +56,42 @@ func (c *cmdline) update(msg tea.Msg) tea.Cmd {
 	if k, ok := msg.(tea.KeyPressMsg); ok {
 		switch k.String() {
 		case "up":
-			if c.back < len(c.past) {
-				if c.back == 0 {
-					c.draft = c.input.Value()
-				}
-				c.back++
-				c.show(c.past[len(c.past)-c.back])
-			}
+			c.older()
 			return nil
 		case "down":
-			if c.back > 0 {
-				c.back--
-				if c.back == 0 {
-					c.show(c.draft)
-				} else {
-					c.show(c.past[len(c.past)-c.back])
-				}
-			}
+			c.newer()
 			return nil
 		}
 	}
 	var cmd tea.Cmd
 	c.input, cmd = c.input.Update(msg)
 	return cmd
+}
+
+// older shows the command before the one on the line. Leaving the line
+// being typed keeps it as the draft to come back to.
+func (c *cmdline) older() {
+	if c.back == len(c.past) {
+		return
+	}
+	if c.back == 0 {
+		c.draft = c.input.Value()
+	}
+	c.back++
+	c.show(c.past[len(c.past)-c.back])
+}
+
+// newer shows the command after the one on the line, and then the draft.
+func (c *cmdline) newer() {
+	if c.back == 0 {
+		return
+	}
+	c.back--
+	if c.back == 0 {
+		c.show(c.draft)
+		return
+	}
+	c.show(c.past[len(c.past)-c.back])
 }
 
 // show puts s on the line with the cursor at the end.

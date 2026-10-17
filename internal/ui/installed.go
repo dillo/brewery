@@ -280,26 +280,33 @@ func (t *installedTab) preview(p brew.Package) string {
 		"latest", latest, "pinned", pinned, "deprecated", deprecated, "homepage", p.Homepage))
 
 	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {
-		b.WriteString("\n" + st.Accent.Render("Dependencies") + "\n")
-		if len(p.DirectDeps) == 0 {
-			b.WriteString(st.Muted.Render("none") + "\n")
-		} else {
-			b.WriteString(strings.Join(t.ix.Tree(p.FullName, t.depLabel), "\n") + "\n")
-		}
-		if behind := t.ix.PinnedBehind(p.Deps...); p.Kind == brew.KindFormula && len(behind) > 0 {
-			b.WriteString(st.Warn.Render("⚠ upgrading needs "+strings.Join(behind, ", ")+" unpinned") + "\n")
-		}
-		b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
-		if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
-			b.WriteString(st.Muted.Render("nothing installed depends on this") + "\n")
-		} else {
-			b.WriteString(strings.Join(used, ", ") + "\n")
-		}
+		t.writeDeps(&b, p)
 	}
 	if p.Caveats != "" {
 		b.WriteString("\n" + st.Accent.Render("Caveats") + "\n" + p.Caveats + "\n")
 	}
 	return b.String()
+}
+
+// writeDeps writes p's dependency tree, any pinned dependency that will
+// stop an upgrade, and what depends on p.
+func (t *installedTab) writeDeps(b *strings.Builder, p brew.Package) {
+	st := t.st
+	b.WriteString("\n" + st.Accent.Render("Dependencies") + "\n")
+	if len(p.DirectDeps) == 0 {
+		b.WriteString(st.Muted.Render("none") + "\n")
+	} else {
+		b.WriteString(strings.Join(t.ix.Tree(p.FullName, t.depLabel), "\n") + "\n")
+	}
+	if behind := t.ix.PinnedBehind(p.Deps...); p.Kind == brew.KindFormula && len(behind) > 0 {
+		b.WriteString(st.Warn.Render("⚠ upgrading needs "+strings.Join(behind, ", ")+" unpinned") + "\n")
+	}
+	b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
+	if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
+		b.WriteString(st.Muted.Render("nothing installed depends on this") + "\n")
+	} else {
+		b.WriteString(strings.Join(used, ", ") + "\n")
+	}
 }
 
 // depLabel names a dependency in the preview's tree, marking it if it's

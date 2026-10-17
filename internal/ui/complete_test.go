@@ -216,9 +216,10 @@ func TestCompletesFromTheCatalogue(t *testing.T) {
 func TestPopupSelectedRowKeepsTextColor(t *testing.T) {
 	c := cmdline{items: []candidate{{text: "install", desc: "Install"}, {text: "pin", desc: "Pin"}}, sel: 0}
 	want := lipgloss.NewStyle().Foreground(testStyles.P.Text).Render("x")
-	seq := strings.TrimSuffix(strings.TrimPrefix(want[:strings.Index(want, "x")], "\x1b["), "m") // SGR parameters; styles merge into one sequence
+	before, _, _ := strings.Cut(want, "x")
+	seq := strings.TrimSuffix(strings.TrimPrefix(before, "\x1b["), "m") // SGR parameters; styles merge into one sequence
 	var sel string
-	for _, l := range strings.Split(c.popup(testStyles, 80), "\n") {
+	for l := range strings.SplitSeq(c.popup(testStyles, 80), "\n") {
 		if strings.Contains(l, "install") {
 			sel = l
 		}

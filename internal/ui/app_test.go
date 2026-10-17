@@ -66,7 +66,7 @@ func drain(t *testing.T, a *App, cmd tea.Cmd) {
 		return
 	}
 	msg := cmd()
-	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeOf(tea.Cmd(nil)) {
+	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeFor[tea.Cmd]() {
 		for i := range v.Len() {
 			drain(t, a, v.Index(i).Interface().(tea.Cmd))
 		}

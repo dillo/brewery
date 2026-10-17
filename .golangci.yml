@@ -2,11 +2,17 @@ version: "2"
 
 linters:
   # The standard set (errcheck, govet, ineffassign, staticcheck, unused),
-  # plus a few cheap checks.
+  # plus a few cheap checks and some that keep functions simple.
   enable:
     - errorlint
+    - fatcontext
+    - gocognit
+    - gocritic
     - misspell
+    - modernize
+    - nestif
     - unconvert
+    - unparam
   exclusions:
     # Closing, removing and printing best-effort, as Go code conventionally does.
     presets:

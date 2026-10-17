@@ -53,9 +53,11 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.upgradeSelected(), true
 	case k == "x" && a.tab == tabInstalled:
 		if a.marks() > 0 {
-			return a.askUninstallMarked(), true
+			a.askUninstallMarked()
+			return nil, true
 		}
-		return a.askUninstall(), true
+		a.askUninstall()
+		return nil, true
 	case k == "p" && a.tab == tabInstalled:
 		return a.togglePin(), true
 	case k == "A" && a.tab == tabOutdated:
@@ -65,7 +67,8 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 	case a.tab == tabServices && k == "L":
 		return a.openLog(), true
 	case a.tab == tabTaps && k == "x":
-		return a.askUntap(), true
+		a.askUntap()
+		return nil, true
 	case a.tab == tabDiscover && k == "a":
 		return a.askInstall(), true
 	}
@@ -118,10 +121,10 @@ func (a *App) upgradeSelected() tea.Cmd {
 // askUninstall confirms uninstalling the selected package. If something
 // still needs it, it explains why brew would refuse instead. If it leaves
 // dependencies nothing else needs, it offers to remove those too.
-func (a *App) askUninstall() tea.Cmd {
+func (a *App) askUninstall() {
 	p, ok := a.installed.selected()
 	if !ok {
-		return nil
+		return
 	}
 	if used := a.ix.UsedBy(p.FullName); len(used) > 0 {
 		a.confirm = &confirmBox{
@@ -129,7 +132,7 @@ func (a *App) askUninstall() tea.Cmd {
 			body:    []string{"Required by " + strings.Join(used, ", ") + ".", "Uninstall those first, or brew will refuse."},
 			choices: []choice{{"n", "close", nil}},
 		}
-		return nil
+		return
 	}
 	refresh := append(slices.Clone(diskQueries), qServices) // its service goes too
 	one := action{title: "uninstall " + p.Name, args: kindArgs("uninstall", p.Kind, p.FullName), refresh: refresh}
@@ -152,7 +155,6 @@ func (a *App) askUninstall() tea.Cmd {
 	}
 	box.choices = append(box.choices, choice{"n", "cancel", nil})
 	a.confirm = box
-	return nil
 }
 
 // togglePin pins the selected package, or unpins it if it is pinned.
@@ -264,10 +266,10 @@ func (a *App) selectedTap() (brew.Tap, bool) {
 
 // askUntap confirms untapping the selected tap. If anything installed came
 // from it, it explains that brew would refuse instead.
-func (a *App) askUntap() tea.Cmd {
+func (a *App) askUntap() {
 	t, ok := a.selectedTap()
 	if !ok {
-		return nil
+		return
 	}
 	var from []string
 	for _, p := range a.snap.Packages {
@@ -281,7 +283,7 @@ func (a *App) askUntap() tea.Cmd {
 			body:    []string{"Installed from it: " + strings.Join(from, ", ") + ".", "Uninstall those first, or brew will refuse."},
 			choices: []choice{{"n", "close", nil}},
 		}
-		return nil
+		return
 	}
 	untap := action{title: "untap " + t.Name, args: []string{"untap", t.Name}, refresh: []query{qTaps}}
 	box := &confirmBox{
@@ -295,7 +297,6 @@ func (a *App) askUntap() tea.Cmd {
 		box.body = []string{"Its " + what + " won't be available", "until you tap it again."}
 	}
 	a.confirm = box
-	return nil
 }
 
 // tapContents says what a tap holds, such as "2 formulae and 1 cask".

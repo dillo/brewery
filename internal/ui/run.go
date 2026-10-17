@@ -241,10 +241,10 @@ func (a *App) stopJob() tea.Cmd {
 
 // askStop confirms before stopping the current job. Output and exits keep
 // arriving while the dialog is open, so "y" only stops the job it named.
-func (a *App) askStop() tea.Cmd {
+func (a *App) askStop() {
 	j := a.queue.Current()
 	if j == nil {
-		return nil
+		return
 	}
 	a.confirm = &confirmBox{
 		title: "Stop " + j.Title + "?",
@@ -259,7 +259,6 @@ func (a *App) askStop() tea.Cmd {
 			{"n", "keep running", nil},
 		},
 	}
-	return nil
 }
 
 // askQuit confirms before quitting while a job is running.

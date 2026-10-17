@@ -65,8 +65,7 @@ func (p *Proc) Kill() error { return syscall.Kill(-p.cmd.Process.Pid, syscall.SI
 func (p *Proc) Wait() (int, error) {
 	err := p.cmd.Wait()
 	p.pty.Close()
-	var exitErr *exec.ExitError
-	if errors.As(err, &exitErr) {
+	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
 		return exitErr.ExitCode(), nil
 	}
 	if err != nil {

@@ -79,7 +79,7 @@ func TestGXOpensTheHomepage(t *testing.T) {
 	fd, _ := a.installed.selected()
 	show(t, a, "Outdated")
 	keys(t, a, "g", "x") // lua-language-server, from its installed package
-	lua, _ := a.packageNamed("lua-language-server", fd.Kind)
+	lua := a.packageNamed("lua-language-server", fd.Kind)
 	show(t, a, "Taps")
 	keys(t, a, "g", "x") // anomalyco/tap: its remote, without .git
 	want := []string{fd.Homepage, lua.Homepage, "https://github.com/anomalyco/homebrew-tap"}

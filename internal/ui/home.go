@@ -231,7 +231,7 @@ func (h *homeTab) writeWarnings(b *strings.Builder, warnings []brew.DoctorWarnin
 		if d.Body != "" {
 			// Style each line alone: as one block, every line would be
 			// padded to the longest, and a narrow pane cuts the padding off.
-			for _, line := range strings.Split(d.Body, "\n") {
+			for line := range strings.SplitSeq(d.Body, "\n") {
 				b.WriteString(st.Muted.Render("  "+line) + "\n")
 			}
 		}

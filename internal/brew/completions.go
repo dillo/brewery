@@ -66,19 +66,13 @@ const suggestPrefix = "(__fish_brew_suggest_"
 // same as `bundle install` means `bundle upgrade` is not offered in
 // completion (it still runs when typed).
 func ParseFish(r io.Reader) (Completions, error) {
-	cmds := map[string]*Command{}
-	subs := map[string]map[string]*Command{} // command → subcommand
-	get := func(name string) *Command {
-		if cmds[name] == nil {
-			cmds[name] = &Command{Name: name}
-		}
-		return cmds[name]
+	f := fishScript{
+		cmds:     map[string]*Command{},
+		subs:     map[string]map[string]*Command{},
+		seenDesc: map[string]map[string]string{},
 	}
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64<<10), 1<<20)
-	var subArgs [][]string                     // applied once every subcommand is known
-	var cmdArgs [][]string                     // applied once every command is known
-	seenDesc := map[string]map[string]string{} // command → description → first name
 	for sc.Scan() {
 		tok := fishTokens(sc.Text())
 		if len(tok) < 2 {
@@ -86,73 +80,111 @@ func ParseFish(r io.Reader) (Completions, error) {
 		}
 		switch tok[0] {
 		case "__fish_brew_complete_cmd":
-			if c := get(tok[1]); c.Desc == "" && len(tok) > 2 {
+			if c := f.cmd(tok[1]); c.Desc == "" && len(tok) > 2 {
 				c.Desc = tok[2]
 			}
 		case "__fish_brew_complete_arg":
 			// The first argument is the command, maybe followed by a fish
 			// condition ("upgrade; and not __fish_seen_argument …").
-			cmdArgs = append(cmdArgs, tok)
+			f.cmdArgs = append(f.cmdArgs, tok)
 		case "__fish_brew_complete_sub_cmd":
-			if len(tok) < 3 {
-				continue
-			}
-			if subs[tok[1]] == nil {
-				subs[tok[1]] = map[string]*Command{}
-			}
-			if subs[tok[1]][tok[2]] != nil {
-				continue
-			}
-			desc := ""
-			if len(tok) > 3 {
-				desc = tok[3]
-			}
-			if desc != "" {
-				if seenDesc[tok[1]] == nil {
-					seenDesc[tok[1]] = map[string]string{}
-				}
-				if first, dup := seenDesc[tok[1]][desc]; dup && first != tok[2] {
-					continue // same description as first: an alias, or a real subcommand folded into it (bundle upgrade)
-				}
-				seenDesc[tok[1]][desc] = tok[2]
-			}
-			subs[tok[1]][tok[2]] = &Command{Name: tok[2], Desc: desc}
+			f.addSub(tok)
 		case "__fish_brew_complete_sub_arg":
-			subArgs = append(subArgs, tok)
+			f.subArgs = append(f.subArgs, tok)
 		}
 	}
 	if err := sc.Err(); err != nil {
 		return Completions{}, err
 	}
-	for _, tok := range cmdArgs {
+	return f.completions(), nil
+}
+
+// fishScript is what ParseFish has read so far. Options are kept until the
+// whole script is read, because they can come before the command they're for.
+type fishScript struct {
+	cmds     map[string]*Command
+	subs     map[string]map[string]*Command // command → subcommand
+	seenDesc map[string]map[string]string   // command → description → first name
+	cmdArgs  [][]string                     // applied once every command is known
+	subArgs  [][]string                     // applied once every subcommand is known
+}
+
+// cmd is the command called name, added if it's new.
+func (f *fishScript) cmd(name string) *Command {
+	if f.cmds[name] == nil {
+		f.cmds[name] = &Command{Name: name}
+	}
+	return f.cmds[name]
+}
+
+// addSub records the subcommand on a __fish_brew_complete_sub_cmd line,
+// unless it's been seen or an earlier one has its description.
+func (f *fishScript) addSub(tok []string) {
+	if len(tok) < 3 {
+		return
+	}
+	cmd, name := tok[1], tok[2]
+	if f.subs[cmd] == nil {
+		f.subs[cmd] = map[string]*Command{}
+	}
+	if f.subs[cmd][name] != nil {
+		return
+	}
+	desc := ""
+	if len(tok) > 3 {
+		desc = tok[3]
+	}
+	if desc != "" && !f.firstWith(cmd, desc, name) {
+		return // same description as the first: an alias, or a real subcommand folded into it (bundle upgrade)
+	}
+	f.subs[cmd][name] = &Command{Name: name, Desc: desc}
+}
+
+// firstWith reports whether name is the first subcommand of cmd described
+// as desc, and remembers it if it is.
+func (f *fishScript) firstWith(cmd, desc, name string) bool {
+	if f.seenDesc[cmd] == nil {
+		f.seenDesc[cmd] = map[string]string{}
+	}
+	if first, dup := f.seenDesc[cmd][desc]; dup && first != name {
+		return false
+	}
+	f.seenDesc[cmd][desc] = name
+	return true
+}
+
+// completions attaches the options to their commands and subcommands and
+// sorts everything by name.
+func (f *fishScript) completions() Completions {
+	for _, tok := range f.cmdArgs {
 		name, _, _ := strings.Cut(tok[1], ";")
-		if c := cmds[strings.TrimSpace(name)]; c != nil {
+		if c := f.cmds[strings.TrimSpace(name)]; c != nil {
 			addOptions(c, tok[2:])
 		}
 	}
-	for _, tok := range subArgs {
+	for _, tok := range f.subArgs {
 		if len(tok) < 3 {
 			continue
 		}
 		// One line can apply to several subcommands and their aliases:
 		// 'start launch load s l'. Only described subcommands are kept.
 		names, _, _ := strings.Cut(tok[2], ";")
-		for _, name := range strings.Fields(names) {
-			if s := subs[tok[1]][name]; s != nil {
+		for name := range strings.FieldsSeq(names) {
+			if s := f.subs[tok[1]][name]; s != nil {
 				addOptions(s, tok[3:])
 			}
 		}
 	}
 	var out Completions
-	for name, c := range cmds {
-		for _, s := range subs[name] {
+	for name, c := range f.cmds {
+		for _, s := range f.subs[name] {
 			c.Subs = append(c.Subs, *s)
 		}
 		sortByName(c.Subs)
 		out.Commands = append(out.Commands, *c)
 	}
 	sortByName(out.Commands)
-	return out, nil
+	return out
 }
 
 // addOptions reads "-l flag -d desc" and "-a '(__fish_brew_suggest_kind)'"
