@@ -246,8 +246,36 @@ func TestSlashFromTheSidebarFiltersTheList(t *testing.T) {
 
 func TestHomeTileOpensItsEntry(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "l", "j", "enter") // Home's content, then the Outdated tile
+	keys(t, a, "l", "l", "enter") // Home's first tile, then the Outdated tile
 	if label(a) != "Outdated" || a.sideFocus {
 		t.Errorf("enter on the Outdated tile: %s, focus %v", label(a), a.sideFocus)
+	}
+}
+
+func TestHomeKeysWalkTheTilesAndBackToTheSidebar(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "l", "l", "l")
+	if a.sideFocus || a.home.sel != 2 {
+		t.Fatalf("l from the sidebar, then l twice: focus %v, tile %d; want the Services tile", a.sideFocus, a.home.sel)
+	}
+	keys(t, a, "h", "h", "h")
+	if !a.sideFocus || label(a) != "Home" {
+		t.Fatalf("h past the first tile should reach the sidebar: focus %v, %s", a.sideFocus, label(a))
+	}
+	keys(t, a, "l")
+	if a.home.sel != 0 || a.home.area != areaTiles {
+		t.Errorf("l from the sidebar should start on Installed: tile %d, area %d", a.home.sel, a.home.area)
+	}
+	keys(t, a, "j", "h")
+	if !a.sideFocus {
+		t.Errorf("h from Doctor should reach the sidebar")
+	}
+}
+
+func TestEnterOnRecentJobsOpensTheJobsList(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "l", "j", "l", "enter")
+	if !a.jobsOpen {
+		t.Errorf("enter on Recent jobs should open the jobs list")
 	}
 }

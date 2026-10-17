@@ -108,13 +108,13 @@ func TestHomeNavigation(t *testing.T) {
 	if tab := h.update(press("enter"), snap); tab != tabInstalled {
 		t.Errorf("enter on first tile -> %d", tab)
 	}
-	h.update(press("j"), snap)
-	h.update(press("j"), snap)
+	h.update(press("l"), snap)
+	h.update(press("right"), snap)
 	if tab := h.update(press("enter"), snap); tab != tabServices {
 		t.Errorf("enter on third tile -> %d", tab)
 	}
 	for range 5 {
-		h.update(press("j"), snap)
+		h.update(press("l"), snap)
 	}
 	if h.sel != 4 {
 		t.Errorf("selection should stop at the last tile, got %d", h.sel)
@@ -122,9 +122,69 @@ func TestHomeNavigation(t *testing.T) {
 	if tab := h.update(press("enter"), snap); tab != openCleanup {
 		t.Errorf("enter on cleanup tile -> %d, want openCleanup", tab)
 	}
+	h.update(press("h"), snap)
+	if tab := h.update(press("enter"), snap); tab != homeStay {
+		t.Errorf("enter on doctor tile -> %d, want homeStay", tab)
+	}
+	for range 3 {
+		h.update(press("left"), snap)
+	}
+	if got := h.update(press("h"), snap); got != leaveHome || h.sel != 0 {
+		t.Errorf("h on the first tile -> %d (sel %d), want leaveHome", got, h.sel)
+	}
+}
+
+func TestHomePanesUnderTheTiles(t *testing.T) {
+	h := homeTab{st: testStyles}
+	snap := fixtureSnapshot(t)
+	h.update(press("l"), snap)
+	h.update(press("l"), snap) // Services
+	h.update(press("j"), snap)
+	if h.area != areaDoctor {
+		t.Fatalf("j from a tile -> area %d, want Doctor", h.area)
+	}
+	h.update(press("l"), snap)
+	if h.area != areaJobs {
+		t.Fatalf("l from Doctor -> area %d, want Recent jobs", h.area)
+	}
+	if got := h.update(press("enter"), snap); got != showJobs {
+		t.Errorf("enter on Recent jobs -> %d, want showJobs", got)
+	}
+	h.update(press("up"), snap)
+	if h.area != areaTiles || h.sel != 2 {
+		t.Errorf("k from Recent jobs -> area %d, tile %d; want the Services tile", h.area, h.sel)
+	}
+	h.update(press("down"), snap)
+	h.update(press("right"), snap)
+	h.update(press("h"), snap)
+	if h.area != areaDoctor {
+		t.Errorf("h from Recent jobs -> area %d, want Doctor", h.area)
+	}
+	if got := h.update(press("h"), snap); got != leaveHome {
+		t.Errorf("h from Doctor -> %d, want leaveHome", got)
+	}
 	h.update(press("k"), snap)
-	if tab := h.update(press("enter"), snap); tab != -1 {
-		t.Errorf("enter on doctor tile -> %d, want -1", tab)
+	if h.area != areaTiles || h.sel != 2 {
+		t.Errorf("k from Doctor -> area %d, tile %d; want the Services tile", h.area, h.sel)
+	}
+}
+
+func TestHomeDoctorScrollsBeforeGoingUp(t *testing.T) {
+	h := loadedHome()
+	snap := fixtureSnapshot(t)
+	h.update(press("j"), snap)
+	h.view(snap, nil, testNow, 140, 12) // a short pane: doctor's warnings don't fit
+	h.update(press("j"), snap)
+	if h.doc.off != 1 || h.area != areaDoctor {
+		t.Fatalf("j in Doctor should scroll it: off %d, area %d", h.doc.off, h.area)
+	}
+	h.update(press("k"), snap)
+	if h.doc.off != 0 || h.area != areaDoctor {
+		t.Fatalf("k should scroll back first: off %d, area %d", h.doc.off, h.area)
+	}
+	h.update(press("k"), snap)
+	if h.area != areaTiles {
+		t.Errorf("k at the top of Doctor should go up to the tiles, area %d", h.area)
 	}
 }
 
@@ -178,7 +238,7 @@ func TestHomeShowsRecentJobs(t *testing.T) {
 			t.Errorf("at %v the view is %dx%d", size, lipgloss.Width(view), lipgloss.Height(view))
 		}
 		out := stripANSI(view)
-		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", ":jobs"} {
+		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", "enter shows them all"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("at %v missing %q:\n%s", size, want, out)
 			}

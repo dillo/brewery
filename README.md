@@ -54,7 +54,8 @@ Press `?` anywhere for the keys that work there.
 | `h` `l` | move between the sidebar, the list and the preview |
 | `1`–`4` | Home, Packages, Manage, Discover |
 | `[` `]` | previous or next entry |
-| `j` `k` on Home | move between its tiles; `enter` opens one |
+| `h` `l` on Home | along the tiles, and from Doctor to Recent jobs; `h` from the first tile or Doctor goes back to the sidebar |
+| `j` `k` on Home | down from the tiles to Doctor (then scroll it), back up to the tile; `enter` opens a tile, or the jobs list from Recent jobs |
 | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move in a list |
 | `/` | filter the list |
 | `u` | upgrade (Packages) |

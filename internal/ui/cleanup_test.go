@@ -67,7 +67,7 @@ func TestCleanupWithNothingToDo(t *testing.T) {
 
 func TestCleanupFromTheHomeTile(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "l", "j", "j", "j", "j", "enter") // into the tiles, then down to Cleanup
+	keys(t, a, "l", "l", "l", "l", "l", "enter") // into the tiles, then along to Cleanup
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("enter on the Cleanup tile should ask: %+v", a.confirm)
 	}

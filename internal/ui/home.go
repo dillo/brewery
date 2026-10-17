@@ -25,15 +25,31 @@ type tile struct {
 	tab    int // tab to open on Enter; -1 for none, openCleanup for the cleanup dialog
 }
 
-// openCleanup is the Cleanup tile's Enter: it asks to clean up rather than
-// opening a tab.
-const openCleanup = -2
+// What a key on Home asks the app to do, besides opening a tile's tab.
+const (
+	homeStay    = -1 // nothing: the key moved within Home, or did nothing
+	openCleanup = -2 // the Cleanup tile's Enter: ask to clean up rather than open a tab
+	leaveHome   = -3 // h past the left edge: back to the sidebar
+	showJobs    = -4 // Enter on Recent jobs: the full list
+)
+
+// homeArea is the part of Home that has the focus.
+type homeArea int
+
+const (
+	areaTiles homeArea = iota
+	areaDoctor
+	areaJobs
+)
 
 // homeTab shows health tiles and doctor's warnings.
 type homeTab struct {
 	st        theme.Styles
-	sel       int
-	doctorErr error // last doctor failure; nil once a run succeeds
+	sel       int      // the tile with the focus, and the one k goes back up to
+	area      homeArea // the tiles, or one of the panes under them
+	doc       scroller // the Doctor pane, which j scrolls once it has the focus
+	docPage   int      // half the Doctor pane's height, for ctrl+d and ctrl+u
+	doctorErr error    // last doctor failure; nil once a run succeeds
 	errs      map[query]error
 	loaded    map[query]bool
 	idle      bool // the sidebar has the focus: no pane here looks focused
@@ -125,17 +141,65 @@ func (h *homeTab) markUnknown(t *tile, q query) {
 	}
 }
 
-func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) (openTab int) {
-	n := len(h.tiles(snap))
-	switch msg.String() {
-	case "j", "down":
-		h.sel = min(h.sel+1, n-1)
-	case "k", "up":
-		h.sel = max(h.sel-1, 0)
-	case "enter":
-		return h.tiles(snap)[h.sel].tab
+// enter puts the focus on the first tile, as l from the sidebar does.
+func (h *homeTab) enter() {
+	h.sel, h.area = 0, areaTiles
+}
+
+// update moves the focus around Home: h and l along the tiles and across
+// the panes under them, j down from the tiles to Doctor, k back up to the
+// tile you came from. It returns a tile's tab to open, or one of homeStay,
+// openCleanup, leaveHome and showJobs.
+func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
+	k := msg.String()
+	switch h.area {
+	case areaTiles:
+		return h.tileKey(k, snap)
+	case areaDoctor:
+		switch k {
+		case "l", "right":
+			h.area = areaJobs
+		case "h", "left":
+			return leaveHome
+		case "k", "up":
+			if h.doc.off == 0 {
+				h.area = areaTiles // at the top of the pane: up to the tiles
+			} else {
+				h.doc.scroll(k, h.docPage)
+			}
+		default:
+			h.doc.scroll(k, h.docPage)
+		}
+	case areaJobs:
+		switch k {
+		case "h", "left":
+			h.area = areaDoctor
+		case "k", "up":
+			h.area = areaTiles
+		case "enter":
+			return showJobs
+		}
 	}
-	return -1
+	return homeStay
+}
+
+// tileKey handles a key while a tile has the focus.
+func (h *homeTab) tileKey(k string, snap state.Snapshot) int {
+	tiles := h.tiles(snap)
+	switch k {
+	case "l", "right":
+		h.sel = min(h.sel+1, len(tiles)-1)
+	case "h", "left":
+		if h.sel == 0 {
+			return leaveHome
+		}
+		h.sel--
+	case "j", "down":
+		h.area = areaDoctor
+	case "enter":
+		return tiles[h.sel].tab
+	}
+	return homeStay
 }
 
 // view renders the tiles over doctor's findings and the recent jobs
@@ -153,7 +217,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 		}
 		iw, _ := paneInner(tw, tileH)
 		body := t.style.Bold(true).Render(t.value) + "\n" + st.Muted.Render(ansi.Truncate(t.detail, iw, "…"))
-		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel && !h.idle)
+		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel && h.area == areaTiles && !h.idle)
 	}
 	row := lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 
@@ -176,8 +240,10 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 	}
 	lowH := max(height-tileH, 3)
 	doctorW := w * 3 / 5
-	doctor := pane(st, "Doctor", b.String(), doctorW, lowH, false)
-	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, false)
+	_, docH := paneInner(doctorW, lowH)
+	h.docPage = max(docH/2, 1)
+	doctor := pane(st, "Doctor", h.doc.window(b.String(), docH), doctorW, lowH, h.area == areaDoctor && !h.idle)
+	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, h.area == areaJobs && !h.idle)
 	return lipgloss.JoinVertical(lipgloss.Left, row, lipgloss.JoinHorizontal(lipgloss.Top, doctor, jobsPane))
 }
 
@@ -186,7 +252,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 func (h *homeTab) recentJobs(recent []jobs.Record, now time.Time, w, height int) string {
 	st := h.st
 	iw, ih := paneInner(w, height)
-	hint := st.Muted.Render(":jobs shows them all")
+	hint := st.Muted.Render("enter shows them all")
 	if len(recent) == 0 {
 		return st.Muted.Render("no jobs yet") + "\n" + hint
 	}

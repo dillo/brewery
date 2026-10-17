@@ -365,7 +365,7 @@ func (a *App) actionHints() string {
 		}
 		return "a install · / search · l details · r refetch"
 	}
-	return "j/k tiles · h sidebar · r refresh · U update · c clean up"
+	return "h/l move · j/k down, up · enter open · r refresh · U update · c clean up"
 }
 
 // pinnedBehind lists the pinned, outdated dependencies of the installed
