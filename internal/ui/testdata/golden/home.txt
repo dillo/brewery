@@ -1,40 +1,40 @@
- 1 Home   2 Installed   3 Outdated  ↑2    4 Services  ✗1    5 Taps   6 Discover                                         
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-╭──────────────────────╮╭──────────────────────╮╭──────────────────────╮╭──────────────────────╮╭──────────────────────╮
-│ Installed            ││ Outdated             ││ Services             ││ Doctor               ││ Cleanup              │
-│ 7                    ││ 2                    ││ 1 error              ││ 2 warnings           ││ 86.7MB               │
-│ 5 formulae · 2 casks ││ lua-language-server… ││ postgresql@16        ││ see below            ││ c to reclaim         │
-╰──────────────────────╯╰──────────────────────╯╰──────────────────────╯╰──────────────────────╯╰──────────────────────╯
-╭──────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────╮
-│ Doctor                                                               ││ Recent jobs                                  │
-│ ⚠ The following taps are not trusted:                                ││ no jobs yet                                  │
-│   oven-sh/bun                                                        ││ :jobs shows them all                         │
-│                                                                      ││                                              │
-│   Untap them with:                                                   ││                                              │
-│     brew untap oven-sh/bun                                           ││                                              │
-│                                                                      ││                                              │
-│ ⚠ Some installed casks are deprecated or disabled.                   ││                                              │
-│   fontbase                                                           ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-│                                                                      ││                                              │
-╰──────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────╯
- NORMAL  Home                                1-6 tabs · r refresh · U update · c clean up · : command · ? help · q quit 
+╭────────────────────╮╭─────────────────╮╭─────────────────╮╭─────────────────╮╭─────────────────╮╭────────────────────╮
+│ brewery            ││ Installed       ││ Outdated        ││ Services        ││ Doctor          ││ Cleanup            │
+│  Home              ││ 7               ││ 2               ││ 1 error         ││ 2 warnings      ││ 86.7MB             │
+│                    ││ 5 formulae · 2… ││ lua-language-s… ││ postgresql@16   ││ see below       ││ c to reclaim       │
+│ PACKAGES           │╰─────────────────╯╰─────────────────╯╰─────────────────╯╰─────────────────╯╰────────────────────╯
+│  All            7  │╭────────────────────────────────────────────────────────╮╭──────────────────────────────────────╮
+│  Top-level      5  ││ Doctor                                                 ││ Recent jobs                          │
+│  Formulae       5  ││ ⚠ The following taps are not trusted:                  ││ no jobs yet                          │
+│  Casks          2  ││   oven-sh/bun                                          ││ :jobs shows them all                 │
+│  Dependencies   2  ││                                                        ││                                      │
+│  Outdated     ↑2   ││   Untap them with:                                     ││                                      │
+│  Pinned         1  ││     brew untap oven-sh/bun                             ││                                      │
+│                    ││                                                        ││                                      │
+│ MANAGE             ││ ⚠ Some installed casks are deprecated or disabled.     ││                                      │
+│  Services     ✗1   ││   fontbase                                             ││                                      │
+│  Taps           2  ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│ DISCOVER           ││                                                        ││                                      │
+│  Popular tools     ││                                                        ││                                      │
+│  Popular apps      ││                                                        ││                                      │
+│  Rising            ││                                                        ││                                      │
+│  New               ││                                                        ││                                      │
+│  Fonts             ││                                                        ││                                      │
+│  Search all        ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+│                    ││                                                        ││                                      │
+╰────────────────────╯╰────────────────────────────────────────────────────────╯╰──────────────────────────────────────╯
+ NORMAL  Home                   j/k tiles · h sidebar · r refresh · U update · c clean up · : command · ? help · q quit 

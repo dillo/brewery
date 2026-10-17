@@ -236,8 +236,8 @@ func TestJobPTYSizeMatchesDrawer(t *testing.T) {
 		t.Errorf("pty is %dx%d, want the drawer's inner 116x12", p.cols, p.rows)
 	}
 	a.Update(tea.WindowSizeMsg{Width: 100, Height: 30})
-	if p.cols != 96 || p.rows != 9 {
-		t.Errorf("after resize pty is %dx%d, want 96x9", p.cols, p.rows)
+	if p.cols != 96 || p.rows != 10 {
+		t.Errorf("after resize pty is %dx%d, want 96x10", p.cols, p.rows)
 	}
 	p.exit()
 	resume(t, a, waiting)

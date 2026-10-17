@@ -11,7 +11,8 @@ import (
 func TestMarkAndUpgradeSeveral(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "space")           // docker-desktop; the cursor moves on to fd
+	show(t, a, "Top-level")
+	keys(t, a, "space")                // docker-desktop; the cursor moves on to fd
 	keys(t, a, "j", "j", "j", "space") // lua-language-server
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "● docker-desktop") || !strings.Contains(out, "● lua-language") {
@@ -33,7 +34,8 @@ func TestMarkAndUpgradeSeveral(t *testing.T) {
 func TestMarkedUpgradeSkipsWhatBrewWould(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "space", "u") // fd is up to date
+	show(t, a, "Top-level")
+	keys(t, a, "j", "space", "u") // fd is up to date
 	if len(fs.calls) != 0 || !strings.Contains(stripANSI(a.statusBar()), "nothing marked needs upgrading") {
 		t.Errorf("ran %v, bar %q", fs.calls, stripANSI(a.statusBar()))
 	}
@@ -42,8 +44,9 @@ func TestMarkedUpgradeSkipsWhatBrewWould(t *testing.T) {
 func TestMarkOnOutdated(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "3", "space", "space") // lua-language-server, docker-desktop
-	a.sync()                          // a refresh keeps the marks
+	show(t, a, "Outdated")
+	keys(t, a, "space", "space") // lua-language-server, docker-desktop
+	a.sync()                     // a refresh keeps the marks
 	if a.marks() != 2 {
 		t.Fatalf("marks after refresh: %d", a.marks())
 	}
@@ -57,8 +60,9 @@ func TestMarkOnOutdated(t *testing.T) {
 func TestUninstallSeveralWithTheirOrphans(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "j", "j", "j", "space") // all: git
-	keys(t, a, "j", "j", "space")                // pcre2, which only git needs
+	show(t, a, "All")
+	keys(t, a, "j", "j", "j", "space") // git
+	keys(t, a, "j", "j", "space")      // pcre2, which only git needs
 	keys(t, a, "x")
 	if a.confirm == nil || a.confirm.title != "Uninstall 2 packages?" {
 		t.Fatalf("x should ask: %+v", a.confirm)
@@ -78,7 +82,8 @@ func TestUninstallSeveralWithTheirOrphans(t *testing.T) {
 func TestUninstallSeveralRefusesWhatOthersNeed(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "f", "j", "j", "j", "j", "space", "x") // all: json-c, which git and pcre2 need
+	show(t, a, "All")
+	keys(t, a, "j", "j", "j", "j", "space", "x") // json-c, which git and pcre2 need
 	if a.confirm == nil || a.confirm.title != "Can't uninstall these" {
 		t.Fatalf("want an explanation, got %+v", a.confirm)
 	}
@@ -93,7 +98,8 @@ func TestUninstallSeveralRefusesWhatOthersNeed(t *testing.T) {
 
 func TestStatusBarCountsMarksTheFilterHides(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "space") // docker-desktop
+	show(t, a, "Top-level")
+	keys(t, a, "space") // docker-desktop
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked") || strings.Contains(bar, "hidden") {
 		t.Errorf("a shown mark: bar %q", bar)
 	}
@@ -111,13 +117,16 @@ func TestStatusBarCountsMarksTheFilterHides(t *testing.T) {
 
 func TestStatusBarCountsMarksTheViewHides(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "f") // all
+	show(t, a, "All")
 	keys(t, a, "j", "j", "j", "space")
 	if a.marks() != 1 || strings.Contains(stripANSI(a.statusBar()), "hidden") {
 		t.Fatalf("one shown mark: bar %q", stripANSI(a.statusBar()))
 	}
-	for i := 0; i < 6 && !strings.Contains(stripANSI(a.statusBar()), "hidden"); i++ {
-		keys(t, a, "f")
+	for _, l := range []string{"Top-level", "Formulae", "Casks", "Dependencies", "Pinned"} {
+		show(t, a, l)
+		if strings.Contains(stripANSI(a.statusBar()), "hidden") {
+			break
+		}
 	}
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked · 1 hidden") {
 		t.Errorf("some view should hide the mark: bar %q", bar)
@@ -126,7 +135,8 @@ func TestStatusBarCountsMarksTheViewHides(t *testing.T) {
 
 func TestStatusBarCountsOutdatedMarksTheFilterHides(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "3", "space") // lua-language-server
+	show(t, a, "Outdated")
+	keys(t, a, "space") // lua-language-server
 	keys(t, a, "/")
 	typeText(t, a, "dock")
 	keys(t, a, "enter")
@@ -141,7 +151,8 @@ func TestStatusBarCountsOutdatedMarksTheFilterHides(t *testing.T) {
 
 func TestMarksOnVanishedRowsAreDropped(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "space") // docker-desktop
+	show(t, a, "Top-level")
+	keys(t, a, "space") // docker-desktop
 	if a.marks() != 1 {
 		t.Fatalf("marks: %d", a.marks())
 	}
@@ -160,7 +171,8 @@ func TestMarksOnVanishedRowsAreDropped(t *testing.T) {
 
 func TestUninstallSeveralListsHiddenMarks(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "j", "space") // fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "space") // fd
 	keys(t, a, "/")
 	typeText(t, a, "git")
 	keys(t, a, "enter", "space", "x") // git; fd is now hidden by the filter

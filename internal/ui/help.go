@@ -20,23 +20,25 @@ func (a *App) helpGroups() []helpGroup {
 	switch {
 	case a.jobsOpen:
 		here = helpGroup{"Jobs", [][2]string{{"enter", "replay the job's output"}, {"esc q", "close"}}}
+	case a.sideFocus:
+		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"l enter", "go to the list"}}}
 	case a.tab == tabHome:
-		here = helpGroup{"Home", [][2]string{{"h l", "move between tiles"}, {"enter", "open the tile's tab (Cleanup: clean up)"}}}
+		here = helpGroup{"Home", [][2]string{{"j k", "move between tiles"}, {"enter", "open the tile's entry (Cleanup: clean up)"}}}
 	case a.tab == tabInstalled:
 		here = helpGroup{"Installed", [][2]string{
 			{"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"}, {"space", "mark for u/x on several"},
-			{"f F", "next or previous view"}, {"tab enter", "preview, then j/k scroll"},
+			{"l tab enter", "details, then j/k scroll"},
 		}}
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{{"u", "upgrade"}, {"A", "upgrade all"}, {"space", "mark for u on several"}}}
 	case a.tab == tabServices:
-		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l", "follow the log full screen"}}}
+		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"L", "follow the log full screen"}}}
 	case a.tab == tabTaps:
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	case a.tab == tabDiscover:
 		here = helpGroup{"Discover", [][2]string{
-			{"a", "install"}, {"f F", "next or previous view"}, {"/", "search names and descriptions"},
-			{"tab enter", "preview, then j/k scroll"}, {"r", "fetch the analytics again"},
+			{"a", "install"}, {"/", "search names and descriptions"},
+			{"l tab enter", "details, then j/k scroll"}, {"r", "fetch the analytics again"},
 		}}
 	}
 	groups := []helpGroup{here}
@@ -46,14 +48,15 @@ func (a *App) helpGroups() []helpGroup {
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
 		}})
-	case a.tab != tabHome:
+	case a.tab != tabHome && !a.sideFocus:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by name"}, {"/ esc", "clear the filter"}, {"y", "copy the name"}, {"gx", "open the homepage"},
 		}})
 	}
 	return append(groups, helpGroup{"Everywhere", [][2]string{
-		{"1-6 [ ]", "switch tabs"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
+		{"h l", "sidebar, list, details"}, {"1-4", "Home, Packages, Manage, Discover"},
+		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
 		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
 		{"ctrl+c", "stop the running job"}, {"q", "quit"},
 	}})

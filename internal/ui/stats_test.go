@@ -101,7 +101,7 @@ func discoverCells(a *App) []string {
 
 func TestDiscoverPopular(t *testing.T) {
 	a, st := newStatsApp(t)
-	keys(t, a, "6")
+	show(t, a, "Popular tools")
 	if !slices.Equal(st.fetched, analytics.Lists) {
 		t.Errorf("fetched %v, want every list in order", st.fetched)
 	}
@@ -119,7 +119,7 @@ func TestDiscoverPopular(t *testing.T) {
 		t.Errorf("Popular tools:\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 	out := stripANSI(a.render())
-	for _, s := range []string{"Popular tools 6", "Popular apps 4", "Rising 4", "New 2", "Fonts 2", "All 17", "The most-installed tools of the last 30 days."} {
+	for _, s := range []string{"Popular tools", "The most-installed tools of the last 30 days."} {
 		if !strings.Contains(out, s) {
 			t.Errorf("missing %q in\n%s", s, out)
 		}
@@ -128,7 +128,7 @@ func TestDiscoverPopular(t *testing.T) {
 		t.Errorf("today's analytics need no date:\n%s", out)
 	}
 
-	keys(t, a, "f") // apps, without fonts
+	show(t, a, "Popular apps") // without fonts
 	want = []string{
 		"1|codex|OpenAI's coding agent that runs in your terminal|135k",
 		"2|✓ docker-desktop|App to build and share containerised applications and microservices|32k",
@@ -142,7 +142,7 @@ func TestDiscoverPopular(t *testing.T) {
 
 func TestDiscoverRising(t *testing.T) {
 	a, _ := newStatsApp(t)
-	keys(t, a, "6", "f", "f")
+	show(t, a, "Rising")
 	want := []string{
 		"1|python@3.15|formula|new|Interpreted, interactive, object-oriented programming language",
 		"2|wget|formula|×4.0|Internet file retriever",
@@ -160,7 +160,7 @@ func TestDiscoverFonts(t *testing.T) {
 	apps := st.fresh[analytics.Apps30]
 	apps.Items = slices.DeleteFunc(slices.Clone(apps.Items), func(it analytics.Item) bool { return it.Name == "font-fira-code" })
 	st.fresh[analytics.Apps30] = apps
-	keys(t, a, "6", "f", "f", "f", "f")
+	show(t, a, "Fonts")
 	want := []string{"1|font-jetbrains-mono|JetBrains Mono|2.8k", "|font-fira-code|Fira Code|"}
 	if got := discoverCells(a); !slices.Equal(got, want) {
 		t.Errorf("Fonts:\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
@@ -172,7 +172,7 @@ func TestDiscoverUsesTheCacheOffline(t *testing.T) {
 	st.cached[analytics.Tools30] = st.fresh[analytics.Tools30]
 	st.cachedAt = testNow.Add(-24 * time.Hour)
 	st.err = errors.New("dial tcp: no route to host")
-	keys(t, a, "6")
+	show(t, a, "Popular tools")
 	if len(st.fetched) != 1 {
 		t.Errorf("fetched %v: a failure stops the rest", st.fetched)
 	}
@@ -180,18 +180,19 @@ func TestDiscoverUsesTheCacheOffline(t *testing.T) {
 	if !strings.Contains(out, "gh") || !strings.Contains(out, "analytics from Oct 12") {
 		t.Errorf("want yesterday's copy, dated:\n%s", out)
 	}
-	keys(t, a, "f") // nothing kept for apps
+	show(t, a, "Popular apps") // nothing kept for apps
 	if out := stripANSI(a.render()); !strings.Contains(out, "couldn't reach formulae.brew.sh · r retries") {
 		t.Errorf("the failure isn't explained:\n%s", out)
 	}
 	// New and All don't need the network.
-	keys(t, a, "f", "f")
+	show(t, a, "New")
 	if got := discoverRows(a); len(got) != 2 {
 		t.Errorf("New shows %v", got)
 	}
 
 	st.err = nil
-	keys(t, a, "F", "F", "r")
+	show(t, a, "Popular apps")
+	keys(t, a, "r")
 	if out := stripANSI(a.render()); !strings.Contains(out, "codex") || strings.Contains(out, "analytics from") {
 		t.Errorf("after r, want today's apps:\n%s", out)
 	}
@@ -203,7 +204,8 @@ func TestDiscoverFetchesOnceADay(t *testing.T) {
 		st.cached[l] = st.fresh[l]
 	}
 	st.cachedAt = testNow.Add(-time.Hour) // already today
-	keys(t, a, "6", "1", "6")
+	show(t, a, "Popular tools")
+	keys(t, a, "1", "4")
 	if len(st.fetched) != 0 {
 		t.Errorf("fetched %v, though the copies are from today", st.fetched)
 	}
@@ -214,7 +216,8 @@ func TestDiscoverFetchesOnceADay(t *testing.T) {
 
 	a, st = newStatsApp(t)
 	st.err = errors.New("offline")
-	keys(t, a, "6", "1", "6")
+	show(t, a, "Popular tools")
+	keys(t, a, "1", "4")
 	if len(st.fetched) != 1 {
 		t.Errorf("fetched %v: a failed fetch isn't retried by opening Discover again the same day", st.fetched)
 	}
@@ -225,7 +228,7 @@ func TestDiscoverFetchesOnceADay(t *testing.T) {
 	// The next start the same day remembers the failed try.
 	a, st2 := newStatsApp(t)
 	st2.tried, st2.err = st.tried, st.err
-	keys(t, a, "6")
+	show(t, a, "Popular tools")
 	if len(st2.fetched) != 0 {
 		t.Errorf("fetched %v after a restart, though a fetch failed earlier today", st2.fetched)
 	}
@@ -237,7 +240,7 @@ func TestDiscoverFetchesOnceADay(t *testing.T) {
 	// A try on an earlier day doesn't count.
 	a, st3 := newStatsApp(t)
 	st3.tried = "2026-10-12"
-	keys(t, a, "6")
+	show(t, a, "Popular tools")
 	if len(st3.fetched) != 5 {
 		t.Errorf("fetched %v, want every list", st3.fetched)
 	}
@@ -254,7 +257,7 @@ func TestDiscoverSaysWhyTheFetchFailed(t *testing.T) {
 	} {
 		a, st := newStatsApp(t)
 		st.err = c.err
-		keys(t, a, "6")
+		show(t, a, "Popular tools")
 		if out := stripANSI(a.render()); !strings.Contains(out, c.want) {
 			t.Errorf("%v: want %q in\n%s", c.err, c.want, out)
 		}
@@ -263,7 +266,7 @@ func TestDiscoverSaysWhyTheFetchFailed(t *testing.T) {
 
 func TestDiscoverWhileFetching(t *testing.T) {
 	a, _ := newStatsApp(t)
-	a.Update(press("6")) // nothing comes back yet
+	a.selectEntry(entryIndex("Popular tools")) // nothing comes back yet
 	if a.fetchStats(true) == nil {
 		t.Fatal("the first fetch didn't start")
 	}

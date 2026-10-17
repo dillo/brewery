@@ -108,13 +108,13 @@ func TestHomeNavigation(t *testing.T) {
 	if tab := h.update(press("enter"), snap); tab != tabInstalled {
 		t.Errorf("enter on first tile -> %d", tab)
 	}
-	h.update(press("l"), snap)
-	h.update(press("l"), snap)
+	h.update(press("j"), snap)
+	h.update(press("j"), snap)
 	if tab := h.update(press("enter"), snap); tab != tabServices {
 		t.Errorf("enter on third tile -> %d", tab)
 	}
 	for range 5 {
-		h.update(press("l"), snap)
+		h.update(press("j"), snap)
 	}
 	if h.sel != 4 {
 		t.Errorf("selection should stop at the last tile, got %d", h.sel)
@@ -122,7 +122,7 @@ func TestHomeNavigation(t *testing.T) {
 	if tab := h.update(press("enter"), snap); tab != openCleanup {
 		t.Errorf("enter on cleanup tile -> %d, want openCleanup", tab)
 	}
-	h.update(press("h"), snap)
+	h.update(press("k"), snap)
 	if tab := h.update(press("enter"), snap); tab != -1 {
 		t.Errorf("enter on doctor tile -> %d, want -1", tab)
 	}

@@ -17,7 +17,8 @@ import (
 func TestCleanupOffersBoth(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "c") // c works on any tab
+	show(t, a, "Top-level")
+	keys(t, a, "c") // c works on any tab
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("c should ask: %+v", a.confirm)
 	}
@@ -66,7 +67,7 @@ func TestCleanupWithNothingToDo(t *testing.T) {
 
 func TestCleanupFromTheHomeTile(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "l", "l", "l", "l", "enter")
+	keys(t, a, "l", "j", "j", "j", "j", "enter") // into the tiles, then down to Cleanup
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("enter on the Cleanup tile should ask: %+v", a.confirm)
 	}

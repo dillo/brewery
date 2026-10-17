@@ -21,6 +21,7 @@ type listTab struct {
 	loaded bool                   // a result has arrived, so an empty table means "nothing"
 	n      int                    // rows shown
 	key    func(table.Row) string // identifies a row across refreshes
+	idle   bool                   // the sidebar has the focus: no pane here looks focused
 	table  table.Model
 	w, h   int
 
@@ -152,13 +153,13 @@ func (t *listTab) view(err error) string {
 	iw, ih := paneInner(sp.listW, sp.listH)
 	switch {
 	case err != nil && t.n == 0:
-		return pane(t.st, t.name, errorBody(t.st, err), w, h, true)
+		return pane(t.st, t.name, errorBody(t.st, err), w, h, !t.idle)
 	case t.n == 0 && !t.loaded:
-		return pane(t.st, t.name, t.st.Muted.Render("loading…")+"\n"+skeleton(t.st, iw, ih-1), w, h, true)
+		return pane(t.st, t.name, t.st.Muted.Render("loading…")+"\n"+skeleton(t.st, iw, ih-1), w, h, !t.idle)
 	case t.n == 0 && len(t.all) > 0:
-		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, true)
+		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, !t.idle)
 	case t.n == 0:
-		return pane(t.st, t.title(), t.st.OK.Render(t.empty), w, h, true) // "up to date" says as of when
+		return pane(t.st, t.title(), t.st.OK.Render(t.empty), w, h, !t.idle) // "up to date" says as of when
 	}
 	body := ""
 	if err != nil {
@@ -166,12 +167,12 @@ func (t *listTab) view(err error) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(ih)
-	list := pane(t.st, t.title(), body+t.table.View(), sp.listW, sp.listH, true)
+	list := pane(t.st, t.title(), body+t.table.View(), sp.listW, sp.listH, !t.idle)
 	if sp.pvW == 0 {
 		return list
 	}
 	title, preview := t.preview(sp.pvW, sp.pvH)
-	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, sp.listW == 0))
+	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, sp.listW == 0 && !t.idle))
 }
 
 // kindCell is a package's TYPE cell: "formula" or "cask", after its icon.

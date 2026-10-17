@@ -30,12 +30,13 @@ func newLinksApp(t *testing.T) (*App, *fakeLinks) {
 
 func TestGGGoesToTheTop(t *testing.T) {
 	a, _ := newLinksApp(t)
-	keys(t, a, "2", "j", "j", "g", "g")
+	show(t, a, "Top-level")
+	keys(t, a, "j", "j", "g", "g")
 	if p, _ := a.installed.selected(); p.Name != "docker-desktop" {
 		t.Errorf("gg should select the first row, got %s", p.Name)
 	}
 	keys(t, a, "g", "3")
-	if a.tab != tabOutdated {
+	if a.tab != tabServices {
 		t.Error("after g, any other key does what it always does")
 	}
 }
@@ -51,7 +52,8 @@ func TestGXOpensOnlyWebPages(t *testing.T) {
 			}
 		}
 		a.sync()
-		keys(t, a, "2", "j", "g", "x") // fd
+		show(t, a, "Top-level")
+		keys(t, a, "j", "g", "x") // fd
 		if len(l.opened) != 0 || !strings.Contains(stripANSI(a.statusBar()), "no web page for fd") {
 			t.Errorf("%q: opened %q, bar %q", page, l.opened, stripANSI(a.statusBar()))
 		}
@@ -63,7 +65,8 @@ func TestGXOpensOnlyWebPages(t *testing.T) {
 		}
 	}
 	a.sync()
-	keys(t, a, "2", "j", "g", "x")
+	show(t, a, "Top-level")
+	keys(t, a, "j", "g", "x")
 	if !reflect.DeepEqual(l.opened, []string{"http://example.com"}) {
 		t.Errorf("plain http opens too: %q", l.opened)
 	}
@@ -71,11 +74,14 @@ func TestGXOpensOnlyWebPages(t *testing.T) {
 
 func TestGXOpensTheHomepage(t *testing.T) {
 	a, l := newLinksApp(t)
-	keys(t, a, "2", "j", "g", "x") // fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "g", "x") // fd
 	fd, _ := a.installed.selected()
-	keys(t, a, "3", "g", "x") // lua-language-server, from its installed package
+	show(t, a, "Outdated")
+	keys(t, a, "g", "x") // lua-language-server, from its installed package
 	lua, _ := a.packageNamed("lua-language-server", fd.Kind)
-	keys(t, a, "5", "g", "x") // anomalyco/tap: its remote, without .git
+	show(t, a, "Taps")
+	keys(t, a, "g", "x") // anomalyco/tap: its remote, without .git
 	want := []string{fd.Homepage, lua.Homepage, "https://github.com/anomalyco/homebrew-tap"}
 	if !reflect.DeepEqual(l.opened, want) {
 		t.Errorf("opened %q, want %q", l.opened, want)
@@ -91,7 +97,8 @@ func TestGXOpensTheHomepage(t *testing.T) {
 
 func TestYCopiesTheName(t *testing.T) {
 	a, l := newLinksApp(t)
-	keys(t, a, "4", "y")
+	show(t, a, "Services")
+	keys(t, a, "y")
 	if !reflect.DeepEqual(l.copied, []string{"postgresql@16"}) || !strings.Contains(stripANSI(a.statusBar()), "copied postgresql@16") {
 		t.Errorf("copied %q, bar %q", l.copied, stripANSI(a.statusBar()))
 	}
@@ -107,7 +114,8 @@ func TestYCopiesTheName(t *testing.T) {
 func TestLinkErrorsShow(t *testing.T) {
 	a, l := newLinksApp(t)
 	l.err = errors.New("no browser")
-	keys(t, a, "2", "g", "x")
+	show(t, a, "Top-level")
+	keys(t, a, "g", "x")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "couldn't open the page: no browser") {
 		t.Errorf("status bar %q", bar)
 	}
@@ -123,7 +131,8 @@ func TestBrewsQuestionForgetsAPendingG(t *testing.T) {
 	l := &fakeLinks{}
 	a.UseOpener(l.open)
 	waiting := settle(t, a, a.run(action{title: "upgrade", args: []string{"upgrade"}}))
-	keys(t, a, "2", "g") // half of a gx…
+	show(t, a, "Top-level")
+	keys(t, a, "g") // half of a gx…
 	p.out <- []byte("Password:")
 	waiting = resume(t, a, waiting) // …when brew asks
 	if a.mode != modeInsert {
@@ -139,7 +148,8 @@ func TestBrewsQuestionForgetsAPendingG(t *testing.T) {
 
 func TestGGOnOutdated(t *testing.T) {
 	a, _ := newLinksApp(t)
-	keys(t, a, "3", "j", "g", "g", "u")
+	show(t, a, "Outdated")
+	keys(t, a, "j", "g", "g", "u")
 	if a.outdated.cursor() != 0 {
 		t.Errorf("gg goes to the top of Outdated: cursor %d", a.outdated.cursor())
 	}

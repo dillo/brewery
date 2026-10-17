@@ -1,40 +1,40 @@
- 1 Home   2 Installed   3 Outdated  ↑2    4 Services  ✗1    5 Taps   6 Discover                                         
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-╭────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
-│ Installed                                                      ││ git                                                │
-│  Top-level 5   All 7   Apps 2   Dependencies 2                 ││ git 2.51.0                                         │
-│ Things you installed that nothing else needs.    f/F to switch ││ Distributed revision control system                │
-│  NAME                  VERSION     TYPE    STATUS    SIZE      ││                                                    │
-│ ────────────────────────────────────────────────────────────── ││ type       formula                                 │
-│  docker-desktop        4.39.0,18…  cask    ↑         2.2GB     ││ tap        homebrew/core                           │
-│  fd                    10.5.0      formu…            3.0MB     ││ size       50.0MB                                  │
-│  fontbase              2.22.0      cask                        ││ installed  on request · 2026-08-29                 │
-│  git                   2.51.0      formu…  pinned    50.0MB    ││ latest     2.51.0                                  │
-│  lua-language-server   3.19.1      formu…  ↑                   ││ pinned     yes                                     │
-│                                                                ││ homepage   https://git-scm.com                     │
-│                                                                ││                                                    │
-│                                                                ││ Dependencies                                       │
-│                                                                ││ git                                                │
-│                                                                ││ └─ pcre2                                           │
-│                                                                ││    └─ json-c                                       │
-│                                                                ││                                                    │
-│                                                                ││ Used by                                            │
-│                                                                ││ nothing installed depends on this                  │
-│                                                                ││                                                    │
-│                                                                ││ Caveats                                            │
-│                                                                ││ Bash completion has been installed.                │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Installed › git         u upgrade · x uninstall · p pin · f/F view · tab preview · : command · ? help · q quit 
+╭────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ brewery            ││ Top-level                                                                                      │
+│  Home              ││ Things you installed that nothing else needs.                                                  │
+│                    ││  NAME                                       VERSION           TYPE       STATUS      SIZE      │
+│ PACKAGES           ││ ────────────────────────────────────────────────────────────────────────────────────────────── │
+│  All            7  ││  docker-desktop                             4.39.0,184744     cask       ↑           2.2GB     │
+│  Top-level      5  ││  fd                                         10.5.0            formula                3.0MB     │
+│  Formulae       5  ││  fontbase                                   2.22.0            cask                             │
+│  Casks          2  ││  git                                        2.51.0            formula    pinned      50.0MB    │
+│  Dependencies   2  ││  lua-language-server                        3.19.1            formula    ↑                     │
+│  Outdated     ↑2   ││                                                                                                │
+│  Pinned         1  ││                                                                                                │
+│                    ││                                                                                                │
+│ MANAGE             ││                                                                                                │
+│  Services     ✗1   ││                                                                                                │
+│  Taps           2  ││                                                                                                │
+│                    ││                                                                                                │
+│ DISCOVER           ││                                                                                                │
+│  Popular tools     ││                                                                                                │
+│  Popular apps      ││                                                                                                │
+│  Rising            ││                                                                                                │
+│  New               │╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+│  Fonts             │╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  Search all        ││ git                                                                                            │
+│                    ││ git 2.51.0                                                                                     │
+│                    ││ Distributed revision control system                                                            │
+│                    ││                                                                                                │
+│                    ││ type       formula                                                                             │
+│                    ││ tap        homebrew/core                                                                       │
+│                    ││ size       50.0MB                                                                              │
+│                    ││ installed  on request · 2026-08-29                                                             │
+│                    ││ latest     2.51.0                                                                              │
+│                    ││ pinned     yes                                                                                 │
+│                    ││ homepage   https://git-scm.com                                                                 │
+│                    ││                                                                                                │
+│                    ││ Dependencies                                                                                   │
+│                    ││ git                                                                                            │
+│                    ││ … 8 more                                                                                       │
+╰────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+ NORMAL  Top-level › git                      u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 

@@ -50,16 +50,20 @@ func TestScreens(t *testing.T) {
 	a.UseAnalytics(newFakeStats(t))
 	a.detailsDelay = 0
 	for _, s := range []struct {
-		name string
-		keys []string
+		name    string
+		entries []string // shown in turn: the last one is the screen
+		keys    []string
 	}{
-		{"home", []string{"1"}},
-		{"installed", []string{"2", "j", "j", "j"}}, // git, with its preview
-		{"outdated", []string{"3"}},
-		{"services", []string{"4"}},
-		{"discover-all", []string{"6", "F"}},
-		{"help", []string{"2", "?"}},
+		{"home", []string{"Home"}, nil},
+		{"installed", []string{"Top-level"}, []string{"j", "j", "j"}}, // git, with its preview
+		{"outdated", []string{"Outdated"}, nil},
+		{"services", []string{"Services"}, nil},
+		{"discover-all", []string{"Popular tools", "Search all"}, nil}, // the selection (gh) carries over from Tools
+		{"help", []string{"Top-level"}, []string{"?"}},
 	} {
+		for _, e := range s.entries {
+			show(t, a, e)
+		}
 		keys(t, a, s.keys...)
 		golden(t, s.name, stripANSI(a.render()))
 		if a.help {

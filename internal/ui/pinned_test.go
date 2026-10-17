@@ -41,14 +41,15 @@ func pinnedApp(t *testing.T) (*App, *fakeStarter) {
 	a := New(src, fs.start, snap, filepath.Join(t.TempDir(), "s.json"))
 	a.now = func() time.Time { return testNow }
 	a.tickEvery = 0
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	return a, fs
 }
 
 // selectOutdated moves Outdated's cursor to name.
 func selectOutdated(t *testing.T, a *App, name string) {
 	t.Helper()
-	keys(t, a, "3", "g", "g")
+	show(t, a, "Outdated")
+	keys(t, a, "g", "g")
 	for range len(a.snap.Outdated) {
 		if i := a.outdated.cursor(); i >= 0 && a.snap.Outdated[i].Name == name {
 			return
@@ -137,7 +138,8 @@ func TestSkippedNoteKeepsTheQueuedMessage(t *testing.T) {
 
 func TestUpgradeAllNamesWhatBrewWillRefuse(t *testing.T) {
 	a, _ := pinnedApp(t)
-	keys(t, a, "3", "A")
+	show(t, a, "Outdated")
+	keys(t, a, "A")
 	if got := confirmText(a); !strings.Contains(got, "brew will refuse git: it needs pcre2 unpinned") {
 		t.Errorf("dialog:\n%s", got)
 	}

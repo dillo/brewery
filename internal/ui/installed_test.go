@@ -30,58 +30,41 @@ func rowNames(it installedTab) string {
 
 func TestInstalledViews(t *testing.T) {
 	it := newFixtureInstalled(t)
-	want := []struct{ view, names string }{
-		{"Top-level", "docker-desktop fd fontbase git lua-language-server"},
-		{"All", "docker-desktop fd fontbase git json-c lua-language-server pcre2"},
-		{"Apps", "docker-desktop fontbase"},
-		{"Dependencies", "json-c pcre2"},
-		{"Top-level", "docker-desktop fd fontbase git lua-language-server"}, // f wraps around
-	}
-	for i, w := range want {
-		if i > 0 {
-			it.update(press("f"))
-		}
-		if views[it.filter].name != w.view {
-			t.Fatalf("step %d: view %s, want %s", i, views[it.filter].name, w.view)
-		}
+	for _, w := range []struct {
+		f     installedFilter
+		names string
+	}{
+		{filterTop, "docker-desktop fd fontbase git lua-language-server"},
+		{filterAll, "docker-desktop fd fontbase git json-c lua-language-server pcre2"},
+		{filterFormulae, "fd git json-c lua-language-server pcre2"},
+		{filterCasks, "docker-desktop fontbase"},
+		{filterDeps, "json-c pcre2"},
+		{filterPinned, "git"},
+	} {
+		it.filter = w.f
+		it.apply()
 		if got := rowNames(it); got != w.names {
-			t.Errorf("view %s: got %q, want %q", w.view, got, w.names)
+			t.Errorf("view %s: got %q, want %q", views[w.f].name, got, w.names)
 		}
-	}
-	it.update(press("F"))
-	if views[it.filter].name != "Dependencies" {
-		t.Errorf("F should step back from Top-level to Dependencies, got %s", views[it.filter].name)
+		if got, want := it.count(w.f), len(strings.Fields(w.names)); got != want {
+			t.Errorf("view %s: count %d, want %d", views[w.f].name, got, want)
+		}
 	}
 }
 
-func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
+func TestInstalledTitleNamesTheViewAndSaysWhatItShows(t *testing.T) {
 	it := newFixtureInstalled(t)
+	it.filter = filterCasks
+	it.apply()
+	it.resize(120, 30)
 	out := stripANSI(it.view(nil))
-	for _, want := range []string{"Top-level 5", "All 7", "Apps 2", "Dependencies 2",
-		"Things you installed that nothing else needs", "f/F to switch"} {
+	for _, want := range []string{"Casks", "macOS apps and fonts (casks)."} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q:\n%s", want, out)
 		}
 	}
-	it.update(press("f"))
-	it.update(press("f"))
-	if out := stripANSI(it.view(nil)); !strings.Contains(out, "macOS apps (casks)") {
-		t.Errorf("the Apps view should explain itself:\n%s", out)
-	}
-}
-
-func TestInstalledViewBarFitsNarrowPanes(t *testing.T) {
-	it := newFixtureInstalled(t)
-	it.resize(44, 24) // narrow: a 44-column list pane, the preview hidden
-	out := it.view(nil)
-	if h, w := lipgloss.Height(out), lipgloss.Width(out); h != 24 || w != 44 {
-		t.Errorf("rendered %dx%d, want 44x24", w, h)
-	}
-	plain := stripANSI(out)
-	for _, want := range []string{"Top 5", "All 7", "Apps 2", "Deps 2", "…  f/F"} {
-		if !strings.Contains(plain, want) {
-			t.Errorf("narrow bar should use short names, missing %q:\n%s", want, plain)
-		}
+	if strings.Contains(out, "f/F") {
+		t.Errorf("no view keys any more:\n%s", out)
 	}
 }
 
@@ -96,7 +79,7 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 	}
 	out := stripANSI(it.view(nil))
 	for _, want := range []string{
-		"Top-level 5", "git 2.51.0", "Distributed revision control system",
+		"Top-level", "git 2.51.0", "Distributed revision control system",
 		"on request · ", "pinned", "Dependencies", "└─ pcre2", "json-c",
 		"nothing installed depends on this", "Bash completion has been installed.",
 	} {
@@ -111,7 +94,8 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 
 func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 	it := newFixtureInstalled(t)
-	it.update(press("f")) // All: docker-desktop stays selected
+	it.filter = filterAll // docker-desktop stays selected
+	it.apply()
 	for range 4 {
 		it.update(press("j")) // [docker-desktop] fd fontbase git json-c
 	}
@@ -235,11 +219,13 @@ func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
 	for range 3 {
 		it.update(press("j")) // git
 	}
-	it.update(press("f")) // All
+	it.filter = filterAll
+	it.apply()
 	if p, _ := it.selected(); p.Name != "git" {
 		t.Errorf("switching to all should keep git selected, got %q", p.Name)
 	}
-	it.update(press("f")) // Apps: git isn't shown
+	it.filter = filterCasks // git isn't shown
+	it.apply()
 	if p, ok := it.selected(); !ok || p.Kind != brew.KindCask {
 		t.Errorf("a view that hides the selection should still select a row, got %+v", p)
 	}
@@ -247,11 +233,13 @@ func TestInstalledFilterChangeKeepsSelection(t *testing.T) {
 
 func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "tab")
+	show(t, a, "Top-level")
+	keys(t, a, "tab")
 	if !a.installed.pv.focus {
 		t.Fatal("tab should focus the preview")
 	}
-	keys(t, a, "3", "2")
+	show(t, a, "Outdated")
+	show(t, a, "Top-level")
 	if a.installed.pv.focus {
 		t.Error("coming back to Installed starts on the list")
 	}

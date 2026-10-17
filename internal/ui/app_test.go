@@ -263,7 +263,7 @@ func TestCachedSnapshotShowsBeforeRefresh(t *testing.T) {
 	cached := state.Snapshot{Packages: []brew.Package{{Name: "neovim", FullName: "neovim", Kind: brew.KindFormula, Version: "0.11.4", OnRequest: true}}}
 	a := New(newFakeSource(t), nil, cached, filepath.Join(t.TempDir(), "s.json"))
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
-	a.Update(press("2"))
+	show(t, a, "Top-level")
 	if !strings.Contains(stripANSI(a.render()), "neovim") {
 		t.Error("cached package should render before any query returns")
 	}
@@ -275,8 +275,8 @@ func TestTabKeys(t *testing.T) {
 		key  string
 		want int
 	}{
-		{"3", tabOutdated}, {"]", tabServices}, {"]", tabTaps}, {"]", tabDiscover}, {"]", tabHome}, {"[", tabDiscover},
-		{"5", tabTaps}, {"6", tabDiscover}, {"1", tabHome},
+		{"3", tabServices}, {"]", tabTaps}, {"]", tabDiscover}, {"[", tabTaps},
+		{"4", tabDiscover}, {"2", tabInstalled}, {"1", tabHome}, {"[", tabDiscover}, // wraps from Home to the last entry
 	}
 	for _, s := range steps {
 		a.Update(press(s.key))
@@ -302,14 +302,15 @@ func TestQuit(t *testing.T) {
 func TestKeysReachActiveTab(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	a.Update(press("l")) // home: select Outdated tile
+	a.Update(press("l")) // home: into the tiles
+	a.Update(press("j")) // select the Outdated tile
 	a.Update(press("enter"))
 	if a.tab != tabOutdated {
 		t.Fatalf("enter on Outdated tile went to tab %d", a.tab)
 	}
-	a.Update(press("2"))
+	show(t, a, "Top-level")
 	a.Update(press("j"))
-	if out := stripANSI(a.render()); !strings.Contains(out, "Installed › fd") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "Top-level › fd") {
 		t.Errorf("status bar should name the selected package:\n%s", out)
 	}
 }
@@ -320,7 +321,7 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	a := newTestApp(t, src)
 	drain(t, a, a.Init())
 
-	a.Update(press("4"))
+	show(t, a, "Services")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "couldn't load this view") || !strings.Contains(out, "exit status 1") {
 		t.Errorf("services tab should show the error:\n%s", out)
@@ -328,7 +329,7 @@ func TestFailedQueryShowsErrorOnlyInItsTab(t *testing.T) {
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "✗ services failed") {
 		t.Errorf("status bar should name the failed query: %q", bar)
 	}
-	a.Update(press("5"))
+	show(t, a, "Taps")
 	if out := stripANSI(a.render()); !strings.Contains(out, "anomalyco/tap") {
 		t.Error("taps tab should still work")
 	}
@@ -386,42 +387,49 @@ func TestStatusBar(t *testing.T) {
 // squash collapses runs of spaces so tests don't depend on chip padding.
 func squash(s string) string { return strings.Join(strings.Fields(s), " ") }
 
-func TestTabBarBadges(t *testing.T) {
+func TestSidebarBadges(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	lines := strings.Split(stripANSI(a.tabBar()), "\n")
-	if len(lines) != 2 {
-		t.Fatalf("tab bar should be the tabs plus a rule, got %d lines", len(lines))
-	}
-	if got := squash(lines[0]); !strings.Contains(got, "3 Outdated ↑2") || !strings.Contains(got, "4 Services ✗1") {
-		t.Errorf("tab bar badges missing: %q", got)
-	}
-	if rule := strings.TrimRight(lines[1], " "); rule != strings.Repeat("─", 140) {
-		t.Errorf("second line should be a full-width rule: %q", rule)
+	got := squash(stripANSI(a.render()))
+	if !strings.Contains(got, "Outdated ↑2") || !strings.Contains(got, "Services ✗1") {
+		t.Errorf("sidebar badges missing: %q", got)
 	}
 }
 
-func TestTabBarCountsEveryFailingService(t *testing.T) {
+func TestSidebarCountsEveryFailingService(t *testing.T) {
 	src := newFakeSource(t)
 	src.snap.Services = append(src.snap.Services, brew.Service{Name: "mysql", Status: "error"})
 	a := newTestApp(t, src)
 	drain(t, a, a.Init())
-	if got := squash(stripANSI(a.tabBar())); !strings.Contains(got, "4 Services ✗2") {
+	if got := squash(stripANSI(a.render())); !strings.Contains(got, "Services ✗2") {
 		t.Errorf("want ✗2 for two failing services: %q", got)
+	}
+}
+
+func TestNarrowWindowShowsTheSidebarOrTheTab(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.Update(tea.WindowSizeMsg{Width: 70, Height: 30})
+	keys(t, a, "j") // All, the sidebar still focused
+	if out := stripANSI(a.render()); !strings.Contains(out, "PACKAGES") || strings.Contains(out, "NAME") {
+		t.Errorf("narrow, sidebar focused: the sidebar alone\n%s", out)
+	}
+	keys(t, a, "l")
+	if out := stripANSI(a.render()); strings.Contains(out, "PACKAGES") || !strings.Contains(out, "NAME") {
+		t.Errorf("narrow, list focused: the list alone\n%s", out)
 	}
 }
 
 func TestViewFitsTerminal(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
-	for tab := range tabNames {
-		a.tab = tab
+	for i, e := range entries {
+		settle(t, a, a.selectEntry(i))
 		out := a.render()
 		if h := lipgloss.Height(out); h != 40 {
-			t.Errorf("tab %s renders %d lines, want 40", tabNames[tab], h)
+			t.Errorf("%s renders %d lines, want 40", e.label, h)
 		}
 		if w := lipgloss.Width(out); w > 140 {
-			t.Errorf("tab %s renders %d columns, want <= 140", tabNames[tab], w)
+			t.Errorf("%s renders %d columns, want <= 140", e.label, w)
 		}
 	}
 	if v := a.View(); !v.AltScreen {
@@ -433,8 +441,7 @@ func TestViewFitsTerminal(t *testing.T) {
 // the cursor to name.
 func selectInstalled(t *testing.T, a *App, name string) {
 	t.Helper()
-	a.Update(press("2"))
-	a.Update(press("f")) // all
+	show(t, a, "All")
 	a.Update(press("g"))
 	a.Update(press("g"))
 	for range len(a.installed.rows) {
@@ -458,14 +465,14 @@ func TestViewFitsSmallTerminals(t *testing.T) {
 			a.Update(tea.WindowSizeMsg{Width: size.w, Height: size.h})
 			drain(t, a, a.Init())
 			selectInstalled(t, a, "lua-language-server")
-			for tab := range tabNames {
-				a.tab = tab
+			for i, e := range entries {
+				settle(t, a, a.selectEntry(i))
 				out := a.render()
 				if h := lipgloss.Height(out); h != size.h {
-					t.Errorf("%dx%d failing=%v: tab %s renders %d lines, want %d\n%s", size.w, size.h, failing, tabNames[tab], h, size.h, stripANSI(out))
+					t.Errorf("%dx%d failing=%v: %s renders %d lines, want %d\n%s", size.w, size.h, failing, e.label, h, size.h, stripANSI(out))
 				}
 				if w := lipgloss.Width(out); w > size.w {
-					t.Errorf("%dx%d failing=%v: tab %s renders %d columns, want <= %d", size.w, size.h, failing, tabNames[tab], w, size.w)
+					t.Errorf("%dx%d failing=%v: %s renders %d columns, want <= %d", size.w, size.h, failing, e.label, w, size.w)
 				}
 			}
 		}
@@ -498,12 +505,14 @@ func TestStatusBarIsOneLine(t *testing.T) {
 	}
 }
 
-func TestTabBarFitsWidth(t *testing.T) {
+func TestSidebarFitsNarrowWidth(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
 	a.Update(tea.WindowSizeMsg{Width: 40, Height: 24})
-	if w := lipgloss.Width(a.tabBar()); w > 40 {
-		t.Errorf("tab bar is %d columns at width 40", w)
+	for i, line := range strings.Split(a.render(), "\n") {
+		if w := lipgloss.Width(line); w > 40 {
+			t.Errorf("line %d is %d columns at width 40", i, w)
+		}
 	}
 }
 
@@ -515,10 +524,10 @@ func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	drain(t, a, a.Init())
 
-	if bar := squash(stripANSI(a.tabBar())); !strings.Contains(bar, "4 Services ⚠") {
-		t.Errorf("tab bar should mark Services as stale: %q", bar)
+	if bar := squash(stripANSI(a.render())); !strings.Contains(bar, "Services ⚠") {
+		t.Errorf("the sidebar should mark Services as stale: %q", bar)
 	}
-	a.Update(press("4"))
+	show(t, a, "Services")
 	out := stripANSI(a.render())
 	for _, want := range []string{"postgresql@16", "refresh failed · r to retry", "exit status 1"} {
 		if !strings.Contains(out, want) {
@@ -528,8 +537,8 @@ func TestRefreshFailureShowsOverCachedRows(t *testing.T) {
 	if strings.Contains(out, "launchctl failed") {
 		t.Error("the banner should show only the first line of the error")
 	}
-	if bar := squash(stripANSI(a.tabBar())); !strings.Contains(bar, "4 Services ⚠") {
-		t.Errorf("the active tab should keep its ⚠ badge: %q", bar)
+	if bar := squash(stripANSI(a.render())); !strings.Contains(bar, "Services ⚠") {
+		t.Errorf("the active entry should keep its ⚠ badge: %q", bar)
 	}
 	if h := lipgloss.Height(a.render()); h != 40 {
 		t.Errorf("render is %d lines, want 40", h)
@@ -551,7 +560,7 @@ func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
 	if strings.Contains(out, "up to date") || strings.Contains(out, "registered") {
 		t.Errorf("home should not report health before any query returns:\n%s", out)
 	}
-	a.Update(press("3"))
+	show(t, a, "Outdated")
 	out = stripANSI(a.render())
 	if !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
 		t.Errorf("outdated tab before its first result:\n%s", out)

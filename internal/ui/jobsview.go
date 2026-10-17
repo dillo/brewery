@@ -43,13 +43,14 @@ func jobRows(st theme.Styles, recs []jobs.Record, now time.Time) []table.Row {
 // openJobs shows the jobs view over the current tab.
 func (a *App) openJobs() tea.Cmd {
 	a.jobsOpen = true
+	a.sideFocus = false // the jobs view's keys aren't the sidebar's
 	a.jobs.setRows(jobRows(a.st, a.history, a.now()))
 	return nil
 }
 
 // jobsKey handles a key while the jobs view is open. ok is false for keys
-// that still do what they do everywhere (tabs, :, /, ?, y, o, r, ctrl+c); tab keys
-// also close the view.
+// that still do what they do everywhere (:, /, ?, y, o, r, ctrl+c); the number
+// and bracket keys also close the view.
 func (a *App) jobsKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	switch msg.String() {
 	case "esc", "q":
@@ -57,7 +58,7 @@ func (a *App) jobsKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 		return nil, true
 	case "enter":
 		return a.showRecord(), true
-	case "1", "2", "3", "4", "5", "[", "]":
+	case "1", "2", "3", "4", "[", "]":
 		a.jobsOpen = false
 		return nil, false
 	case ":", "/", "?", "y", "o", "r", "ctrl+c":

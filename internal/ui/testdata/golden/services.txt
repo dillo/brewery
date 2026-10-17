@@ -1,40 +1,40 @@
- 1 Home   2 Installed   3 Outdated  ↑2    4 Services  ✗1    5 Taps   6 Discover                                         
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-╭────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
-│ Services · 2                                                   ││ postgresql@16                                      │
-│  NAME                                      STATUS              ││ error (exit 1)                                     │
-│ ────────────────────────────────────────────────────────────── ││ command    LC_ALL="en_US.UTF-8" /opt/homebrew/opt… │
-│  postgresql@16                             error (exit 1)      ││ user       locutus                                 │
-│  redis                                     started             ││ file       ~/Library/LaunchAgents/homebrew.mxcl.p… │
-│                                                                ││ log        /opt/homebrew/var/log/postgresql@16.log │
-│                                                                ││                                                    │
-│                                                                ││ End of the log                                     │
-│                                                                ││ nothing logged yet                                 │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Services                                    s start · S stop · R restart · l log · : command · ? help · q quit 
+╭────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ brewery            ││ Services · 2                                                                                   │
+│  Home              ││  NAME                                                                      STATUS              │
+│                    ││ ────────────────────────────────────────────────────────────────────────────────────────────── │
+│ PACKAGES           ││  postgresql@16                                                             error (exit 1)      │
+│  All            7  ││  redis                                                                     started             │
+│  Top-level      5  ││                                                                                                │
+│  Formulae       5  ││                                                                                                │
+│  Casks          2  ││                                                                                                │
+│  Dependencies   2  ││                                                                                                │
+│  Outdated     ↑2   ││                                                                                                │
+│  Pinned         1  ││                                                                                                │
+│                    ││                                                                                                │
+│ MANAGE             ││                                                                                                │
+│  Services     ✗1   ││                                                                                                │
+│  Taps           2  ││                                                                                                │
+│                    ││                                                                                                │
+│ DISCOVER           ││                                                                                                │
+│  Popular tools     ││                                                                                                │
+│  Popular apps      ││                                                                                                │
+│  Rising            ││                                                                                                │
+│  New               │╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+│  Fonts             │╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  Search all        ││ postgresql@16                                                                                  │
+│                    ││ error (exit 1)                                                                                 │
+│                    ││ command    LC_ALL="en_US.UTF-8" /opt/homebrew/opt/postgresql@16/bin/postgres -D /opt/homebrew… │
+│                    ││ user       locutus                                                                             │
+│                    ││ file       ~/Library/LaunchAgents/homebrew.mxcl.postgresql@16.plist                            │
+│                    ││ log        /opt/homebrew/var/log/postgresql@16.log                                             │
+│                    ││                                                                                                │
+│                    ││ End of the log                                                                                 │
+│                    ││ nothing logged yet                                                                             │
+│                    ││                                                                                                │
+│                    ││                                                                                                │
+│                    ││                                                                                                │
+│                    ││                                                                                                │
+│                    ││                                                                                                │
+│                    ││                                                                                                │
+╰────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+ NORMAL  Services                                    s start · S stop · R restart · L log · : command · ? help · q quit 

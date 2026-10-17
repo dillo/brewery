@@ -10,7 +10,8 @@ import (
 func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "?")
+	show(t, a, "Top-level")
+	keys(t, a, "?")
 	out := stripANSI(a.render())
 	for _, want := range []string{"Installed", "space", "mark for u/x on several", "gx", "open the homepage", "Everywhere", "any key closes this"} {
 		if !strings.Contains(out, want) {
@@ -21,7 +22,8 @@ func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 	if a.help || len(fs.calls) != 0 {
 		t.Errorf("a key closes help and does nothing else: help %v, ran %v", a.help, fs.calls)
 	}
-	keys(t, a, "4", "?")
+	show(t, a, "Services")
+	keys(t, a, "?")
 	if out := stripANSI(a.render()); !strings.Contains(out, "follow the log full screen") || strings.Contains(out, "uninstall") {
 		t.Errorf("Services help:\n%s", out)
 	}
@@ -44,7 +46,8 @@ func TestHelpHintAndSmallWindows(t *testing.T) {
 		t.Errorf("the status bar should mention ? help: %q", bar)
 	}
 	a.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
-	keys(t, a, "2", "?")
+	show(t, a, "Top-level")
+	keys(t, a, "?")
 	out := stripANSI(a.render())
 	if h := len(strings.Split(out, "\n")); h != 24 {
 		t.Errorf("help must fit the window: %d lines", h)
@@ -70,7 +73,8 @@ func TestHelpInJobsSaysWhatYCopies(t *testing.T) {
 func TestHelpClosesWithoutActing(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
-	keys(t, a, "2", "j", "?", "x") // x would ask to uninstall fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "?", "x") // x would ask to uninstall fd
 	if a.help || a.confirm != nil || len(fs.calls) != 0 {
 		t.Errorf("the key that closes help does nothing else: help %v, confirm %+v", a.help, a.confirm)
 	}
@@ -96,7 +100,8 @@ func TestHelpClosesWhenBrewAsks(t *testing.T) {
 
 func TestHelpSaysHowToClearTheFilter(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "?")
+	show(t, a, "Top-level")
+	keys(t, a, "?")
 	if out := stripANSI(a.render()); !strings.Contains(out, "/ esc") || !strings.Contains(out, "clear the filter") {
 		t.Errorf("Installed help doesn't say how to clear the filter:\n%s", out)
 	}

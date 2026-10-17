@@ -62,7 +62,7 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.askUpgradeAll(), true
 	case a.tab == tabServices && (k == "s" || k == "S" || k == "R"):
 		return a.serviceKey(k), true
-	case a.tab == tabServices && k == "l":
+	case a.tab == tabServices && k == "L":
 		return a.openLog(), true
 	case a.tab == tabTaps && k == "x":
 		return a.askUntap(), true
@@ -338,30 +338,33 @@ func (a *App) serviceKey(k string) tea.Cmd {
 	return nil
 }
 
-// actionHints are the status-bar hints for the current tab's actions.
+// actionHints are the status-bar hints for where the focus is.
 func (a *App) actionHints() string {
 	if a.jobsOpen {
 		return "enter show output · esc close"
 	}
+	if a.sideFocus {
+		return "j/k choose · l open · 1-4 sections"
+	}
 	switch a.tab {
 	case tabInstalled:
 		if a.installed.pv.focus {
-			return "j/k scroll · tab back to the list · u upgrade · x uninstall"
+			return "j/k scroll · h back to the list · u upgrade · x uninstall"
 		}
-		return "u upgrade · x uninstall · p pin · f/F view · tab preview"
+		return "u upgrade · x uninstall · p pin · l details"
 	case tabOutdated:
 		return "u upgrade · A upgrade all"
 	case tabServices:
-		return "s start · S stop · R restart · l log"
+		return "s start · S stop · R restart · L log"
 	case tabTaps:
 		return "x untap"
 	case tabDiscover:
 		if a.discover.pv.focus {
-			return "j/k scroll · tab back to the list"
+			return "j/k scroll · h back to the list"
 		}
-		return "a install · f/F view · / search · tab preview · r refetch"
+		return "a install · / search · l details · r refetch"
 	}
-	return "1-6 tabs · r refresh · U update · c clean up"
+	return "j/k tiles · h sidebar · r refresh · U update · c clean up"
 }
 
 // pinnedBehind lists the pinned, outdated dependencies of the installed

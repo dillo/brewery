@@ -121,14 +121,14 @@ const (
 	discAll
 )
 
-// discoverViews are Discover's views, in the order f steps through them.
-var discoverViews = [...]struct{ name, short, about string }{
-	discTools:  {"Popular tools", "Tools", "The most-installed tools of the last 30 days."},
-	discApps:   {"Popular apps", "Apps", "The most-installed apps of the last 30 days."},
-	discRising: {"Rising", "Rising", "Growing fastest: the last 30 days against the 60 before."},
-	discNew:    {"New", "New", "Added to Homebrew since brew last updated."},
-	discFonts:  {"Fonts", "Fonts", "Fonts, the most installed first."},
-	discAll:    {"All", "All", "Everything brew can install. / searches names and descriptions."},
+// discoverViews are Discover's views, in the sidebar's order.
+var discoverViews = [...]struct{ name, about string }{
+	discTools:  {"Popular tools", "The most-installed tools of the last 30 days."},
+	discApps:   {"Popular apps", "The most-installed apps of the last 30 days."},
+	discRising: {"Rising", "Growing fastest: the last 30 days against the 60 before."},
+	discNew:    {"New", "Added to Homebrew since brew last updated."},
+	discFonts:  {"Fonts", "Fonts, the most installed first."},
+	discAll:    {"Search all", "Everything brew can install. / searches names and descriptions."},
 }
 
 // ranked reports whether view v is ordered by the analytics.
@@ -186,6 +186,7 @@ type discoverTab struct {
 	err         error // the last read failed
 	table       table.Model
 	w, h        int
+	idle        bool // the sidebar has the focus: no pane here looks focused
 
 	pv         scroller                // the preview, which tab or enter focuses
 	details    map[string]brew.Details // what brew said about each package, by entryKey
@@ -414,19 +415,10 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	case k == "tab" || (k == "enter" && !t.pv.focus):
 		t.pv.focus = !t.pv.focus
 		return nil
-	case t.pv.focus && k != "f" && k != "F":
+	case t.pv.focus:
 		sp := splitFor(t.w, t.h, true)
 		_, ih := paneInner(sp.pvW, sp.pvH)
 		t.pv.scroll(k, ih/2)
-		return nil
-	}
-	if k == "f" || k == "F" {
-		step := discoverView(1)
-		if k == "F" {
-			step = discoverView(len(discoverViews) - 1)
-		}
-		t.showing = (t.showing + step) % discoverView(len(discoverViews))
-		t.apply()
 		return nil
 	}
 	before := t.selectedKey()
@@ -440,7 +432,7 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 func (t *discoverTab) size() {
 	sp := splitFor(t.w, t.h, false)
 	iw, ih := paneInner(sp.listW, sp.listH)
-	sizeTable(&t.table, discoverCols[t.showing], iw, max(ih-viewBarHeight, 0))
+	sizeTable(&t.table, discoverCols[t.showing], iw, max(ih-aboutHeight, 0))
 }
 
 // resize must run before key handling: the table ignores navigation
@@ -453,20 +445,20 @@ func (t *discoverTab) resize(w, h int) {
 func (t *discoverTab) view() string {
 	w, h := t.w, t.h
 	if t.err != nil && !t.loaded {
-		return pane(t.st, "Discover", errorBody(t.st, t.err), w, h, true)
+		return pane(t.st, "Discover", errorBody(t.st, t.err), w, h, !t.idle)
 	}
 	sp := splitFor(w, h, t.pv.focus)
 	if !t.loaded {
 		sp = split{listW: w, listH: h} // nothing to preview yet
 	}
 	iw, ih := paneInner(sp.listW, sp.listH)
-	body := t.viewBar(iw) + "\n"
-	ih -= viewBarHeight
+	body := about(t.st, discoverViews[t.showing].about, iw) + "\n"
+	ih -= aboutHeight
 	if t.err != nil {
 		body += refreshBanner(t.st, t.err, iw) + "\n"
 		ih -= bannerHeight
 	}
-	title := "Discover"
+	title := discoverViews[t.showing].name
 	if t.match != "" {
 		title += " · /" + t.match
 	}
@@ -486,7 +478,7 @@ func (t *discoverTab) view() string {
 		t.table.SetHeight(max(ih, 0))
 		body += t.table.View()
 	}
-	list := pane(t.st, title, body, sp.listW, sp.listH, !t.pv.focus)
+	list := pane(t.st, title, body, sp.listW, sp.listH, !t.pv.focus && !t.idle)
 	if sp.pvW == 0 {
 		return list
 	}
@@ -533,13 +525,4 @@ func rankCell(n int) string {
 		return ""
 	}
 	return strconv.Itoa(n)
-}
-
-// viewBar is the bar of Discover's views with their counts.
-func (t *discoverTab) viewBar(w int) string {
-	segs := make([]viewSeg, len(discoverViews))
-	for v, d := range discoverViews {
-		segs[v] = viewSeg{name: d.name, short: d.short, n: len(t.byView[v])}
-	}
-	return viewBar(t.st, segs, int(t.showing), discoverViews[t.showing].about, w)
 }

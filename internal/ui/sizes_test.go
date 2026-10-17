@@ -26,7 +26,8 @@ func TestHumanSize(t *testing.T) {
 
 func TestInstalledShowsSizes(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "2", "j", "j", "j") // git
+	show(t, a, "Top-level")
+	keys(t, a, "j", "j", "j") // git
 	out := stripANSI(a.render())
 	for _, want := range []string{"SIZE", "2.2GB", "50.0MB", "size       50.0MB"} {
 		if !strings.Contains(out, want) {
@@ -51,7 +52,8 @@ func TestSizesAreMeasuredAfterRefreshAndChanges(t *testing.T) {
 	if src.calls["sizes"] != 1 || len(a.snap.Sizes) != 3 {
 		t.Fatalf("a full refresh measures sizes once: %v, %v", src.calls, a.snap.Sizes)
 	}
-	keys(t, a, "2", "j", "p") // pin fd: nothing on disk changes
+	show(t, a, "Top-level")
+	keys(t, a, "j", "p") // pin fd: nothing on disk changes
 	if src.calls["sizes"] != 1 {
 		t.Errorf("pinning shouldn't measure again: %v", src.calls)
 	}
@@ -69,7 +71,8 @@ func TestSizesAreMeasuredFromTheFreshPackageList(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
 	drain(t, a, a.Init())
 	src.dropAfter, src.sized = "fd", nil // from now on brew no longer lists fd
-	keys(t, a, "2", "j", "x", "y")       // uninstall fd
+	show(t, a, "Top-level")
+	keys(t, a, "j", "x", "y") // uninstall fd
 	if len(src.sized) != 1 {
 		t.Fatalf("one measurement after the uninstall, got %v", src.sized)
 	}
