@@ -515,6 +515,10 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		if cmd, ok := a.sidebarKey(k); ok {
 			return cmd
 		}
+	} else if a.tab == tabHome && !a.jobsOpen {
+		if cmd, ok := a.homeKey(msg); ok {
+			return cmd
+		}
 	}
 	if cmd, ok := a.globalKey(k); ok {
 		return cmd
@@ -658,17 +662,31 @@ func (a *App) escape() {
 	}
 }
 
-// tabKey gives the key to the current tab: moving through its list, or
-// Home's tiles.
+// homeKey moves around Home's tiles and panes, which take the arrow keys
+// and h, j, k, l that elsewhere move between columns. ok is false for any
+// other key.
+func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
+	switch msg.String() {
+	case "h", "j", "k", "l", "left", "down", "up", "right", "enter", "ctrl+d", "ctrl+u", "G", "end", "home":
+	default:
+		return nil, false
+	}
+	switch t := a.home.update(msg, a.snap); {
+	case t >= 0:
+		return a.selectEntry(entryIndex(tileEntries[t])), true
+	case t == openCleanup:
+		return a.askCleanup(), true
+	case t == leaveHome:
+		a.sideFocus = true
+	case t == showJobs:
+		return a.openJobs(), true
+	}
+	return nil, true
+}
+
+// tabKey gives the key to the current tab's list.
 func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 	switch a.tab {
-	case tabHome:
-		switch t := a.home.update(msg, a.snap); {
-		case t >= 0:
-			return a.selectEntry(entryIndex(tileEntries[t]))
-		case t == openCleanup:
-			return a.askCleanup()
-		}
 	case tabInstalled:
 		return a.installed.update(msg)
 	case tabOutdated:

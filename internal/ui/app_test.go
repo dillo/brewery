@@ -303,7 +303,7 @@ func TestKeysReachActiveTab(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	drain(t, a, a.Init())
 	a.Update(press("l")) // home: into the tiles
-	a.Update(press("j")) // select the Outdated tile
+	a.Update(press("l")) // select the Outdated tile
 	a.Update(press("enter"))
 	if a.tab != tabOutdated {
 		t.Fatalf("enter on Outdated tile went to tab %d", a.tab)

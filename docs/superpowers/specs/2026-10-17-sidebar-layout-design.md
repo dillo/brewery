@@ -89,7 +89,7 @@ Focus is one of: sidebar, list, details.
 - brewery opens on Home with the focus in the sidebar.
 - `f` and `F` are removed.
 - Services' "follow the log" moves from `l` to `L`.
-- Home's tiles move with `j` `k` instead of `h` `l`; see Home below.
+- Home moves on a grid of its own; see Home below.
 - `esc` in the list keeps today's order: clear marks, then close the drawer.
 - Every other key keeps its meaning: `u`, `A`, `x`, `p`, `space`, `s` `S` `R`, `a`, `/`, `:`, `o`, `i`, `y`, `gx`, `r`, `U`, `c`, `ctrl+c`, `q`, `?`. Keys that act on a row act on the list's selected row from the list or the details. From the sidebar they do nothing, except the ones that act on everything (`A`, `U`, `c`, `r`, `:`, `?`, `q`, `o`, `i`, `ctrl+c`).
 
@@ -102,7 +102,8 @@ Focus is one of: sidebar, list, details.
 
 When Home is selected, today's dashboard fills the list and details columns: the tiles, doctor's warnings, and the recent jobs.
 
-- With the focus on Home's content, `j` and `k` move between the tiles.
+- Home is a grid: the five tiles, and under them the Doctor and Recent jobs panes. `l` from the sidebar always lands on the first tile (Installed). `l` and `h` move along the tiles; `h` on the first tile goes back to the sidebar. `j` from any tile goes down to Doctor, and `k` goes back up to the tile you came from. From Doctor, `l` goes to Recent jobs and `h` back to the sidebar; from Recent jobs, `h` goes back to Doctor and `k` up to the tiles. Once Doctor has the focus, `j` scrolls it, and `k` scrolls back before stepping up. Nothing wraps. The arrow keys do the same. Whatever has the focus has the purple border.
+- `enter` on Recent jobs opens the jobs list.
 - `enter` on a tile selects the matching sidebar entry and focuses the list: Installed → All, Outdated → Outdated, Services → Services. Doctor and Cleanup: see step 3. Until then they keep today's behaviour.
 
 ### Narrow terminals in step 1
@@ -175,7 +176,7 @@ A new tab with a list of three rows:
 
 ## Tests
 
-- **Step 1**: sidebar rendering (entries, counts, chips, selection, focus border); entry → tab and view; `j` `k` `[` `]` and number keys, including the section memory; `h`/`l`/`enter`/`esc` focus moves; `L` for the log; Home's tiles on `j` `k`; marks and `/` shared across Installed's entries; help text.
+- **Step 1**: sidebar rendering (entries, counts, chips, selection, focus border); entry → tab and view; `j` `k` `[` `]` and number keys, including the section memory; `h`/`l`/`enter`/`esc` focus moves; `L` for the log; Home's grid of tiles and panes; marks and `/` shared across Installed's entries; help text.
 - **Step 2**: a table test of the column rule for each width band against each focus, including Home; the golden files regenerated at 140 columns plus one narrow width.
 - **Step 3**: History's rows and details; Maintenance's rows and details in loaded, loading and failed states; the Home tiles selecting their Maintenance rows; `:jobs` selecting History.
 

@@ -197,6 +197,9 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.selectEntry(0), true
 	case "l", "right", "enter", "tab":
 		a.sideFocus = false
+		if a.tab == tabHome {
+			a.home.enter() // Home starts on its first tile, whichever had the focus before
+		}
 		return nil, true
 	case "/":
 		if a.filterTarget() != nil {

@@ -23,7 +23,12 @@ func (a *App) helpGroups() []helpGroup {
 	case a.sideFocus:
 		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"l enter", "go to the list"}}}
 	case a.tab == tabHome:
-		here = helpGroup{"Home", [][2]string{{"j k", "move between tiles"}, {"enter", "open the tile's entry (Cleanup: clean up)"}}}
+		here = helpGroup{"Home", [][2]string{
+			{"h l", "move along the tiles; past the first, sidebar"},
+			{"j k", "down to Doctor, back up; j scrolls Doctor"},
+			{"l h", "Doctor to Recent jobs and back"},
+			{"enter", "open the tile; on Recent jobs, all jobs"},
+		}}
 	case a.tab == tabInstalled:
 		here = helpGroup{"Installed", [][2]string{
 			{"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"}, {"space", "mark for u/x on several"},

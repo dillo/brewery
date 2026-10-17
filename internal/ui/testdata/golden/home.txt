@@ -6,7 +6,7 @@
 │  All            7  │╭────────────────────────────────────────────────────────╮╭──────────────────────────────────────╮
 │  Top-level      5  ││ Doctor                                                 ││ Recent jobs                          │
 │  Formulae       5  ││ ⚠ The following taps are not trusted:                  ││ no jobs yet                          │
-│  Casks          2  ││   oven-sh/bun                                          ││ :jobs shows them all                 │
+│  Casks          2  ││   oven-sh/bun                                          ││ enter shows them all                 │
 │  Dependencies   2  ││                                                        ││                                      │
 │  Outdated     ↑2   ││   Untap them with:                                     ││                                      │
 │  Pinned         1  ││     brew untap oven-sh/bun                             ││                                      │
@@ -37,4 +37,4 @@
 │                    ││                                                        ││                                      │
 │                    ││                                                        ││                                      │
 ╰────────────────────╯╰────────────────────────────────────────────────────────╯╰──────────────────────────────────────╯
- NORMAL  Home                   j/k tiles · h sidebar · r refresh · U update · c clean up · : command · ? help · q quit 
+ NORMAL  Home    h/l move · j/k down, up · enter open · r refresh · U update · c clean up · : command · ? help · q quit 
