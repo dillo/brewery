@@ -79,6 +79,21 @@ func TestFilterIsPerList(t *testing.T) {
 	}
 }
 
+func TestFilterIsSharedByInstalledViews(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Top-level")
+	keys(t, a, "/")
+	typeText(t, a, "git")
+	keys(t, a, "enter")
+	show(t, a, "All")
+	if a.installed.match != "git" {
+		t.Errorf("the filter should follow the tab to its other view: %q", a.installed.match)
+	}
+	if len(a.installed.rows) == 0 || len(a.installed.rows) >= a.installed.count(filterAll) {
+		t.Errorf("All should be filtered: %d of %d rows", len(a.installed.rows), a.installed.count(filterAll))
+	}
+}
+
 func TestFilterJobs(t *testing.T) {
 	a := newJobsViewApp(t, &fakeStarter{})
 	keys(t, a, ":")

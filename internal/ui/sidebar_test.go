@@ -6,7 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	"github.com/dillo/brewery/internal/brew"
 )
 
 func TestSidebarHasEveryViewOnce(t *testing.T) {
@@ -94,6 +97,18 @@ func TestSidebarShowsCountsAndChips(t *testing.T) {
 		if w := lipgloss.Width(l); w > sidebarW {
 			t.Errorf("line %d is %d wide, want <= %d: %q", i, w, sidebarW, l)
 		}
+	}
+	raw := strings.Split(a.sidebarView(sidebarW, 40), "\n")
+	open, _, _ := strings.Cut(a.st.TabActive.Render("x"), "x") // the block's opening escape
+	for _, l := range raw {
+		if got, want := strings.Contains(l, open), strings.Contains(l, "Home"); got != want {
+			t.Errorf("only the selected entry, Home, is a TabActive block: %q", l)
+		}
+	}
+	failing := 1 // the fixtures have one already
+	a.snap.Services = append(a.snap.Services, brew.Service{Name: "broken", Status: "error"})
+	if out := squash(stripANSI(a.sidebarView(sidebarW, 40))); !strings.Contains(out, fmt.Sprintf("Services ✗%d", failing+1)) {
+		t.Errorf("failing services should show a chip: %s", out)
 	}
 	a.errs[qTaps] = errors.New("offline")
 	if out := squash(stripANSI(a.sidebarView(sidebarW, 40))); !strings.Contains(out, "Taps ⚠") {
@@ -189,6 +204,35 @@ func TestRowKeysDoNothingInTheSidebar(t *testing.T) {
 	keys(t, a, "U")
 	if got := lastCall(fs); len(got) == 0 || got[0] != "update" {
 		t.Errorf("U should work from the sidebar: %v", got)
+	}
+}
+
+func TestSlashFromTheSidebarOnHomeKeepsTheFocus(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "/")
+	if a.mode == modeFilter || !a.sideFocus {
+		t.Errorf("Home has no filter: mode %d, focus %v", a.mode, a.sideFocus)
+	}
+}
+
+func TestSidebarKeepsItsSelectedEntryInView(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.Update(tea.WindowSizeMsg{Width: 120, Height: 20})
+	for _, l := range []string{"Search all", "Home", "Pinned", "Fonts"} {
+		settle(t, a, a.selectEntry(entryIndex(l)))
+		out := a.sidebarView(sidebarW, 20-4)
+		if !strings.Contains(squash(stripANSI(out)), l) {
+			t.Errorf("%s is out of view:\n%s", l, stripANSI(out))
+		}
+		if n := lipgloss.Height(out); n != 20-4 {
+			t.Errorf("%s: sidebar is %d lines, want %d", l, n, 20-4)
+		}
+		if strings.Contains(stripANSI(out), "more") {
+			t.Errorf("%s: the pane cut the sidebar:\n%s", l, stripANSI(out))
+		}
+		if full := stripANSI(a.render()); !strings.Contains(squash(full), l) {
+			t.Errorf("%s is out of view in the 120×20 screen:\n%s", l, full)
+		}
 	}
 }
 

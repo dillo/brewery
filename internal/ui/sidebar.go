@@ -153,8 +153,9 @@ const sidebarW = 22
 // solid block, as the active tab was.
 func (a *App) sidebarView(w, h int) string {
 	st := a.st
-	iw, _ := paneInner(w, h)
+	iw, ih := paneInner(w, h)
 	var lines []string
+	selLine := 0
 	for i, e := range entries {
 		if i > 0 && e.sec != entries[i-1].sec {
 			lines = append(lines, "", st.Muted.Render(sectionNames[e.sec]))
@@ -168,8 +169,16 @@ func (a *App) sidebarView(w, h int) string {
 		line := " " + label + strings.Repeat(" ", gap) + b + " "
 		if i == a.sel {
 			line = st.TabActive.Render(line)
+			selLine = len(lines)
 		}
 		lines = append(lines, line)
+	}
+	if len(lines) > ih && ih > 0 {
+		// Too tall for the pane: show the lines that end at the selected
+		// one, so it is in view with as much above it as fits. Cutting the
+		// bottom instead, as pane would, hides everything below Manage.
+		end := max(selLine+1, ih)
+		lines = lines[end-ih : end]
 	}
 	return pane(st, "brewery", strings.Join(lines, "\n"), w, h, a.sideFocus)
 }
@@ -190,10 +199,17 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 		a.sideFocus = false
 		return nil, true
 	case "/":
-		a.sideFocus = false // the filter is the list's: go there to type it
-		return nil, false
+		if a.filterTarget() != nil {
+			a.sideFocus = false // the filter is the list's: go there to type it
+		}
+		return nil, false // Home has none: the note says so, and the focus stays
 	case "A":
-		return nil, a.tab != tabOutdated // upgrade all needs no row
+		// Upgrade all needs no row, so on Outdated it works from the
+		// sidebar; anywhere else A does nothing, and the sidebar eats it.
+		if a.tab == tabOutdated {
+			return nil, false
+		}
+		return nil, true
 	case "q", ":", "?", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4":
 		return nil, false
 	}

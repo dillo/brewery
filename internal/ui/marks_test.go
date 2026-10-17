@@ -123,10 +123,10 @@ func TestStatusBarCountsMarksTheViewHides(t *testing.T) {
 		t.Fatalf("one shown mark: bar %q", stripANSI(a.statusBar()))
 	}
 	for _, l := range []string{"Top-level", "Formulae", "Casks", "Dependencies", "Pinned"} {
+		show(t, a, l)
 		if strings.Contains(stripANSI(a.statusBar()), "hidden") {
 			break
 		}
-		show(t, a, l)
 	}
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "1 marked · 1 hidden") {
 		t.Errorf("some view should hide the mark: bar %q", bar)
