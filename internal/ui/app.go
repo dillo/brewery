@@ -115,6 +115,9 @@ type App struct {
 	pagerCmd func(files []string) *exec.Cmd    // builds the full-screen log viewer
 
 	tab           int
+	sel           int             // the sidebar entry shown
+	sideFocus     bool            // keys go to the sidebar, not the tab
+	lastIn        map[section]int // each section's last-used entry, for 1-4
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
 	laidOut       [3]int // width, height and drawer state of the last layout
@@ -141,6 +144,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a := &App{
 		src: src, start: start, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
+		sideFocus: true, lastIn: map[section]int{},
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
 		detailsDelay: detailsDelay,

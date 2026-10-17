@@ -79,3 +79,13 @@ func press(k string) tea.KeyPressMsg {
 	r := []rune(k)[0]
 	return tea.KeyPressMsg{Code: r, Text: k}
 }
+
+// show selects the sidebar entry labelled label and focuses its list, as
+// moving there in the sidebar and pressing l would.
+func show(t *testing.T, a *App, label string) {
+	t.Helper()
+	settle(t, a, a.selectEntry(entryIndex(label)))
+	a.sideFocus = false
+	_, cmd := a.Update(nil) // what follows any key: Services' log, Discover's details, the layout
+	settle(t, a, cmd)
+}
