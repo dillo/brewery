@@ -57,10 +57,10 @@ Press `?` anywhere for the keys that work there.
 | `j` `k` on Home | move between its tiles; `enter` opens one |
 | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move in a list |
 | `/` | filter the list |
-| `u` | upgrade (Installed, Outdated) |
+| `u` | upgrade (Packages) |
 | `A` | upgrade all (Outdated) |
-| `x` | uninstall (Installed), untap (Taps) |
-| `p` | pin or unpin (Installed) |
+| `x` | uninstall (Packages, except Outdated), untap (Taps) |
+| `p` | pin or unpin (Packages, except Outdated) |
 | `space` | mark several for `u` or `x` |
 | `s` `S` `R` | start, stop, restart a service; `L` follows its log |
 | `a` | install (Discover) |
