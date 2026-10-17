@@ -36,6 +36,7 @@ type homeTab struct {
 	doctorErr error // last doctor failure; nil once a run succeeds
 	errs      map[query]error
 	loaded    map[query]bool
+	idle      bool // the sidebar has the focus: no pane here looks focused
 }
 
 func (h *homeTab) tiles(snap state.Snapshot) []tile {
@@ -152,7 +153,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 		}
 		iw, _ := paneInner(tw, tileH)
 		body := t.style.Bold(true).Render(t.value) + "\n" + st.Muted.Render(ansi.Truncate(t.detail, iw, "…"))
-		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel)
+		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel && !h.idle)
 	}
 	row := lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 

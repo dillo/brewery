@@ -49,8 +49,8 @@ func (a *App) openJobs() tea.Cmd {
 }
 
 // jobsKey handles a key while the jobs view is open. ok is false for keys
-// that still do what they do everywhere (tabs, :, /, ?, y, o, r, ctrl+c); tab keys
-// also close the view.
+// that still do what they do everywhere (:, /, ?, y, o, r, ctrl+c); the number
+// and bracket keys also close the view.
 func (a *App) jobsKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	switch msg.String() {
 	case "esc", "q":

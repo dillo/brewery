@@ -41,7 +41,7 @@ func pinnedApp(t *testing.T) (*App, *fakeStarter) {
 	a := New(src, fs.start, snap, filepath.Join(t.TempDir(), "s.json"))
 	a.now = func() time.Time { return testNow }
 	a.tickEvery = 0
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	return a, fs
 }
 

@@ -36,7 +36,7 @@ func TestInstalledStacksThenHidesThePreview(t *testing.T) {
 	lines := strings.Split(out, "\n")
 	list, preview := -1, -1
 	for i, l := range lines {
-		if strings.Contains(l, "Top-level 5") && list < 0 {
+		if strings.Contains(l, "Top-level") && list < 0 {
 			list = i
 		}
 		if strings.Contains(l, "App to build and share") {
@@ -52,11 +52,11 @@ func TestInstalledStacksThenHidesThePreview(t *testing.T) {
 		t.Errorf("at 50 columns only the list shows:\n%s", out)
 	}
 	keys(t, a, "tab")
-	if out := stripANSI(a.render()); !strings.Contains(out, "App to build and share") || strings.Contains(out, "Top 5") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "App to build and share") || strings.Contains(out, "NAME") {
 		t.Errorf("tab shows the preview instead of the list:\n%s", out)
 	}
 	keys(t, a, "esc")
-	if out := stripANSI(a.render()); !strings.Contains(out, "Top 5") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "NAME") {
 		t.Errorf("esc goes back to the list:\n%s", out)
 	}
 }
@@ -82,7 +82,7 @@ func TestServicesPreviewTakesTurnsWhenNarrow(t *testing.T) {
 func TestServicesPreviewTakesTurnsWhenShort(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.readLog = (&fakeLogs{}).read
-	a.Update(tea.WindowSizeMsg{Width: 80, Height: 14})
+	a.Update(tea.WindowSizeMsg{Width: 80, Height: 12})
 	show(t, a, "Services")
 	if s := splitFor(a.services.w, a.services.h, false); s.pvW != 0 {
 		t.Fatalf("test needs a short tab, got %dx%d: %+v", a.services.w, a.services.h, s)

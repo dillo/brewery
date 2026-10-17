@@ -119,7 +119,7 @@ func TestDiscoverPopular(t *testing.T) {
 		t.Errorf("Popular tools:\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 	out := stripANSI(a.render())
-	for _, s := range []string{"Popular tools 6", "Popular apps 4", "Rising 4", "New 2", "Fonts 2", "All 17", "The most-installed tools of the last 30 days."} {
+	for _, s := range []string{"Popular tools", "The most-installed tools of the last 30 days."} {
 		if !strings.Contains(out, s) {
 			t.Errorf("missing %q in\n%s", s, out)
 		}

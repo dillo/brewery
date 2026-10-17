@@ -24,7 +24,7 @@ func newInstallApp(t *testing.T) (*App, *fakeStarter, *fakeSource, *fakeCatalog)
 	cat.details = map[string]brew.Details{"ripgrep": ripgrep}
 	a.UseCatalog(cat)
 	a.detailsDelay = 0
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	show(t, a, "Search all")
 	return a, fs, src, cat
 }

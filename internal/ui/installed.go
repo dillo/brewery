@@ -24,14 +24,14 @@ const (
 )
 
 // views are the Installed tab's views, in the sidebar's order,
-// with a short name for narrow panes and a line saying what each shows.
-var views = [...]struct{ name, short, about string }{
-	filterTop:      {"Top-level", "Top", "Things you installed that nothing else needs."},
-	filterAll:      {"All", "All", "Everything installed."},
-	filterCasks:    {"Casks", "Casks", "macOS apps and fonts (casks)."},
-	filterDeps:     {"Dependencies", "Deps", "Installed because something else needed them."},
-	filterFormulae: {"Formulae", "Form", "Command-line tools and libraries (formulae)."},
-	filterPinned:   {"Pinned", "Pin", "Held at their version: brew upgrade skips them."},
+// with a line saying what each shows.
+var views = [...]struct{ name, about string }{
+	filterTop:      {"Top-level", "Things you installed that nothing else needs."},
+	filterAll:      {"All", "Everything installed."},
+	filterCasks:    {"Casks", "macOS apps and fonts (casks)."},
+	filterDeps:     {"Dependencies", "Installed because something else needed them."},
+	filterFormulae: {"Formulae", "Command-line tools and libraries (formulae)."},
+	filterPinned:   {"Pinned", "Held at their version: brew upgrade skips them."},
 }
 
 var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
@@ -48,6 +48,7 @@ type installedTab struct {
 	marked map[string]bool  // packages picked with space, by pkgKey
 	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
 	loaded bool
+	idle   bool // the sidebar has the focus: no pane here looks focused
 	table  table.Model
 	w, h   int
 }
@@ -68,7 +69,7 @@ func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
 	t.apply()
 }
 
-// shows reports whether view f lists p. Apps count as top-level: brew
+// shows reports whether view f lists p. Casks count as top-level: brew
 // doesn't record whether a cask came in for another one, so they are all
 // taken as things you chose to install.
 func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
@@ -200,7 +201,7 @@ func (t *installedTab) resize(w, h int) {
 	t.w, t.h = w, h
 	sp := splitFor(w, h, false)
 	iw, ih := paneInner(sp.listW, sp.listH)
-	sizeTable(&t.table, installedCols, iw, max(ih-viewBarHeight, 0))
+	sizeTable(&t.table, installedCols, iw, max(ih-aboutHeight, 0))
 }
 
 // listWidth is the list pane's width with the preview closed.
@@ -211,18 +212,18 @@ func (t *installedTab) listWidth() int { return splitFor(t.w, t.h, false).listW 
 func (t *installedTab) view(err error) string {
 	w, h := t.w, t.h
 	if err != nil && len(t.all) == 0 {
-		return pane(t.st, "Installed", errorBody(t.st, err), w, h, true)
+		return pane(t.st, "Installed", errorBody(t.st, err), w, h, !t.idle)
 	}
 	sp := splitFor(w, h, t.pv.focus)
 	iw, ih := paneInner(sp.listW, sp.listH)
-	body := t.viewBar(iw) + "\n"
-	ih -= viewBarHeight
+	body := about(t.st, views[t.filter].about, iw) + "\n"
+	ih -= aboutHeight
 	if err != nil {
 		body += refreshBanner(t.st, err, iw) + "\n"
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(max(ih, 0))
-	title := "Installed"
+	title := views[t.filter].name
 	if t.match != "" {
 		title += " · /" + t.match
 	}
@@ -230,7 +231,7 @@ func (t *installedTab) view(err error) string {
 	if !t.loaded && len(t.all) == 0 {
 		rows = skeleton(t.st, iw, ih) // nothing yet: show the shape of what's coming
 	}
-	list := pane(t.st, title, body+rows, sp.listW, sp.listH, !t.pv.focus)
+	list := pane(t.st, title, body+rows, sp.listW, sp.listH, !t.pv.focus && !t.idle)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
@@ -245,15 +246,6 @@ func (t *installedTab) view(err error) string {
 		body = t.st.Muted.Render("loading…")
 	}
 	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, t.pv.focus))
-}
-
-// viewBar is the bar of Installed's views with their counts.
-func (t *installedTab) viewBar(w int) string {
-	segs := make([]viewSeg, len(views))
-	for f, v := range views {
-		segs[f] = viewSeg{name: v.name, short: v.short, n: t.count(installedFilter(f))}
-	}
-	return viewBar(t.st, segs, int(t.filter), views[t.filter].about, w)
 }
 
 func (t *installedTab) preview(p brew.Package) string {

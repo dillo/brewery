@@ -1,40 +1,40 @@
- 1 Home   2 Installed   3 Outdated  ↑2    4 Services  ✗1    5 Taps   6 Discover                                         
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-╭────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
-│ Discover                                                       ││ gh                                                 │
-│  Tools 6   Apps 4   Rising 4   New 2   Fonts 2   All 17        ││ gh                                                 │
-│ Everything brew can install. / searches names and descri…  f/F ││ GitHub command-line tool                           │
-│  NAME                  TYPE       DESCRIPTION                  ││                                                    │
-│ ────────────────────────────────────────────────────────────── ││ type       formula                                 │
-│  abcl                  formula    Armed Bear Common Lisp: a …  ││ installed  no                                      │
-│  docker                formula    Pack, ship and run any app…  ││                                                    │
-│  ✓ fd                  formula    Simple, fast and user-frie…  ││ Would also install                                 │
-│  gh                    formula    GitHub command-line tool     ││ nothing else                                       │
-│  ✓ git                 formula    Distributed revision contr…  ││                                                    │
-│  ✓ pcre2               formula    Perl compatible regular ex…  ││ Installs                                           │
-│  python@3.15           formula    Interpreted, interactive, …  ││ 30 days    217,104                                 │
-│  ripgrep               formula    Search tool like grep and …  ││ 90 days    710,524                                 │
-│  wget                  formula    Internet file retriever      ││ 365 days   2,994,048                               │
-│  0-ad                  cask       Real-time strategy game      ││                                                    │
-│  ape                   cask       Software for DNA sequence …  ││                                                    │
-│  codex                 cask       OpenAI's coding agent that…  ││                                                    │
-│  ✓ docker-desktop      cask       App to build and share con…  ││                                                    │
-│  firefox               cask       Web browser                  ││                                                    │
-│  font-fira-code        cask       Fira Code                    ││                                                    │
-│  font-jetbrains-mono   cask       JetBrains Mono               ││                                                    │
-│  ✓ fontbase            cask       Font manager                 ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-│                                                                ││                                                    │
-╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Discover › gh                       a install · / search · l details · r refetch · : command · ? help · q quit 
+╭────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ brewery            ││ Search all                                                                                     │
+│  Home              ││ Everything brew can install. / searches names and descriptions.                                │
+│                    ││  NAME                  TYPE       DESCRIPTION                                                  │
+│ PACKAGES           ││ ────────────────────────────────────────────────────────────────────────────────────────────── │
+│  All            7  ││  abcl                  formula    Armed Bear Common Lisp: a full implementation of Common Li…  │
+│  Top-level      5  ││  docker                formula    Pack, ship and run any application as a lightweight contai…  │
+│  Formulae       5  ││  ✓ fd                  formula    Simple, fast and user-friendly alternative to find           │
+│  Casks          2  ││  gh                    formula    GitHub command-line tool                                     │
+│  Dependencies   2  ││  ✓ git                 formula    Distributed revision control system                          │
+│  Outdated     ↑2   ││  ✓ pcre2               formula    Perl compatible regular expressions library with a new API   │
+│  Pinned         1  ││  python@3.15           formula    Interpreted, interactive, object-oriented programming lang…  │
+│                    ││  ripgrep               formula    Search tool like grep and The Silver Searcher                │
+│ MANAGE             ││  wget                  formula    Internet file retriever                                      │
+│  Services     ✗1   ││  0-ad                  cask       Real-time strategy game                                      │
+│  Taps           2  ││  ape                   cask       Software for DNA sequence analysis and annotation            │
+│                    ││  codex                 cask       OpenAI's coding agent that runs in your terminal             │
+│ DISCOVER           ││  ✓ docker-desktop      cask       App to build and share containerised applications and micr…  │
+│  Popular tools     ││  firefox               cask       Web browser                                                  │
+│  Popular apps      ││  font-fira-code        cask       Fira Code                                                    │
+│  Rising            ││  font-jetbrains-mono   cask       JetBrains Mono                                               │
+│  New               │╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+│  Fonts             │╭────────────────────────────────────────────────────────────────────────────────────────────────╮
+│  Search all        ││ gh                                                                                             │
+│                    ││ gh                                                                                             │
+│                    ││ GitHub command-line tool                                                                       │
+│                    ││                                                                                                │
+│                    ││ type       formula                                                                             │
+│                    ││ installed  no                                                                                  │
+│                    ││                                                                                                │
+│                    ││ Would also install                                                                             │
+│                    ││ nothing else                                                                                   │
+│                    ││                                                                                                │
+│                    ││ Installs                                                                                       │
+│                    ││ 30 days    217,104                                                                             │
+│                    ││ 90 days    710,524                                                                             │
+│                    ││ 365 days   2,994,048                                                                           │
+│                    ││                                                                                                │
+╰────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────╯
+ NORMAL  Search all › gh                     a install · / search · l details · r refetch · : command · ? help · q quit 

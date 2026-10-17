@@ -12,6 +12,14 @@ import (
 	"github.com/dillo/brewery/internal/theme"
 )
 
+// aboutHeight is the line under a list's title saying what its view shows.
+const aboutHeight = 1
+
+// about is that line, cut to w.
+func about(st theme.Styles, s string, w int) string {
+	return st.Muted.Render(ansi.Truncate(s, w, "…"))
+}
+
 // pane draws a rounded box of exactly w×h cells with a title on its first
 // line. The body is clipped to the box before the border goes on, so long
 // content never wraps or pushes the bottom border out of view.

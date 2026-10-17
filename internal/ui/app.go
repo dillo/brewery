@@ -29,8 +29,6 @@ const (
 	tabDiscover
 )
 
-var tabNames = [...]string{"Home", "Installed", "Outdated", "Services", "Taps", "Discover"}
-
 // tabQueries is the query each tab's data comes from. Home shows doctor.
 var tabQueries = map[int]query{
 	tabHome: qDoctor, tabInstalled: qInstalled, tabOutdated: qOutdated, tabServices: qServices, tabTaps: qTaps,
@@ -440,11 +438,12 @@ func (a *App) layout() {
 	if shown == 1 {
 		a.tabH -= dh
 	}
-	a.installed.resize(a.width, a.tabH)
+	cw := a.contentWidth()
+	a.installed.resize(cw, a.tabH)
 	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs} {
-		t.resize(a.width, a.tabH)
+		t.resize(cw, a.tabH)
 	}
-	a.discover.resize(a.width, a.tabH)
+	a.discover.resize(cw, a.tabH)
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -667,12 +666,15 @@ func (a *App) render() string {
 	}
 	bodyH := a.tabH
 	var body string
+	idle := a.sideFocus
+	a.home.idle, a.installed.idle, a.discover.idle = idle, idle, idle
+	a.outdated.idle, a.services.idle, a.taps.idle, a.jobs.idle = idle, idle, idle, idle
 	if a.jobsOpen {
 		body = a.jobs.view(nil)
 	} else {
 		switch a.tab {
 		case tabHome:
-			body = a.home.view(a.snap, a.history, a.now(), a.width, bodyH)
+			body = a.home.view(a.snap, a.history, a.now(), a.contentWidth(), bodyH)
 		case tabInstalled:
 			body = a.installed.view(a.errs[qInstalled])
 		case tabOutdated:
@@ -684,6 +686,13 @@ func (a *App) render() string {
 		case tabDiscover:
 			body = a.discover.view()
 		}
+	}
+	switch {
+	case bodyH == 0:
+	case a.width >= sidebarBeside:
+		body = lipgloss.JoinHorizontal(lipgloss.Top, a.sidebarView(sidebarW, bodyH), body)
+	case a.sideFocus:
+		body = a.sidebarView(a.width, bodyH)
 	}
 	drawer := a.drawerShown()
 	if bodyH == 0 && (a.confirm != nil || a.help) {
@@ -697,9 +706,9 @@ func (a *App) render() string {
 	if a.help {
 		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
 	}
-	parts := []string{a.tabBar()}
+	var parts []string
 	if bodyH > 0 {
-		parts = append(parts, body) // when the drawer takes the whole body, the tab gets no line at all
+		parts = append(parts, body) // the drawer takes the whole body: no room for the tab
 	}
 	if drawer {
 		parts = append(parts, a.drawer.view(a.width, a.bodyHeight()-bodyH, a.now(), a.frame, a.mode == modeInsert))
@@ -718,44 +727,20 @@ func clipLines(s string, n int) string {
 	return strings.Join(lines[:min(len(lines), max(n, 0))], "\n")
 }
 
-// bodyHeight is the space between the tab bar (tabs + rule) and the status bar.
-func (a *App) bodyHeight() int { return max(a.height-3, 3) }
+// bodyHeight is the space above the status bar.
+func (a *App) bodyHeight() int { return max(a.height-1, 3) }
 
-// tabBar renders the tabs as solid blocks over a full-width rule. Badges
-// are chips: ↑N updates available, ✗N services in error, ⚠ refresh failed.
-func (a *App) tabBar() string {
-	st := a.st
-	chips := map[int]string{}
-	if n := len(a.snap.Outdated); n > 0 {
-		chips[tabOutdated] = st.ChipWarn.Render(fmt.Sprintf("↑%d", n))
+// sidebarBeside is the narrowest window with room for the sidebar beside
+// a list of 60 columns.
+const sidebarBeside = sidebarW + 60
+
+// contentWidth is the width left for the tab: the whole window when it's
+// too narrow for the sidebar to sit beside the tab.
+func (a *App) contentWidth() int {
+	if a.width >= sidebarBeside {
+		return a.width - sidebarW
 	}
-	failing := 0
-	for _, s := range a.snap.Services {
-		if s.Status == "error" {
-			failing++
-		}
-	}
-	if failing > 0 {
-		chips[tabServices] = st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
-	}
-	for tab, q := range tabQueries {
-		if a.errs[q] != nil {
-			chips[tab] = st.ChipStale.Render("⚠") // stale data outranks any count
-		}
-	}
-	parts := make([]string, len(tabNames))
-	for i, name := range tabNames {
-		block := st.Tab
-		if i == a.tab {
-			block = st.TabActive
-		}
-		parts[i] = block.Render(fmt.Sprintf(" %d %s ", i+1, name))
-		if c, ok := chips[i]; ok {
-			parts[i] += c + block.Render(" ")
-		}
-	}
-	tabs := ansi.Truncate(strings.Join(parts, " "), a.width, "…")
-	return tabs + "\n" + st.TabRule.Render(strings.Repeat("─", a.width))
+	return a.width
 }
 
 // promptBar is the status bar while a line is being typed: the mode's
@@ -791,7 +776,7 @@ func (a *App) statusBar() string {
 	case a.queue.Current() != nil:
 		badge = "RUNNING"
 	}
-	left := st.Mode(badge).Render(badge) + " " + tabNames[a.tab]
+	left := st.Mode(badge).Render(badge) + " " + entries[a.sel].label
 	switch {
 	case a.jobsOpen:
 		left = st.Mode(badge).Render(badge) + " Jobs"

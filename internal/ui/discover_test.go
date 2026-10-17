@@ -93,7 +93,7 @@ func TestDiscoverViews(t *testing.T) {
 	a, _ := newDiscoverApp(t)
 	show(t, a, "New")
 	out := stripANSI(a.render())
-	for _, want := range []string{"6 Discover", "New 2", "All 17", "Added to Homebrew since brew last updated."} {
+	for _, want := range []string{"New", "Added to Homebrew since brew last updated."} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in\n%s", want, out)
 		}
@@ -131,7 +131,7 @@ func TestDiscoverFilterSearchesDescriptions(t *testing.T) {
 	if got := discoverRows(a); len(got) != 1 || got[0] != "wget" {
 		t.Errorf("/retriever shows %v", got)
 	}
-	if out := stripANSI(a.render()); !strings.Contains(out, "Discover · /retriever") || !strings.Contains(out, "Discover › wget") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "Search all · /retriever") || !strings.Contains(out, "Search all › wget") {
 		t.Errorf("the title or status bar doesn't say:\n%s", out)
 	}
 	keys(t, a, "/", "x", "x", "x", "enter")

@@ -17,7 +17,7 @@ func TestFilterInstalled(t *testing.T) {
 	if got := rowNames(a.installed); got != "git" {
 		t.Errorf("rows %q, want just git", got)
 	}
-	if out := stripANSI(a.render()); !strings.Contains(out, "Installed · /GI") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "Top-level · /GI") {
 		t.Errorf("the pane should name the filter:\n%s", out)
 	}
 	keys(t, a, "enter")

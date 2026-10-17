@@ -52,34 +52,19 @@ func TestInstalledViews(t *testing.T) {
 	}
 }
 
-func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
+func TestInstalledTitleNamesTheViewAndSaysWhatItShows(t *testing.T) {
 	it := newFixtureInstalled(t)
+	it.filter = filterCasks
+	it.apply()
+	it.resize(120, 30)
 	out := stripANSI(it.view(nil))
-	for _, want := range []string{"Top-level 5", "All 7", "Casks 2", "Dependencies 2", "Formulae 5", "Pinned 1",
-		"Things you installed that nothing else needs", "f/F to switch"} {
+	for _, want := range []string{"Casks", "macOS apps and fonts (casks)."} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q:\n%s", want, out)
 		}
 	}
-	it.filter = filterCasks
-	it.apply()
-	if out := stripANSI(it.view(nil)); !strings.Contains(out, "macOS apps and fonts (casks)") {
-		t.Errorf("the Casks view should explain itself:\n%s", out)
-	}
-}
-
-func TestInstalledViewBarFitsNarrowPanes(t *testing.T) {
-	it := newFixtureInstalled(t)
-	it.resize(44, 24) // narrow: a 44-column list pane, the preview hidden
-	out := it.view(nil)
-	if h, w := lipgloss.Height(out), lipgloss.Width(out); h != 24 || w != 44 {
-		t.Errorf("rendered %dx%d, want 44x24", w, h)
-	}
-	plain := stripANSI(out)
-	for _, want := range []string{"Top 5", "All 7", "Casks 2", "Deps 2", "…  f/F"} {
-		if !strings.Contains(plain, want) {
-			t.Errorf("narrow bar should use short names, missing %q:\n%s", want, plain)
-		}
+	if strings.Contains(out, "f/F") {
+		t.Errorf("no view keys any more:\n%s", out)
 	}
 }
 
@@ -94,7 +79,7 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 	}
 	out := stripANSI(it.view(nil))
 	for _, want := range []string{
-		"Top-level 5", "git 2.51.0", "Distributed revision control system",
+		"Top-level", "git 2.51.0", "Distributed revision control system",
 		"on request · ", "pinned", "Dependencies", "└─ pcre2", "json-c",
 		"nothing installed depends on this", "Bash completion has been installed.",
 	} {
