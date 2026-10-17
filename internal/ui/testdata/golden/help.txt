@@ -17,12 +17,13 @@
 │                                       │ gg G       top, bottom               │                                       │
 │                                       │ ctrl+d/u   half a page               │                                       │
 │                                       │ /          filter by name            │                                       │
+│                                       │ / esc      clear the filter          │                                       │
 │                                       │ y          copy the name             │                                       │
-│                                       │ gx         open the homepage         │                                       │
-│                                       │                                      │alled depends on this                  │
+│                                       │ gx         open the homepage         │alled depends on this                  │
+│                                       │                                      │                                       │
 │                                       │ Everywhere                           │                                       │
-│                                       │ 1-6 [ ]    switch tabs               │                                       │
-│                                       │ :          run any brew command      │ion has been installed.                │
+│                                       │ 1-6 [ ]    switch tabs               │ion has been installed.                │
+│                                       │ :          run any brew command      │                                       │
 │                                       │ r          refresh                   │                                       │
 │                                       │ U          brew update               │                                       │
 │                                       │ c          clean up                  │                                       │
@@ -33,7 +34,6 @@
 │                                       │                                      │                                       │
 │                                       │ any key closes this                  │                                       │
 │                                       ╰──────────────────────────────────────╯                                       │
-│                                                                ││                                                    │
 │                                                                ││                                                    │
 │                                                                ││                                                    │
 ╰────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯

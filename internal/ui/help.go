@@ -44,12 +44,12 @@ func (a *App) helpGroups() []helpGroup {
 	case a.jobsOpen:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
-			{"/", "filter by command"}, {"y", "copy the command"},
+			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
 		}})
 	case a.tab != tabHome:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
-			{"/", "filter by name"}, {"y", "copy the name"}, {"gx", "open the homepage"},
+			{"/", "filter by name"}, {"/ esc", "clear the filter"}, {"y", "copy the name"}, {"gx", "open the homepage"},
 		}})
 	}
 	return append(groups, helpGroup{"Everywhere", [][2]string{

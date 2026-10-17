@@ -93,3 +93,19 @@ func TestHelpClosesWhenBrewAsks(t *testing.T) {
 	p.exit()
 	resume(t, a, waiting)
 }
+
+func TestHelpSaysHowToClearTheFilter(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "2", "?")
+	if out := stripANSI(a.render()); !strings.Contains(out, "/ esc") || !strings.Contains(out, "clear the filter") {
+		t.Errorf("Installed help doesn't say how to clear the filter:\n%s", out)
+	}
+
+	a = newJobsViewApp(t, &fakeStarter{})
+	keys(t, a, ":")
+	typeText(t, a, "jobs")
+	keys(t, a, "enter", "?")
+	if out := stripANSI(a.render()); !strings.Contains(out, "/ esc") || !strings.Contains(out, "clear the filter") {
+		t.Errorf(":jobs help doesn't say how to clear the filter:\n%s", out)
+	}
+}
