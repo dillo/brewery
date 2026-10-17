@@ -57,14 +57,15 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 	return nil, false
 }
 
-// packageNamed finds an installed package by name and kind.
-func (a *App) packageNamed(name string, kind brew.Kind) (brew.Package, bool) {
+// packageNamed finds an installed package by name and kind, or is the
+// zero Package when none is installed.
+func (a *App) packageNamed(name string, kind brew.Kind) brew.Package {
 	for _, p := range a.snap.Packages {
 		if p.Name == name && p.Kind == kind {
-			return p, true
+			return p
 		}
 	}
-	return brew.Package{}, false
+	return brew.Package{}
 }
 
 // selection is what the cursor is on in the current list: a name to copy
@@ -84,12 +85,12 @@ func (a *App) selection() (name, url string, ok bool) {
 	case tabOutdated:
 		if i := a.outdated.cursor(); i >= 0 {
 			o := a.snap.Outdated[i]
-			p, _ := a.packageNamed(o.Name, o.Kind)
+			p := a.packageNamed(o.Name, o.Kind)
 			return o.Name, p.Homepage, true
 		}
 	case tabServices:
 		if s, ok := a.selectedService(); ok {
-			p, _ := a.packageNamed(s.Name, brew.KindFormula)
+			p := a.packageNamed(s.Name, brew.KindFormula)
 			return s.Name, p.Homepage, true
 		}
 	case tabTaps:

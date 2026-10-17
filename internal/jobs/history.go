@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"syscall"
@@ -200,8 +201,8 @@ func (h History) Load() ([]Record, error) {
 		return nil, err
 	}
 	var recs []Record
-	for i := len(files) - 1; i >= 0; i-- {
-		b, err := os.ReadFile(files[i])
+	for _, file := range slices.Backward(files) {
+		b, err := os.ReadFile(file)
 		if err != nil {
 			continue
 		}

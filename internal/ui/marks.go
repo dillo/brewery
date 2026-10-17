@@ -152,7 +152,7 @@ func (a *App) upgradeMarked() tea.Cmd {
 
 // askUninstallMarked confirms uninstalling the marked packages. If an
 // unmarked package still needs one, it explains why brew would refuse.
-func (a *App) askUninstallMarked() tea.Cmd {
+func (a *App) askUninstallMarked() {
 	pkgs := a.installed.markedPackages()
 	gone := map[string]bool{}
 	var names, full []string
@@ -179,7 +179,7 @@ func (a *App) askUninstallMarked() tea.Cmd {
 			body:    append(blocked, "Unmark it, or mark those too."),
 			choices: []choice{{"n", "close", nil}},
 		}
-		return nil
+		return
 	}
 	refresh := append(slices.Clone(diskQueries), qServices)
 	ts := make([]target, len(pkgs))
@@ -213,7 +213,6 @@ func (a *App) askUninstallMarked() tea.Cmd {
 	}
 	box.choices = append(box.choices, choice{"n", "cancel", nil})
 	a.confirm = box
-	return nil
 }
 
 // markedPackages are the marked packages, by name.

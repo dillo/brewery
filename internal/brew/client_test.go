@@ -72,8 +72,7 @@ func TestClientCleanup(t *testing.T) {
 func TestClientQueryErrorIncludesStderr(t *testing.T) {
 	c := NewClient(fakeRunner{err: map[string]error{"services info --all --json": errors.New("exit status 1")}})
 	_, err := c.Services(context.Background())
-	var qe *QueryError
-	if !errors.As(err, &qe) {
+	if _, ok := errors.AsType[*QueryError](err); !ok {
 		t.Fatalf("want *QueryError, got %v", err)
 	}
 	if !strings.Contains(err.Error(), "brew services info --all --json") || !strings.Contains(err.Error(), "something broke") {
@@ -109,8 +108,7 @@ func TestClientDoctorFailureWithoutWarningsIsAnError(t *testing.T) {
 	exitErr := exec.Command("false").Run() // a real *exec.ExitError with status 1
 	c := NewClient(fakeRunner{err: map[string]error{"doctor": exitErr}})
 	_, err := c.Doctor(context.Background())
-	var qe *QueryError
-	if !errors.As(err, &qe) {
+	if _, ok := errors.AsType[*QueryError](err); !ok {
 		t.Fatalf("want *QueryError, got %v", err)
 	}
 	if !strings.Contains(err.Error(), "something broke") {

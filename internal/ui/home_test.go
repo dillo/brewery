@@ -197,7 +197,7 @@ func TestShortDoctorLinesAreNotCutOff(t *testing.T) {
 		Body:  "oven-sh/bun\nHomebrew is currently ignoring formulae, casks and commands from these taps because tap trust is required.",
 	}}}
 	out := stripANSI(h.view(snap, nil, testNow, 100, 30))
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		if strings.Contains(line, "oven-sh/bun") && strings.Contains(line, "…") {
 			t.Errorf("a short line is padded to the long one and cut off: %q", line)
 		}

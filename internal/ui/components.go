@@ -101,77 +101,105 @@ const minFlex = 8
 // width 0, which the table skips: the table indexes columns by row cell, so
 // removing columns would make it panic on rows that still carry every cell.
 func sizeTable(t *table.Model, cols []col, w, h int) {
-	widths := make([]int, len(cols))
-	floor := make([]int, len(cols))
+	f := newFit(cols, w)
+	f.shrink(false)
+	f.hideOptional()
+	f.shrink(true)
+	for f.shown > 1 && f.over() > 0 {
+		f.shown-- // trailing columns go last
+	}
+	t.SetColumns(f.columns())
+	t.SetWidth(w)
+	t.SetHeight(h)
+}
+
+// fit is a table's columns being fitted to a width w: each column's width
+// so far, the floor it may shrink to, and which columns are left out.
+type fit struct {
+	cols          []col
+	w             int
+	widths, floor []int
+	hidden        []bool
+	shown         int // the leading columns that are shown
+}
+
+func newFit(cols []col, w int) *fit {
+	f := &fit{cols: cols, w: w, widths: make([]int, len(cols)), floor: make([]int, len(cols)),
+		hidden: make([]bool, len(cols)), shown: len(cols)}
 	for i, c := range cols {
 		switch {
 		case c.width == 0:
-			widths[i], floor[i] = max(c.min, minFlex), minFlex
+			f.widths[i], f.floor[i] = max(c.min, minFlex), minFlex
 		case c.min < 0:
-			widths[i], floor[i] = c.width, c.width // optional: shown whole or not at all
+			f.widths[i], f.floor[i] = c.width, c.width // optional: shown whole or not at all
 		case c.min > 0:
-			widths[i], floor[i] = c.width, min(c.min, c.width)
+			f.widths[i], f.floor[i] = c.width, min(c.min, c.width)
 		default:
-			widths[i], floor[i] = c.width, min(len(c.title), c.width)
+			f.widths[i], f.floor[i] = c.width, min(len(c.title), c.width)
 		}
 	}
-	shown := len(cols)
-	hidden := make([]bool, len(cols))
-	// over is how much wider than w the shown columns are, with padding.
-	over := func() int {
-		n := 0
-		for i := range shown {
-			if !hidden[i] {
-				n += widths[i] + 2 // cell padding
-			}
-		}
-		return n - w
-	}
-	for _, flexible := range []bool{false, true} {
-		if flexible {
-			for i := len(cols) - 1; i >= 0 && over() > 0; i-- {
-				hidden[i] = hidden[i] || cols[i].min < 0
-			}
-		}
-		for over() > 0 {
-			give := -1
-			for i := range shown {
-				if (cols[i].width == 0) == flexible && widths[i] > floor[i] &&
-					(give < 0 || widths[i]-floor[i] > widths[give]-floor[give]) {
-					give = i
-				}
-			}
-			if give < 0 {
-				break
-			}
-			widths[give]--
-		}
-	}
-	for shown > 1 && over() > 0 {
-		shown--
-	}
+	return f
+}
 
+// over is how much wider than w the shown columns are, with padding.
+func (f *fit) over() int {
+	n := 0
+	for i := range f.shown {
+		if !f.hidden[i] {
+			n += f.widths[i] + 2 // cell padding
+		}
+	}
+	return n - f.w
+}
+
+// shrink takes a cell at a time from the fixed columns (or the flexible
+// ones), always from whichever has the most to spare, until the columns
+// fit or none can give more.
+func (f *fit) shrink(flexible bool) {
+	for f.over() > 0 {
+		give := -1
+		for i := range f.shown {
+			if (f.cols[i].width == 0) == flexible && f.widths[i] > f.floor[i] &&
+				(give < 0 || f.widths[i]-f.floor[i] > f.widths[give]-f.floor[give]) {
+				give = i
+			}
+		}
+		if give < 0 {
+			return
+		}
+		f.widths[give]--
+	}
+}
+
+// hideOptional hides optional columns, last first, until the columns fit.
+func (f *fit) hideOptional() {
+	for i := len(f.cols) - 1; i >= 0 && f.over() > 0; i-- {
+		f.hidden[i] = f.hidden[i] || f.cols[i].min < 0
+	}
+}
+
+// columns are the table's columns: the flexible ones share what width is
+// left, and a column left out has width 0.
+func (f *fit) columns() []table.Column {
 	flex := 0
-	for i := range shown {
-		if cols[i].width == 0 {
+	for i := range f.shown {
+		if f.cols[i].width == 0 {
 			flex++
 		}
 	}
-	spare := max(-over(), 0)
-	tc := make([]table.Column, len(cols))
-	for i, c := range cols {
-		width := widths[i]
+	spare := max(-f.over(), 0)
+	tc := make([]table.Column, len(f.cols))
+	for i, c := range f.cols {
+		width := f.widths[i]
 		switch {
-		case i >= shown || hidden[i]:
+		case i >= f.shown || f.hidden[i]:
 			width = 0
 		case c.width == 0:
 			width += spare / flex
 		}
 		tc[i] = table.Column{Title: c.title, Width: width}
 	}
-	t.SetColumns(tc)
-	t.SetWidth(w)
-	t.SetHeight(h)
+	return tc
 }
 
 // setRows replaces the table rows and keeps the cursor inside the new range.

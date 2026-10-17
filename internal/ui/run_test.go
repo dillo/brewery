@@ -162,7 +162,7 @@ func settle(t *testing.T, a *App, cmd tea.Cmd) parked {
 // deliver feeds one message to the app and settles what follows.
 func deliver(t *testing.T, a *App, msg tea.Msg) parked {
 	t.Helper()
-	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeOf(tea.Cmd(nil)) {
+	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeFor[tea.Cmd]() {
 		var out parked
 		for i := range v.Len() {
 			out = append(out, settle(t, a, v.Index(i).Interface().(tea.Cmd))...)
@@ -491,7 +491,7 @@ func quits(cmd tea.Cmd) bool {
 		return true
 	}
 	msg := cmd()
-	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeOf(tea.Cmd(nil)) {
+	if v := reflect.ValueOf(msg); v.Kind() == reflect.Slice && v.Type().Elem() == reflect.TypeFor[tea.Cmd]() {
 		for i := range v.Len() {
 			if c := v.Index(i).Interface().(tea.Cmd); c != nil && reflect.ValueOf(c).Pointer() == reflect.ValueOf(tea.Quit).Pointer() {
 				return true

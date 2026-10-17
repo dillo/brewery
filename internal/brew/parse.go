@@ -241,7 +241,7 @@ var freeRe = regexp.MustCompile(`would free approximately (\S+) of disk space`)
 // nothing to do prints nothing.
 func ParseCleanup(out string) CleanupEstimate {
 	var e CleanupEstimate
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		if strings.HasPrefix(line, "Would remove") {
 			e.Items++
 		}
@@ -263,7 +263,7 @@ func ParseDoctor(out string) []DoctorWarning {
 		}
 		body = nil
 	}
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		if title, ok := strings.CutPrefix(line, "Warning: "); ok {
 			flush()
 			ws = append(ws, DoctorWarning{Title: strings.TrimSpace(title)})

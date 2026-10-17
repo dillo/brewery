@@ -237,13 +237,11 @@ func TestHistoryConcurrentSavesWithTheSameStartAllSurvive(t *testing.T) {
 	h := History{Dir: filepath.Join(t.TempDir(), "jobs")}
 	var wg sync.WaitGroup
 	for i := range 8 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if err := h.Save(record(fmt.Sprintf("job %d", i), t0)); err != nil {
 				t.Error(err)
 			}
-		}()
+		})
 	}
 	wg.Wait()
 	got, err := h.Load()

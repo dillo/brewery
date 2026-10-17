@@ -22,7 +22,7 @@ func (c *Client) Catalogue(ctx context.Context) ([]Entry, error) {
 func ParseCatalogue(out string) []Entry {
 	var es []Entry
 	kind, in := KindFormula, false
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		switch line = strings.TrimSpace(line); line {
 		case "==> Formulae":
 			kind, in = KindFormula, true
@@ -102,11 +102,11 @@ func (c *Client) NewSinceUpdate(ctx context.Context) ([]Entry, error) {
 // added lists the names in now that aren't in before, one name a line.
 func added(before, now string) []string {
 	had := map[string]bool{}
-	for _, n := range strings.Fields(before) {
+	for n := range strings.FieldsSeq(before) {
 		had[n] = true
 	}
 	var out []string
-	for _, n := range strings.Fields(now) {
+	for n := range strings.FieldsSeq(now) {
 		if !had[n] {
 			out = append(out, n)
 		}

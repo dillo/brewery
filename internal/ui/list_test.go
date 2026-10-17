@@ -142,7 +142,7 @@ func TestSizeTableDropsTrailingColumns(t *testing.T) {
 	if !strings.Contains(out, "lua-lan") || strings.Contains(out, "PINNED") || strings.Contains(out, "TYPE") {
 		t.Errorf("dropped columns should not render, rows should:\n%s", out)
 	}
-	for _, line := range strings.Split(tbl.View(), "\n") {
+	for line := range strings.SplitSeq(tbl.View(), "\n") {
 		if lipgloss.Width(line) > 30 {
 			t.Errorf("line is %d wide: %q", lipgloss.Width(line), stripANSI(line))
 		}
@@ -217,7 +217,7 @@ func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 	lt.resize(60, 20)
 	out := stripANSI(lt.view(nil))
 	n := 0
-	for _, l := range strings.Split(out, "\n") {
+	for l := range strings.SplitSeq(out, "\n") {
 		if strings.Contains(l, "░") {
 			n++
 		}
@@ -266,7 +266,7 @@ func TestSelectedRowStaysHighlighted(t *testing.T) {
 	lt.resize(60, 10)
 	lt.setRows(serviceRows(testStyles, fixtureSnapshot(t).Services))
 	found := false
-	for _, line := range strings.Split(lt.table.View(), "\n") {
+	for line := range strings.SplitSeq(lt.table.View(), "\n") {
 		if !strings.Contains(line, "postgresql@16") {
 			continue
 		}
