@@ -17,17 +17,21 @@ type installedFilter int
 const (
 	filterTop installedFilter = iota
 	filterAll
-	filterApps
+	filterCasks
 	filterDeps
+	filterFormulae
+	filterPinned
 )
 
 // views are the Installed tab's views, in the order f steps through them,
 // with a short name for narrow panes and a line saying what each shows.
 var views = [...]struct{ name, short, about string }{
-	filterTop:  {"Top-level", "Top", "Things you installed that nothing else needs."},
-	filterAll:  {"All", "All", "Everything installed."},
-	filterApps: {"Apps", "Apps", "macOS apps (casks)."},
-	filterDeps: {"Dependencies", "Deps", "Installed because something else needed them."},
+	filterTop:      {"Top-level", "Top", "Things you installed that nothing else needs."},
+	filterAll:      {"All", "All", "Everything installed."},
+	filterCasks:    {"Casks", "Casks", "macOS apps and fonts (casks)."},
+	filterDeps:     {"Dependencies", "Deps", "Installed because something else needed them."},
+	filterFormulae: {"Formulae", "Form", "Command-line tools and libraries (formulae)."},
+	filterPinned:   {"Pinned", "Pin", "Held at their version: brew upgrade skips them."},
 }
 
 var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
@@ -71,12 +75,27 @@ func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
 	switch f {
 	case filterTop:
 		return p.Kind == brew.KindCask || t.ix.IsLeaf(p)
-	case filterApps:
+	case filterCasks:
 		return p.Kind == brew.KindCask
 	case filterDeps:
 		return p.Kind == brew.KindFormula && !p.OnRequest
+	case filterFormulae:
+		return p.Kind == brew.KindFormula
+	case filterPinned:
+		return p.Pinned
 	}
 	return true
+}
+
+// count is how many installed packages view f lists, before the "/" filter.
+func (t *installedTab) count(f installedFilter) int {
+	n := 0
+	for _, p := range t.all {
+		if t.shows(f, p) {
+			n++
+		}
+	}
+	return n
 }
 
 func (t *installedTab) apply() {
@@ -241,12 +260,7 @@ func (t *installedTab) view(err error) string {
 func (t *installedTab) viewBar(w int) string {
 	segs := make([]viewSeg, len(views))
 	for f, v := range views {
-		segs[f] = viewSeg{name: v.name, short: v.short}
-		for _, p := range t.all {
-			if t.shows(installedFilter(f), p) {
-				segs[f].n++
-			}
-		}
+		segs[f] = viewSeg{name: v.name, short: v.short, n: t.count(installedFilter(f))}
 	}
 	return viewBar(t.st, segs, int(t.filter), views[t.filter].about, w)
 }

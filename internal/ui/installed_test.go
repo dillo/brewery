@@ -30,34 +30,32 @@ func rowNames(it installedTab) string {
 
 func TestInstalledViews(t *testing.T) {
 	it := newFixtureInstalled(t)
-	want := []struct{ view, names string }{
-		{"Top-level", "docker-desktop fd fontbase git lua-language-server"},
-		{"All", "docker-desktop fd fontbase git json-c lua-language-server pcre2"},
-		{"Apps", "docker-desktop fontbase"},
-		{"Dependencies", "json-c pcre2"},
-		{"Top-level", "docker-desktop fd fontbase git lua-language-server"}, // f wraps around
-	}
-	for i, w := range want {
-		if i > 0 {
-			it.update(press("f"))
-		}
-		if views[it.filter].name != w.view {
-			t.Fatalf("step %d: view %s, want %s", i, views[it.filter].name, w.view)
-		}
+	for _, w := range []struct {
+		f     installedFilter
+		names string
+	}{
+		{filterTop, "docker-desktop fd fontbase git lua-language-server"},
+		{filterAll, "docker-desktop fd fontbase git json-c lua-language-server pcre2"},
+		{filterFormulae, "fd git json-c lua-language-server pcre2"},
+		{filterCasks, "docker-desktop fontbase"},
+		{filterDeps, "json-c pcre2"},
+		{filterPinned, "git"},
+	} {
+		it.filter = w.f
+		it.apply()
 		if got := rowNames(it); got != w.names {
-			t.Errorf("view %s: got %q, want %q", w.view, got, w.names)
+			t.Errorf("view %s: got %q, want %q", views[w.f].name, got, w.names)
 		}
-	}
-	it.update(press("F"))
-	if views[it.filter].name != "Dependencies" {
-		t.Errorf("F should step back from Top-level to Dependencies, got %s", views[it.filter].name)
+		if got, want := it.count(w.f), len(strings.Fields(w.names)); got != want {
+			t.Errorf("view %s: count %d, want %d", views[w.f].name, got, want)
+		}
 	}
 }
 
 func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
 	it := newFixtureInstalled(t)
 	out := stripANSI(it.view(nil))
-	for _, want := range []string{"Top-level 5", "All 7", "Apps 2", "Dependencies 2",
+	for _, want := range []string{"Top-level 5", "All 7", "Casks 2", "Dependencies 2", "Formulae 5", "Pinned 1",
 		"Things you installed that nothing else needs", "f/F to switch"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q:\n%s", want, out)
@@ -65,8 +63,8 @@ func TestInstalledViewBarShowsEveryViewAndExplainsTheActiveOne(t *testing.T) {
 	}
 	it.update(press("f"))
 	it.update(press("f"))
-	if out := stripANSI(it.view(nil)); !strings.Contains(out, "macOS apps (casks)") {
-		t.Errorf("the Apps view should explain itself:\n%s", out)
+	if out := stripANSI(it.view(nil)); !strings.Contains(out, "macOS apps and fonts (casks)") {
+		t.Errorf("the Casks view should explain itself:\n%s", out)
 	}
 }
 
@@ -78,7 +76,7 @@ func TestInstalledViewBarFitsNarrowPanes(t *testing.T) {
 		t.Errorf("rendered %dx%d, want 44x24", w, h)
 	}
 	plain := stripANSI(out)
-	for _, want := range []string{"Top 5", "All 7", "Apps 2", "Deps 2", "…  f/F"} {
+	for _, want := range []string{"Top 5", "All 7", "Casks 2", "Deps 2", "…  f/F"} {
 		if !strings.Contains(plain, want) {
 			t.Errorf("narrow bar should use short names, missing %q:\n%s", want, plain)
 		}
