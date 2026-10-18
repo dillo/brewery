@@ -396,10 +396,7 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case takeoverDoneMsg:
 		return a.takeoverDone(msg)
 	case quitNowMsg:
-		if a.proc == nil {
-			return nil // the job has stopped and brewery is already saving it on the way out
-		}
-		return a.quitNow()
+		return a.quitDue()
 	case logMsg:
 		a.gotLog(msg)
 	case pagerDoneMsg:
@@ -407,24 +404,44 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case openedMsg, copiedMsg:
 		a.linkDone(msg)
 	case completionsMsg:
-		if msg.err == nil {
-			a.comp = msg.comp // without them, only brewery's own commands complete
-		}
+		a.gotCompletions(msg)
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
 	case tea.PasteMsg:
-		switch {
-		case a.mode == modeInsert && a.proc != nil:
-			_, _ = a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
-		case a.mode == modeCommand:
-			cmd := a.cmd.update(msg)
-			a.suggest(false)
-			return cmd
-		case a.mode == modeFilter:
-			return a.filterKey(msg)
-		}
+		return a.paste(msg)
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
+	}
+	return nil
+}
+
+// quitDue quits at once, unless the job has already stopped.
+func (a *App) quitDue() tea.Cmd {
+	if a.proc == nil {
+		return nil // the job has stopped and brewery is already saving it on the way out
+	}
+	return a.quitNow()
+}
+
+// gotCompletions keeps the shell completions that loaded.
+func (a *App) gotCompletions(msg completionsMsg) {
+	if msg.err == nil {
+		a.comp = msg.comp // without them, only brewery's own commands complete
+	}
+}
+
+// paste sends pasted text to the job in insert mode, or to the prompt
+// being typed. Anywhere else it is ignored.
+func (a *App) paste(msg tea.PasteMsg) tea.Cmd {
+	switch {
+	case a.mode == modeInsert && a.proc != nil:
+		_, _ = a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
+	case a.mode == modeCommand:
+		cmd := a.cmd.update(msg)
+		a.suggest(false)
+		return cmd
+	case a.mode == modeFilter:
+		return a.filterKey(msg)
 	}
 	return nil
 }
@@ -742,20 +759,30 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 		a.focus = colList
 		return nil
 	case a.focus == colDetails:
-		switch a.tab {
-		case tabInstalled:
-			a.installed.scroll(k)
-		case tabDiscover:
-			a.discover.scroll(k)
-		case tabServices:
-			a.scrollLog(k)
-		case tabHistory:
-			a.jobs.scroll(k)
-		case tabMaintenance:
-			a.maint.scroll(k)
-		}
+		a.scrollDetails(k)
 		return nil
 	}
+	return a.listUpdate(msg)
+}
+
+// scrollDetails scrolls the details of the current tab.
+func (a *App) scrollDetails(k string) {
+	switch a.tab {
+	case tabInstalled:
+		a.installed.scroll(k)
+	case tabDiscover:
+		a.discover.scroll(k)
+	case tabServices:
+		a.scrollLog(k)
+	case tabHistory:
+		a.jobs.scroll(k)
+	case tabMaintenance:
+		a.maint.scroll(k)
+	}
+}
+
+// listUpdate gives the key to the current tab's list.
+func (a *App) listUpdate(msg tea.KeyPressMsg) tea.Cmd {
 	switch a.tab {
 	case tabInstalled:
 		return a.installed.update(msg)

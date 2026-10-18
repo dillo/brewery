@@ -41,41 +41,83 @@ var (
 // actionKey handles the keys that ask brew to do something. ok is false
 // when k is not an action on the current tab.
 func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
-	switch {
-	case k == "U":
+	switch k {
+	case "U":
 		return a.brewUpdate(), true
-	case k == "c":
+	case "c":
 		return a.askCleanup(), true
-	case k == "space" && (a.tab == tabInstalled || a.tab == tabOutdated):
+	}
+	switch a.tab {
+	case tabInstalled:
+		return a.installedKey(k)
+	case tabOutdated:
+		return a.outdatedKey(k)
+	case tabServices:
+		return a.servicesKey(k)
+	case tabHistory:
+		if k == "R" {
+			a.askRunAgain()
+			return nil, true
+		}
+	case tabTaps:
+		if k == "x" {
+			a.askUntap()
+			return nil, true
+		}
+	case tabDiscover:
+		if k == "a" {
+			return a.askInstall(), true
+		}
+	}
+	return nil, false
+}
+
+// markKey handles the keys that Installed and Outdated share: space marks
+// a row, and u upgrades the marked rows or else the selected one.
+func (a *App) markKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "space":
 		return a.toggleMark(), true
-	case k == "u" && (a.tab == tabInstalled || a.tab == tabOutdated):
+	case "u":
 		if a.marks() > 0 {
 			return a.upgradeMarked(), true
 		}
 		return a.upgradeSelected(), true
-	case k == "x" && a.tab == tabInstalled:
+	}
+	return nil, false
+}
+
+// installedKey handles the action keys on Installed.
+func (a *App) installedKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "x":
 		if a.marks() > 0 {
 			a.askUninstallMarked()
 			return nil, true
 		}
 		a.askUninstall()
 		return nil, true
-	case k == "p" && a.tab == tabInstalled:
+	case "p":
 		return a.togglePin(), true
-	case k == "A" && a.tab == tabOutdated:
+	}
+	return a.markKey(k)
+}
+
+// outdatedKey handles the action keys on Outdated.
+func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
+	if k == "A" {
 		return a.askUpgradeAll(), true
-	case a.tab == tabServices && (k == "s" || k == "S" || k == "R"):
+	}
+	return a.markKey(k)
+}
+
+// servicesKey handles the action keys on Services.
+func (a *App) servicesKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "s", "S", "R":
 		return a.serviceKey(k), true
-	case a.tab == tabHistory && k == "R":
-		a.askRunAgain()
-		return nil, true
-	case a.tab == tabServices && k == "L":
+	case "L":
 		return a.openLog(), true
-	case a.tab == tabTaps && k == "x":
-		a.askUntap()
-		return nil, true
-	case a.tab == tabDiscover && k == "a":
-		return a.askInstall(), true
 	}
 	return nil, false
 }
