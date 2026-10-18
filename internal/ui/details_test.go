@@ -106,6 +106,7 @@ func TestDiscoverPreviewFailsAndWaits(t *testing.T) {
 	a, _ = newDiscoverApp(t)
 	show(t, a, "Popular tools")
 	a.selectEntry(entryIndex("Search all")) // to All, and brew's answer about abcl hasn't come
+	a.layout()                              // as Update would
 	if out := stripANSI(a.render()); !strings.Contains(out, "asking brew…") {
 		t.Errorf("want a note while brew is asked:\n%s", out)
 	}

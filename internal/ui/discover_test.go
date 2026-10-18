@@ -234,6 +234,7 @@ func TestDiscoverHasNoDetailsFocusBeforeTheCatalogue(t *testing.T) {
 func TestMovingToLoadingDiscoverLandsOnItsList(t *testing.T) {
 	a := newTestApp(t, newFakeSource(t))
 	a.UseCatalog(newFakeCatalog(t))
+	drain(t, a, a.Init()) // the installed list needs rows for details
 	show(t, a, "All")
 	keys(t, a, "l")
 	if a.focus != colDetails {

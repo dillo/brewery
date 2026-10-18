@@ -163,9 +163,9 @@ func TestEmptyJobsView(t *testing.T) {
 	if out := stripANSI(a.render()); !strings.Contains(out, "no jobs yet") {
 		t.Errorf("empty History:\n%s", out)
 	}
-	keys(t, a, "enter") // no job, so empty details
-	if a.focus != colDetails {
-		t.Errorf("enter on an empty History focuses the details: %d", a.focus)
+	keys(t, a, "enter") // no job, so no details to focus
+	if a.focus != colList {
+		t.Errorf("enter on an empty History keeps the list: %d", a.focus)
 	}
 	if title, body := a.recordPreview(60, 30); title != "Details" || body != "" {
 		t.Errorf("an empty History's details are empty: %q, %q", title, body)
@@ -217,5 +217,48 @@ func TestJobRows(t *testing.T) {
 	}
 	if rows[0][0] != theme.Tint(testStyles.P.Red, "✗ exit 1") || rows[1][0] != theme.Tint(testStyles.P.Green, "✓ done") {
 		t.Errorf("statuses should be colored: %q, %q", rows[0][0], rows[1][0])
+	}
+}
+
+func TestHistoryRecordDetails(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	started := time.Date(2026, 3, 4, 17, 5, 0, 0, time.UTC)
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{
+		{Title: "upgrade", Args: []string{"upgrade"}, State: jobs.Canceled, Started: started, Ended: started.Add(time.Minute)},
+	})
+	show(t, a, "History")
+	out := stripANSI(a.render())
+	var list, details strings.Builder
+	for line := range strings.SplitSeq(out, "\n") {
+		panes := strings.Split(line, "││") // the sidebar, the list and the details
+		if len(panes) == 3 {
+			list.WriteString(panes[1] + "\n")
+			details.WriteString(panes[2] + "\n")
+		}
+	}
+	if !strings.Contains(list.String(), "stopped") {
+		t.Errorf("a canceled job reads stopped in the list:\n%s", out)
+	}
+	if !strings.Contains(details.String(), "stopped") {
+		t.Errorf("a canceled job reads stopped in the details:\n%s", out)
+	}
+	if !strings.Contains(out, "nothing printed") {
+		t.Errorf("a job with no output says so:\n%s", out)
+	}
+	if !strings.Contains(out, "2026-03-04 17:05") {
+		t.Errorf("started shows the date and time:\n%s", out)
+	}
+}
+
+func TestHistoryStartedUsesTheClockZone(t *testing.T) {
+	zone := time.FixedZone("test", 5*3600+1800)
+	a := newJobApp(t, &fakeStarter{})
+	a.now = func() time.Time { return testNow.In(zone) }
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{
+		{Title: "pin git", Args: []string{"pin", "git"}, State: jobs.Done, Started: testNow, Ended: testNow, Output: "ok\r\n"},
+	})
+	show(t, a, "History")
+	if out := stripANSI(a.render()); !strings.Contains(out, "2026-10-13 15:00") {
+		t.Errorf("started is in the app's zone (09:30 UTC is 15:00 at +5:30):\n%s", out)
 	}
 }

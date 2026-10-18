@@ -1,10 +1,14 @@
 package ui
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 func TestColumnsFor(t *testing.T) {
@@ -40,6 +44,8 @@ func TestColumnsFor(t *testing.T) {
 		{82, colSidebar, false, columns{22, 60, 0}},
 		{81, colSidebar, false, columns{81, 0, 0}},
 		{81, colList, false, columns{0, 81, 0}},
+		{81, colDetails, false, columns{0, 81, 0}}, // a details focus is the list's
+		{110, colList, false, columns{22, 88, 0}},
 	} {
 		if got := columnsFor(tt.w, tt.focus, tt.hasDetails); got != tt.want {
 			t.Errorf("columnsFor(%d, %d, %v) = %+v, want %+v", tt.w, tt.focus, tt.hasDetails, got, tt.want)
@@ -123,5 +129,82 @@ func TestDetailsShowAloneAfterAResize(t *testing.T) {
 func TestHistoryHasDetails(t *testing.T) {
 	if !hasDetails(tabHistory) {
 		t.Error("History shows the selected job's details beside its list")
+	}
+}
+
+func TestEmptyListKeepsTheFocus(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, nil)
+	show(t, a, "History")
+	keys(t, a, "enter")
+	if a.focus != colList {
+		t.Errorf("enter on an empty History: focus %d, want the list", a.focus)
+	}
+	keys(t, a, "l", "tab")
+	if a.focus != colList {
+		t.Errorf("l and tab on an empty list: focus %d, want the list", a.focus)
+	}
+	if hint := stripANSI(a.statusBar()); strings.Contains(hint, "j/k scroll") {
+		t.Errorf("an empty list's hints don't offer scrolling: %s", hint)
+	}
+}
+
+func TestFilteringToNothingLeavesTheDetails(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Top-level")
+	keys(t, a, "l")
+	keys(t, a, "/")
+	typeText(t, a, "zzzq") // matches nothing
+	keys(t, a, "enter")
+	if out := stripANSI(a.render()); a.focus != colList || !strings.Contains(out, a.installed.emptyNote()) {
+		t.Errorf("a filter that empties the list shows its note in the list: focus %d\n%s", a.focus, out)
+	}
+}
+
+// The guard in Update, not the filter, takes the focus off details that a
+// refresh left with nothing to show.
+func TestRefreshEmptyingAListLeavesTheDetails(t *testing.T) {
+	t.Run("services", func(t *testing.T) {
+		a := newJobApp(t, &fakeStarter{})
+		show(t, a, "Services")
+		keys(t, a, "l")
+		if a.focus != colDetails {
+			t.Fatalf("l: focus %d", a.focus)
+		}
+		a.Update(resultMsg{q: qServices, services: []brew.Service{}})
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "s start") {
+			t.Errorf("focus %d, hints %q", a.focus, h)
+		}
+	})
+	t.Run("pinned", func(t *testing.T) {
+		a := newJobApp(t, &fakeStarter{})
+		show(t, a, "Pinned") // the fixture pins git
+		pkgs := slices.Clone(a.snap.Packages)
+		keys(t, a, "l")
+		if a.focus != colDetails {
+			t.Fatalf("l on a pinned package: focus %d", a.focus)
+		}
+		unpinned := slices.Clone(pkgs)
+		for i := range unpinned {
+			unpinned[i].Pinned = false
+		}
+		a.Update(resultMsg{q: qInstalled, packages: unpinned})
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "u upgrade") || !strings.Contains(h, "l details") {
+			t.Errorf("focus %d, hints %q", a.focus, h)
+		}
+	})
+}
+
+func TestSwitchingToAnEmptyTabKeepsTheList(t *testing.T) {
+	a, _ := newDiscoverApp(t)
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, nil)
+	show(t, a, "Search all")
+	keys(t, a, "l")
+	if a.focus != colDetails {
+		t.Fatalf("l on Search all: focus %d (catalogue loaded: %v)", a.focus, a.discover.loaded)
+	}
+	show(t, a, "History")
+	if label(a) != "History" || a.focus != colList {
+		t.Errorf("onto an empty History: %s, focus %d", label(a), a.focus)
 	}
 }

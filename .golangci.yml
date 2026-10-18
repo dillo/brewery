@@ -8,6 +8,7 @@ linters:
     - fatcontext
     - gocognit
     - gocritic
+    - gocyclo
     - misspell
     - modernize
     - nestif

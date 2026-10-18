@@ -9,6 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/jobs"
 )
 
@@ -58,19 +59,72 @@ func TestMaintenanceDetails(t *testing.T) {
 	}
 }
 
+// rowLine is the render's line for a Maintenance row, found by its task name.
+func rowLine(t *testing.T, a *App, task string) string {
+	t.Helper()
+	for l := range strings.SplitSeq(stripANSI(a.render()), "\n") {
+		// the render's panes sit side by side: the sidebar, the list, the details
+		if panes := strings.Split(l, "││"); len(panes) > 1 && strings.HasPrefix(strings.TrimLeft(panes[1], " │"), task+" ") {
+			return panes[1]
+		}
+	}
+	t.Fatalf("no row for %q:\n%s", task, stripANSI(a.render()))
+	return ""
+}
+
 func TestMaintenanceStates(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.loaded[qDoctor], a.loaded[qCleanup] = false, false
 	show(t, a, "Maintenance")
-	if out := stripANSI(a.render()); strings.Count(out, "…") < 2 {
-		t.Errorf("doctor and cleanup still running read as loading:\n%s", out)
+	for _, task := range []string{"Doctor", "Cleanup"} {
+		if l := rowLine(t, a, task); !strings.Contains(l, "…") {
+			t.Errorf("%s still running reads as loading: %q", task, l)
+		}
 	}
 	a.loaded[qDoctor], a.loaded[qCleanup] = true, true
 	a.errs[qDoctor], a.errs[qCleanup] = errors.New("boom"), errors.New("boom")
 	a.home.doctorErr = a.errs[qDoctor]
 	a.Update(nil)
-	if out := stripANSI(a.render()); strings.Count(out, "✗ failed") < 2 {
-		t.Errorf("failed doctor and cleanup read as failed:\n%s", out)
+	for _, task := range []string{"Doctor", "Cleanup"} {
+		if l := rowLine(t, a, task); !strings.Contains(l, "✗ failed") {
+			t.Errorf("failed %s reads as failed: %q", task, l)
+		}
+	}
+}
+
+func TestMaintenanceRowsWhenClean(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.snap.Doctor, a.snap.DoctorRan = nil, true
+	a.loaded[qDoctor], a.loaded[qCleanup] = true, true
+	a.snap.Cleanup = brew.Cleanup{}
+	show(t, a, "Maintenance")
+	if l := rowLine(t, a, "Doctor"); !strings.Contains(l, "all clear") {
+		t.Errorf("no warnings reads all clear: %q", l)
+	}
+	if l := rowLine(t, a, "Cleanup"); !strings.Contains(l, "nothing to clean") {
+		t.Errorf("no estimates reads nothing to clean: %q", l)
+	}
+	a.snap.Cleanup = brew.Cleanup{All: brew.CleanupEstimate{Items: 3, Size: "1.2GB"}}
+	a.Update(nil)
+	if l := rowLine(t, a, "Cleanup"); !strings.Contains(l, "frees 1.2GB (whole cache)") {
+		t.Errorf("only the whole cache freeing says so: %q", l)
+	}
+}
+
+func TestMaintenanceUpdateDetails(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Maintenance")
+	keys(t, a, "j", "j")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "unknown") {
+		t.Errorf("with no version the details say unknown:\n%s", out)
+	}
+	ended := a.now().Add(-3 * time.Hour)
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{{Title: "update", Args: []string{"update"},
+		State: jobs.Done, Started: ended, Ended: ended}})
+	a.Update(nil)
+	if out := stripANSI(a.render()); !strings.Contains(out, "3h ago · 2026-10-13 06:30") {
+		t.Errorf("after an update the details say how long ago and when:\n%s", out)
 	}
 }
 

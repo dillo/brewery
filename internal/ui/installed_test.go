@@ -129,17 +129,17 @@ func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
 
 func TestInstalledEmptyFilter(t *testing.T) {
 	it := newInstalledTab(testStyles)
-	it.resize(55, 45, 12)
+	it.resize(100, 0, 12) // an empty view has no details column
 	it.setData(nil, state.NewIndex(nil))
-	if out := stripANSI(it.view(nil, colList)); !strings.Contains(out, "loading…") || strings.Contains(out, "nothing in this view") {
-		t.Errorf("before its first result the preview should say it is loading:\n%s", out)
+	if out := stripANSI(it.view(nil, colList)); strings.Contains(out, "nothing in this view") {
+		t.Errorf("before its first result the list shows the skeleton, not the empty note:\n%s", out)
 	}
 	it.loaded = true
 	if _, ok := it.selected(); ok {
 		t.Error("nothing should be selected in an empty list")
 	}
 	if out := stripANSI(it.view(nil, colList)); !strings.Contains(out, "nothing in this view") {
-		t.Errorf("empty preview missing:\n%s", out)
+		t.Errorf("empty note missing:\n%s", out)
 	}
 }
 
@@ -240,6 +240,9 @@ func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	}
 	for i := 0; label(a) != "Outdated" && i < 10; i++ {
 		keys(t, a, "]") // Outdated has no details: the focus drops to its list
+	}
+	if a.focus != colList {
+		t.Errorf("on Outdated the focus is the list's, got %d", a.focus)
 	}
 	for i := 0; label(a) != "Top-level" && i < 10; i++ {
 		keys(t, a, "[")

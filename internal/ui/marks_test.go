@@ -183,3 +183,21 @@ func TestUninstallSeveralListsHiddenMarks(t *testing.T) {
 		t.Errorf("the hidden mark is listed too:\n%s", out)
 	}
 }
+
+func TestSpaceInTheDetailsMarksAndAdvances(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Top-level")
+	first, _ := a.installed.selected()
+	keys(t, a, "tab")
+	if a.focus != colDetails {
+		t.Fatal("tab should focus the details")
+	}
+	keys(t, a, "space")
+	next, _ := a.installed.selected()
+	if a.marks() != 1 || next.Name == first.Name {
+		t.Errorf("space marks %s (%d marked) and moves on, now on %s", first.Name, a.marks(), next.Name)
+	}
+	if !strings.Contains(stripANSI(a.render()), "● "+first.Name) {
+		t.Errorf("%s should show as marked", first.Name)
+	}
+}

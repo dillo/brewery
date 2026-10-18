@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -277,5 +279,181 @@ func TestLogKeyWithoutAViewer(t *testing.T) {
 	keys(t, a, "L")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "the log viewer isn't available") {
 		t.Errorf("status bar %q", bar)
+	}
+}
+
+// longLog is n log lines: "log line 1" to "log line n".
+func longLog(n int) string {
+	lines := make([]string, n)
+	for i := range lines {
+		lines[i] = fmt.Sprintf("log line %d", i+1)
+	}
+	return strings.Join(lines, "\n")
+}
+
+const (
+	pgLog    = "/opt/homebrew/var/log/postgresql@16.log"
+	redisLog = "/opt/homebrew/var/log/redis.log"
+)
+
+func TestServicesDetailsScrollTheLog(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "log line 200") {
+		t.Fatalf("the details start at the newest line:\n%s", out)
+	}
+	keys(t, a, "k")
+	if out := stripANSI(a.render()); strings.Contains(out, "log line 200") || !strings.Contains(out, "log line 199") || !strings.Contains(out, "The log · 1 line back") {
+		t.Errorf("k scrolls back one line:\n%s", out)
+	}
+	keys(t, a, "j")
+	if !strings.Contains(stripANSI(a.render()), "log line 200") {
+		t.Error("j scrolls forward again")
+	}
+	keys(t, a, "g", "g")
+	if !regexp.MustCompile(`\blog line 1\b`).MatchString(stripANSI(a.render())) {
+		t.Error("gg goes to the oldest line read")
+	}
+	keys(t, a, "G")
+	if !strings.Contains(stripANSI(a.render()), "log line 200") {
+		t.Error("G goes back to the newest line")
+	}
+}
+
+func TestShortLogDoesNotScroll(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: "only line\n"}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	before := stripANSI(a.render())
+	keys(t, a, "k", "k", "ctrl+u")
+	if after := stripANSI(a.render()); after != before {
+		t.Errorf("a log that fits doesn't move:\n%s", after)
+	}
+}
+
+func TestLogScrollStartsAtTheNewestForEachService(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	logs := &fakeLogs{text: map[string]string{pgLog: longLog(200), redisLog: longLog(300)}}
+	a.readLog = logs.read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	keys(t, a, "k", "k", "k")
+	if !strings.Contains(stripANSI(a.render()), "3 lines back") {
+		t.Fatalf("scrolled back on the first service:\n%s", stripANSI(a.render()))
+	}
+	keys(t, a, "h", "j")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "log line 300") || !strings.Contains(out, "End of the log") {
+		t.Errorf("the next service's log starts at its newest line:\n%s", out)
+	}
+}
+
+func TestLogScrollKeepsItsPlaceOnARefresh(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	keys(t, a, "k", "k")
+	_, cmd := a.Update(resultMsg{q: qServices, services: a.snap.Services})
+	settle(t, a, cmd)
+	if out := stripANSI(a.render()); !strings.Contains(out, "2 lines back") {
+		t.Errorf("a fresh read of the same log keeps the place:\n%s", out)
+	}
+}
+
+// newestVisible is the number of the newest "log line N" in the output.
+func newestVisible(t *testing.T, out string) int {
+	t.Helper()
+	m := regexp.MustCompile(`log line (\d+)`).FindAllStringSubmatch(out, -1)
+	if len(m) == 0 {
+		t.Fatalf("no log lines shown:\n%s", out)
+	}
+	n, _ := strconv.Atoi(m[len(m)-1][1])
+	return n
+}
+
+// logRoom is how many log lines the Services details pane shows, and so
+// how far ctrl+d pages: half of it.
+func logRoom(a *App) int {
+	_, _, _, room, _ := a.logWindow(a.services.pvW, a.services.h)
+	return room
+}
+
+func TestLogScrollPagesByHalfThePane(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	page := max(logRoom(a)/2, 1)
+	if newestVisible(t, stripANSI(a.render())) != 200 {
+		t.Fatal("starts at the newest line")
+	}
+	keys(t, a, "ctrl+u")
+	if got := newestVisible(t, stripANSI(a.render())); got != 200-page {
+		t.Errorf("ctrl+u pages back %d lines: newest is %d", page, got)
+	}
+	keys(t, a, "ctrl+u", "ctrl+d")
+	if got := newestVisible(t, stripANSI(a.render())); got != 200-page {
+		t.Errorf("ctrl+d pages forward again: newest is %d", got)
+	}
+	keys(t, a, "ctrl+d", "ctrl+d")
+	if got := newestVisible(t, stripANSI(a.render())); got != 200 {
+		t.Errorf("paging forward stops at the newest: %d", got)
+	}
+}
+
+func TestLogScrollReclampsWhenThePaneGrows(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	keys(t, a, "g", "g")
+	a.Update(tea.WindowSizeMsg{Width: a.width, Height: a.height + 10})
+	keys(t, a, "k")
+	out := stripANSI(a.render())
+	if !regexp.MustCompile(`\blog line 1\b`).MatchString(out) {
+		t.Errorf("k at the oldest line still shows it:\n%s", out)
+	}
+	before := newestVisible(t, out)
+	keys(t, a, "j")
+	if got := newestVisible(t, stripANSI(a.render())); got != before+1 {
+		t.Errorf("j moves forward at once: newest %d, then %d", before, got)
+	}
+}
+
+func TestLogEndingInANewlineShowsItsNewestLine(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200) + "\n"}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	lines := strings.Split(strings.TrimRight(stripANSI(a.render()), "\n"), "\n")
+	for i, l := range lines {
+		if strings.Contains(l, "log line 200") {
+			if next := strings.TrimSpace(strings.Trim(lines[i+1], "│ ╰╯─")); next != "" {
+				t.Errorf("the newest line is the last in the pane, not %q", next)
+			}
+			return
+		}
+	}
+	t.Fatal("log line 200 isn't shown")
+}
+
+func TestServicesDetailsFocusAtFullWidth(t *testing.T) {
+	for _, back := range []string{"h", "esc"} {
+		a := newJobApp(t, &fakeStarter{})
+		a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+		show(t, a, "Services")
+		keys(t, a, "l")
+		if hint := a.actionHints(); a.focus != colDetails || !strings.Contains(hint, "j/k scroll the log · h back to the list") {
+			t.Fatalf("l focuses Services' details: focus %d, hint %q", a.focus, hint)
+		}
+		keys(t, a, back)
+		if hint := a.actionHints(); a.focus != colList || strings.Contains(hint, "scroll the log") {
+			t.Errorf("%s returns to the list: focus %d, hint %q", back, a.focus, hint)
+		}
 	}
 }

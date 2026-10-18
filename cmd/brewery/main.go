@@ -35,6 +35,13 @@ var (
 	brewVersion = readBrewVersion
 )
 
+// runProgram runs the TUI until it quits; tests swap it for one that needs
+// no terminal.
+var runProgram = func(m tea.Model) error {
+	_, err := tea.NewProgram(m).Run()
+	return err
+}
+
 // readBrewVersion asks the brew at bin for its version. It takes about
 // 50ms; a brew that hangs is given 5 seconds.
 func readBrewVersion(bin string) (brew.Version, error) {
@@ -129,7 +136,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if crashErr == nil {
 		terminal = crash.terminal
 	}
-	_, err = tea.NewProgram(app).Run()
+	err = runProgram(app)
 	if crashErr == nil {
 		if path := crash.stop(time.Now()); path != "" {
 			fmt.Fprintf(stderr, "brewery crashed. What happened is in %s; please include it when reporting this.\n", path)

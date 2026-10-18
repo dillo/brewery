@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
+
 	"github.com/dillo/brewery/internal/jobs"
 )
 
@@ -165,5 +167,20 @@ func TestGGOnOutdated(t *testing.T) {
 	keys(t, a, "j", "g", "g", "u")
 	if a.outdated.cursor() != 0 {
 		t.Errorf("gg goes to the top of Outdated: cursor %d", a.outdated.cursor())
+	}
+}
+
+func TestYInTheDetailsAloneCopiesTheName(t *testing.T) {
+	a, l := newLinksApp(t)
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 30})
+	show(t, a, "Top-level")
+	keys(t, a, "l")
+	if a.focus != colDetails || strings.Contains(stripANSI(a.render()), "NAME") {
+		t.Fatalf("at 90 columns the details stand alone: focus %d", a.focus)
+	}
+	p, _ := a.installed.selected()
+	keys(t, a, "y")
+	if !reflect.DeepEqual(l.copied, []string{p.Name}) {
+		t.Errorf("copied %q, want %q", l.copied, p.Name)
 	}
 }

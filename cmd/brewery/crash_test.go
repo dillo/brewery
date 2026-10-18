@@ -144,3 +144,68 @@ func TestCrashLogHandsOutTheTerminalsStderr(t *testing.T) {
 		t.Error("terminal must not be the crash file")
 	}
 }
+
+func TestCrashLogNeedsAWritableDir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can write to a read-only directory")
+	}
+	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	real := os.Stderr
+	var before, after unix.Stat_t
+	if err := unix.Fstat(2, &before); err != nil {
+		t.Fatal(err)
+	}
+	if c, err := startCrashLog(dir); err == nil {
+		c.stop(crashAt)
+		t.Fatal("startCrashLog should fail when it can't create the file")
+	}
+	if err := unix.Fstat(2, &after); err != nil {
+		t.Fatal(err)
+	}
+	if os.Stderr != real || before.Dev != after.Dev || before.Ino != after.Ino {
+		t.Error("a crash log that couldn't start must leave stderr alone")
+	}
+}
+
+func TestCrashLogStaysPutWhenItCantBeRenamed(t *testing.T) {
+	dir := t.TempDir()
+	// A non-empty directory holds the crash log's name: the rename fails.
+	if err := os.MkdirAll(filepath.Join(dir, "crash-20261016-150405.log", "x"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	c, err := startCrashLog(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Fprint(os.Stderr, "boom\n")
+	path := c.stop(crashAt)
+	if path != c.f.Name() {
+		t.Errorf("stop returned %q, want the temp file %q, kept where it is", path, c.f.Name())
+	}
+	if b, err := os.ReadFile(path); err != nil || string(b) != "boom\n" {
+		t.Errorf("crash log = %q, %v", b, err)
+	}
+}
+
+func TestCrashLogAdoptsALeftoverWithoutAPid(t *testing.T) {
+	dir := t.TempDir()
+	odd := filepath.Join(dir, ".crash-x-1.log") // names no process, so none is using it
+	if err := os.WriteFile(odd, []byte("fatal error\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(odd, crashAt, crashAt); err != nil {
+		t.Fatal(err)
+	}
+	c, err := startCrashLog(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.stop(crashAt)
+	if want := []string{filepath.Join(dir, "crash-20261016-150405.log")}; !slices.Equal(c.earlier, want) {
+		t.Errorf("earlier = %v, want %v", c.earlier, want)
+	}
+}
