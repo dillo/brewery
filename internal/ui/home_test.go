@@ -147,8 +147,8 @@ func TestHomePanesUnderTheTiles(t *testing.T) {
 	if h.area != areaJobs {
 		t.Fatalf("l from Doctor -> area %d, want Recent jobs", h.area)
 	}
-	if got := h.update(press("enter"), snap); got != showJobs {
-		t.Errorf("enter on Recent jobs -> %d, want showJobs", got)
+	if got := h.update(press("enter"), snap); got != showHistory {
+		t.Errorf("enter on Recent jobs -> %d, want showHistory", got)
 	}
 	h.update(press("up"), snap)
 	if h.area != areaTiles || h.sel != 2 {
@@ -238,7 +238,7 @@ func TestHomeShowsRecentJobs(t *testing.T) {
 			t.Errorf("at %v the view is %dx%d", size, lipgloss.Width(view), lipgloss.Height(view))
 		}
 		out := stripANSI(view)
-		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", "enter shows them all"} {
+		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", "5 History has them all"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("at %v missing %q:\n%s", size, want, out)
 			}
@@ -297,5 +297,17 @@ func TestHomeOutdatedTileCountsPinned(t *testing.T) {
 	snap.Outdated[1].Pinned = true // nothing left that U would upgrade
 	if got := h.tiles(snap)[1]; got.value != "2" || got.detail != "2 pinned · nothing to upgrade" || got.style.GetForeground() != testStyles.Muted.GetForeground() {
 		t.Errorf("tile %q (%q)", got.value, got.detail)
+	}
+}
+
+func TestRecentJobsOpensHistory(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "l", "j", "l") // the first tile, down to Doctor, across to Recent jobs
+	if !strings.Contains(stripANSI(a.render()), "5 History has them all") {
+		t.Errorf("Recent jobs' hint names History:\n%s", stripANSI(a.render()))
+	}
+	keys(t, a, "enter")
+	if label(a) != "History" || a.focus != colList {
+		t.Errorf("enter on Recent jobs: %s, focus %d", label(a), a.focus)
 	}
 }

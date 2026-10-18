@@ -167,7 +167,7 @@ func (a *App) execute(line string) tea.Cmd {
 	case "q", "quit":
 		return a.askQuit()
 	case "jobs":
-		return a.openJobs()
+		return a.showHistory()
 	}
 	if args[0] == "install" && a.queue.Pending(args) != nil {
 		return a.note(strings.Join(args, " ") + " is already queued")

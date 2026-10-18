@@ -341,11 +341,8 @@ func (a *App) serviceKey(k string) tea.Cmd {
 
 // actionHints are the status-bar hints for where the focus is.
 func (a *App) actionHints() string {
-	if a.jobsOpen {
-		return "enter show output · esc close"
-	}
 	if a.focus == colSidebar {
-		return "j/k choose · l open · 1-4 sections"
+		return "j/k choose · l open · 1-5 sections"
 	}
 	switch a.tab {
 	case tabInstalled:
@@ -367,6 +364,11 @@ func (a *App) actionHints() string {
 			return "j/k scroll · h back to the list"
 		}
 		return "a install · / search · l details · r refetch"
+	case tabHistory:
+		if a.focus == colDetails {
+			return "j/k scroll · h back to the list"
+		}
+		return "l details · / filter by command · y copy the command"
 	}
 	return "h/l move · j/k down, up · enter open · r refresh · U update · c clean up"
 }

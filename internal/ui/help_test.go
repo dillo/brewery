@@ -38,13 +38,13 @@ func TestServicesDetailsHints(t *testing.T) {
 	}
 }
 
-func TestHelpInTheJobsView(t *testing.T) {
+func TestHelpInHistory(t *testing.T) {
 	a := newJobsViewApp(t, &fakeStarter{})
 	keys(t, a, ":")
 	typeText(t, a, "jobs")
 	keys(t, a, "enter", "?")
-	if out := stripANSI(a.render()); !a.help || !strings.Contains(out, "replay the job's output") {
-		t.Errorf("? works in :jobs too:\n%s", out)
+	if out := stripANSI(a.render()); !a.help || !strings.Contains(out, "details: the command and its output") {
+		t.Errorf("? works in History too:\n%s", out)
 	}
 }
 

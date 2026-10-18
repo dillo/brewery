@@ -100,9 +100,9 @@ func TestFilterJobs(t *testing.T) {
 	typeText(t, a, "jobs")
 	keys(t, a, "enter", "/")
 	typeText(t, a, "pin")
-	keys(t, a, "enter", "enter") // replay the one shown
-	if a.drawer.job == nil || a.drawer.job.Title != "pin git" {
-		t.Errorf("replayed %+v, want pin git", a.drawer.job)
+	keys(t, a, "enter") // keep the filter: pin git is the one shown, and selected
+	if name, _ := a.selectedName(); name != "pin git" || a.jobs.n != 1 {
+		t.Errorf("selected %q of %d shown, want pin git alone", name, a.jobs.n)
 	}
 }
 

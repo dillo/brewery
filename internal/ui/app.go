@@ -27,6 +27,7 @@ const (
 	tabServices
 	tabTaps
 	tabDiscover
+	tabHistory
 )
 
 // tabQueries is the query each tab's data comes from. Home shows doctor.
@@ -82,11 +83,10 @@ type App struct {
 	quitGrace time.Duration // how long a running job gets to stop when brewery quits
 	quitting  bool          // brewery is waiting for the running job to stop, then exits
 
-	hist     *jobs.History // where finished jobs are saved, or nil
-	history  []jobs.Record // finished jobs, newest first
-	histErr  error         // the last save failed
-	jobs     listTab       // the ":jobs" view
-	jobsOpen bool
+	hist    *jobs.History // where finished jobs are saved, or nil
+	history []jobs.Record // finished jobs, newest first
+	histErr error         // the last save failed
+	jobs    listTab       // History's list
 
 	detailsDelay time.Duration // how long the Discover cursor rests before brew is asked
 
@@ -115,10 +115,10 @@ type App struct {
 	tab           int
 	sel           int             // the sidebar entry shown
 	focus         column          // the sidebar, the list or the details
-	lastIn        map[section]int // each section's last-used entry, for 1-4
+	lastIn        map[section]int // each section's last-used entry, for 1-5
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
-	laidOut       [7]int // width, height, drawer state, focus, tab, jobs view and whether Discover has loaded, at the last layout
+	laidOut       [6]int // width, height, drawer state, focus, tab and whether Discover has loaded, at the last layout
 
 	// brew asked a question while the command line was open; answer it
 	// once the line closes.
@@ -157,11 +157,12 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		jobs:         newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
 		discover:     newDiscoverTab(st),
 	}
-	// The history is read before the app starts, so the jobs view is never
+	// The history is read before the app starts, so History is never
 	// waiting for it.
 	a.jobs.loaded = true
 	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
+	a.jobs.preview = a.recordPreview
 	a.outdated.note = a.dataAge
 	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
@@ -338,10 +339,10 @@ func (a *App) apply(m resultMsg) {
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	cmd := a.update(msg)
-	if a.tab == tabServices && !a.jobsOpen {
+	if a.tab == tabServices {
 		cmd = tea.Batch(cmd, a.wantLog())
 	}
-	if a.tab == tabDiscover && !a.jobsOpen {
+	if a.tab == tabDiscover {
 		cmd = tea.Batch(cmd, a.wantDetails())
 	}
 	if a.promptPending && a.mode == modeNormal {
@@ -423,6 +424,10 @@ func (a *App) selectedName() (string, bool) {
 	case tabServices:
 		s, ok := a.selectedService()
 		return s.Name, ok
+	case tabHistory:
+		if i := a.jobs.cursor(); i >= 0 {
+			return a.history[i].Title, true
+		}
 	}
 	return "", false
 }
@@ -433,22 +438,18 @@ func (a *App) drawerShown() bool {
 }
 
 // layout sizes the tabs and the drawer's terminal for the current window,
-// the focus, the tab, the jobs view and the drawer. It does nothing if
+// the focus, the tab and the drawer. It does nothing if
 // none of them has changed.
 func (a *App) layout() {
 	shown := 0
 	if a.drawerShown() {
 		shown = 1
 	}
-	jobs := 0
-	if a.jobsOpen {
-		jobs = 1
-	}
 	loaded := 0
 	if a.discover.loaded {
 		loaded = 1
 	}
-	key := [7]int{a.width, a.height, shown, int(a.focus), a.tab, jobs, loaded}
+	key := [6]int{a.width, a.height, shown, int(a.focus), a.tab, loaded}
 	if a.laidOut == key {
 		return
 	}
@@ -468,18 +469,17 @@ func (a *App) layout() {
 	for tab, resize := range map[int]func(listW, pvW, h int){
 		tabInstalled: a.installed.resize, tabOutdated: a.outdated.resize,
 		tabServices: a.services.resize, tabTaps: a.taps.resize, tabDiscover: a.discover.resize,
+		tabHistory: a.jobs.resize,
 	} {
 		c := a.columnsFor(tab)
 		resize(c.list, c.details, a.tabH)
 	}
-	c := columnsFor(a.width, a.focus, false)
-	a.jobs.resize(c.list, 0, a.tabH)
 }
 
 // columnsFor is how the columns share the window for tab, as the focus
 // stands.
 func (a *App) columnsFor(tab int) columns {
-	return columnsFor(a.width, a.focus, a.tabHasDetails(tab) && !a.jobsOpen)
+	return columnsFor(a.width, a.focus, a.tabHasDetails(tab))
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -542,16 +542,11 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if cmd, ok := a.gPrefixKey(k); ok {
 		return cmd
 	}
-	if a.jobsOpen {
-		if cmd, ok := a.jobsKey(msg); ok {
-			return cmd
-		}
-	}
 	if a.focus == colSidebar {
 		if cmd, ok := a.sidebarKey(k); ok {
 			return cmd
 		}
-	} else if a.tab == tabHome && !a.jobsOpen {
+	} else if a.tab == tabHome {
 		if cmd, ok := a.homeKey(msg); ok {
 			return cmd
 		}
@@ -647,7 +642,7 @@ func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
 		if a.proc != nil {
 			a.typeIntoJob()
 		}
-	case "1", "2", "3", "4":
+	case "1", "2", "3", "4", "5":
 		return a.selectSection(section(k[0] - '1')), true
 	case "]":
 		return a.stepEntry(1), true
@@ -697,8 +692,8 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 		return a.askCleanup(), true
 	case t == leaveHome:
 		a.focus = colSidebar
-	case t == showJobs:
-		return a.openJobs(), true
+	case t == showHistory:
+		return a.showHistory(), true
 	}
 	return nil, true
 }
@@ -721,7 +716,11 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.installed.scroll(k)
 		case tabDiscover:
 			a.discover.scroll(k)
-		} // Services' details show the end of the log, which L follows: nothing to scroll
+		case tabServices:
+			a.services.scroll(k)
+		case tabHistory:
+			a.jobs.scroll(k)
+		}
 		return nil
 	}
 	switch a.tab {
@@ -735,6 +734,8 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.taps.update(msg)
 	case tabDiscover:
 		return a.discover.update(msg)
+	case tabHistory:
+		return a.jobs.update(msg)
 	}
 	return nil
 }
@@ -747,7 +748,7 @@ func (a *App) View() tea.View {
 }
 
 // hasDetails reports whether what's showing has a details column.
-func (a *App) hasDetails() bool { return !a.jobsOpen && a.tabHasDetails(a.tab) }
+func (a *App) hasDetails() bool { return a.tabHasDetails(a.tab) }
 
 // tabHasDetails is hasDetails for tab, but Discover has none until its
 // catalogue has loaded: there is no row to show them for.
@@ -764,8 +765,6 @@ func (a *App) render() string {
 	var body string
 	switch {
 	case c.list == 0 && c.details == 0: // the sidebar alone
-	case a.jobsOpen:
-		body = a.jobs.view(nil, colList)
 	case a.tab == tabHome:
 		body = a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
 	case a.tab == tabInstalled:
@@ -778,6 +777,8 @@ func (a *App) render() string {
 		body = a.taps.view(a.errs[qTaps], a.focus)
 	case a.tab == tabDiscover:
 		body = a.discover.view(a.focus)
+	case a.tab == tabHistory:
+		body = a.jobs.view(nil, a.focus)
 	}
 	if bodyH > 0 && c.side > 0 {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
@@ -852,12 +853,10 @@ func (a *App) statusBar() string {
 		badge = "RUNNING"
 	}
 	left := st.Mode(badge).Render(badge) + " " + entries[a.sel].label
-	if a.jobsOpen {
-		left = st.Mode(badge).Render(badge) + " Jobs"
-	} else if name, ok := a.selectedName(); ok {
+	if name, ok := a.selectedName(); ok {
 		left += " › " + name
 	}
-	if n := a.marks(); n > 0 && !a.jobsOpen {
+	if n := a.marks(); n > 0 {
 		left += fmt.Sprintf(" · %d marked", n)
 		if h := a.hiddenMarks(); h > 0 {
 			left += fmt.Sprintf(" · %d hidden", h)
@@ -902,11 +901,7 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	quit := "quit"
-	if a.jobsOpen {
-		quit = "close" // q closes the jobs view
-	}
-	hints := a.actionHints() + " · : command · ? help · q " + quit
+	hints := a.actionHints() + " · : command · ? help · q quit"
 	if a.drawer.job != nil && !a.drawer.open {
 		hints = "o output · " + hints
 	}

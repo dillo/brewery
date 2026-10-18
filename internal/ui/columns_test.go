@@ -34,7 +34,7 @@ func TestColumnsFor(t *testing.T) {
 		{81, colSidebar, true, columns{81, 0, 0}},
 		{81, colList, true, columns{0, 81, 0}},
 		{81, colDetails, true, columns{0, 0, 81}},
-		// no details (Home, Outdated, Taps, jobs): sidebar and list, or one
+		// no details (Home, Outdated, Taps): sidebar and list, or one
 		{140, colList, false, columns{22, 118, 0}},
 		{140, colDetails, false, columns{22, 118, 0}}, // a details focus is the list's
 		{82, colSidebar, false, columns{22, 60, 0}},
@@ -117,5 +117,11 @@ func TestDetailsShowAloneAfterAResize(t *testing.T) {
 	keys(t, a, "esc")
 	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
 		t.Errorf("esc brings back the list:\n%s", out)
+	}
+}
+
+func TestHistoryHasDetails(t *testing.T) {
+	if !hasDetails(tabHistory) {
+		t.Error("History shows the selected job's details beside its list")
 	}
 }

@@ -6,7 +6,7 @@
 │  All            7  │╭────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────╮
 │  Top-level      5  ││ Doctor                                                             ││ Recent jobs                                  │
 │  Formulae       5  ││ ⚠ The following taps are not trusted:                              ││ no jobs yet                                  │
-│  Casks          2  ││   oven-sh/bun                                                      ││ enter shows them all                         │
+│  Casks          2  ││   oven-sh/bun                                                      ││ 5 History has them all                       │
 │  Dependencies   2  ││                                                                    ││                                              │
 │  Outdated     ↑2   ││   Untap them with:                                                 ││                                              │
 │  Pinned         1  ││     brew untap oven-sh/bun                                         ││                                              │
@@ -23,8 +23,8 @@
 │  Fonts             ││                                                                    ││                                              │
 │  Search all        ││                                                                    ││                                              │
 │                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
+│ TOOLS              ││                                                                    ││                                              │
+│  History        0  ││                                                                    ││                                              │
 │                    ││                                                                    ││                                              │
 │                    ││                                                                    ││                                              │
 │                    ││                                                                    ││                                              │

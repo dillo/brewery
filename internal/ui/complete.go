@@ -17,7 +17,7 @@ import (
 type candidate struct{ text, desc string }
 
 // builtins are brewery's own commands, completed alongside brew's.
-var builtins = []candidate{{"jobs", "List finished jobs and replay their output"}}
+var builtins = []candidate{{"jobs", "Show History: finished jobs and their output"}}
 
 // everyday are the commands most people use. They complete before brew's
 // many developer commands, so "up" offers upgrade before update-report.

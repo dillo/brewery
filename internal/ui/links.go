@@ -32,9 +32,6 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 			return a.selectEntry(0), true
 		}
 		home := tea.KeyPressMsg{Code: tea.KeyHome}
-		if a.jobsOpen {
-			return a.jobs.update(home), true
-		}
 		if a.focus == colDetails {
 			return a.tabKey(home), true // gg scrolls the details to the top
 		}
@@ -49,6 +46,8 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 			return a.taps.update(home), true
 		case tabDiscover:
 			return a.discover.update(home), true
+		case tabHistory:
+			return a.jobs.update(home), true
 		}
 		return nil, true
 	case "x":
@@ -74,13 +73,11 @@ func (a *App) packageNamed(name string, kind brew.Kind) brew.Package {
 // selection is what the cursor is on in the current list: a name to copy
 // and, where there is one, a web page.
 func (a *App) selection() (name, url string, ok bool) {
-	if a.jobsOpen {
+	switch a.tab {
+	case tabHistory:
 		if i := a.jobs.cursor(); i >= 0 {
 			return "brew " + strings.Join(a.history[i].Args, " "), "", true
 		}
-		return "", "", false
-	}
-	switch a.tab {
 	case tabInstalled:
 		if p, ok := a.installed.selected(); ok {
 			return p.Name, p.Homepage, true

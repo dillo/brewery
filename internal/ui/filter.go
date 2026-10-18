@@ -33,12 +33,8 @@ func newFilterInput(st theme.Styles) textinput.Model {
 	return in
 }
 
-// filterTarget is the list "/" narrows now: the jobs view when it's open,
-// otherwise the tab's list. Home has none.
+// filterTarget is the list "/" narrows now: the tab's list. Home has none.
 func (a *App) filterTarget() filterable {
-	if a.jobsOpen {
-		return &a.jobs
-	}
 	switch a.tab {
 	case tabInstalled:
 		return &a.installed
@@ -50,6 +46,8 @@ func (a *App) filterTarget() filterable {
 		return &a.taps
 	case tabDiscover:
 		return &a.discover
+	case tabHistory:
+		return &a.jobs
 	}
 	return nil
 }

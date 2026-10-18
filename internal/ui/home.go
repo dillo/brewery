@@ -30,7 +30,7 @@ const (
 	homeStay    = -1 // nothing: the key moved within Home, or did nothing
 	openCleanup = -2 // the Cleanup tile's Enter: ask to clean up rather than open a tab
 	leaveHome   = -3 // h past the left edge: back to the sidebar
-	showJobs    = -4 // Enter on Recent jobs: the full list
+	showHistory = -4 // Enter on Recent jobs: History, with them all
 )
 
 // homeArea is the part of Home that has the focus.
@@ -148,7 +148,7 @@ func (h *homeTab) enter() {
 // update moves the focus around Home: h and l along the tiles and across
 // the panes under them, j down from the tiles to Doctor, k back up to the
 // tile you came from. It returns a tile's tab to open, or one of homeStay,
-// openCleanup, leaveHome and showJobs.
+// openCleanup, leaveHome and showHistory.
 func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 	k := msg.String()
 	switch h.area {
@@ -176,7 +176,7 @@ func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 		case "k", "up":
 			h.area = areaTiles
 		case "enter":
-			return showJobs
+			return showHistory
 		}
 	}
 	return homeStay
@@ -251,7 +251,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 func (h *homeTab) recentJobs(recent []jobs.Record, now time.Time, w, height int) string {
 	st := h.st
 	iw, ih := paneInner(w, height)
-	hint := st.Muted.Render("enter shows them all")
+	hint := st.Muted.Render("5 History has them all")
 	if len(recent) == 0 {
 		return st.Muted.Render("no jobs yet") + "\n" + hint
 	}
