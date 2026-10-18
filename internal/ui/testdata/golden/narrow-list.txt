@@ -1,40 +1,40 @@
-╭────────────────────╮╭──────────────────────────────────────────────────────────────────╮
-│ brewery            ││ Top-level                                                        │
-│  Home              ││ Things you installed that nothing else needs.                    │
-│                    ││  NAME                  VERSION     TYPE     STATUS     SIZE      │
-│ PACKAGES           ││ ──────────────────────────────────────────────────────────────── │
-│  All            7  ││  docker-desktop        4.39.0,18…  cask     ↑          2.2GB     │
-│  Top-level      5  ││  fd                    10.5.0      formula             3.0MB     │
-│  Formulae       5  ││  fontbase              2.22.0      cask                          │
-│  Casks          2  ││  git                   2.51.0      formula  pinned     50.0MB    │
-│  Dependencies   2  ││  lua-language-server   3.19.1      formula  ↑                    │
-│  Outdated     ↑2   ││                                                                  │
-│  Pinned         1  ││                                                                  │
-│                    ││                                                                  │
-│ MANAGE             ││                                                                  │
-│  Services     ✗1   ││                                                                  │
-│  Taps           2  ││                                                                  │
-│                    ││                                                                  │
-│ DISCOVER           ││                                                                  │
-│  Popular tools     ││                                                                  │
-│  Popular apps      ││                                                                  │
-│  Rising            ││                                                                  │
-│  New               ││                                                                  │
-│  Fonts             ││                                                                  │
-│  Search all        ││                                                                  │
-│                    ││                                                                  │
-│ TOOLS              ││                                                                  │
-│  History        2  ││                                                                  │
-│  Maintenance       ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-│                    ││                                                                  │
-╰────────────────────╯╰──────────────────────────────────────────────────────────────────╯
+╭────────────────────────╮╭──────────────────────────────────────────────────────────────╮
+│ brewery                ││ Top-level                                                    │
+│  Home                  ││ Things you installed that nothing else needs.                │
+│                        ││  NAME                  VERSION    TYPE   STATUS    SIZE      │
+│ PACKAGES               ││ ──────────────────────────────────────────────────────────── │
+│  All                7  ││  docker-desktop        4.39.0,1…  cask   ↑         2.2GB     │
+│  Top-level          5  ││  fd                    10.5.0     form…            3.0MB     │
+│  Formulae           5  ││  fontbase              2.22.0     cask                       │
+│  Casks              2  ││  git                   2.51.0     form…  pinned    50.0MB    │
+│  Dependencies       2  ││  lua-language-server   3.19.1     form…  ↑                   │
+│  Outdated          ↑2  ││                                                              │
+│  Pinned             1  ││                                                              │
+│                        ││                                                              │
+│ MANAGE                 ││                                                              │
+│  Services          ✗1  ││                                                              │
+│  Taps               2  ││                                                              │
+│                        ││                                                              │
+│ DISCOVER               ││                                                              │
+│  Popular tools         ││                                                              │
+│  Popular apps          ││                                                              │
+│  Rising                ││                                                              │
+│  New                   ││                                                              │
+│  Fonts                 ││                                                              │
+│  Search all            ││                                                              │
+│                        ││                                                              │
+│ TOOLS                  ││                                                              │
+│  History            2  ││                                                              │
+│  Maintenance           ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+│                        ││                                                              │
+╰────────────────────────╯╰──────────────────────────────────────────────────────────────╯
  NORMAL  Top-level › git                                                                  

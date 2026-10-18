@@ -1,40 +1,40 @@
-╭────────────────────╮╭──────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
-│ brewery            ││ Services · 2                                                 ││ postgresql@16                                      │
-│  Home              ││  NAME                                    STATUS              ││ error (exit 1)                                     │
-│                    ││ ──────────────────────────────────────────────────────────── ││ command    LC_ALL="en_US.UTF-8" /opt/homebrew/opt… │
-│ PACKAGES           ││  postgresql@16                           error (exit 1)      ││ user       locutus                                 │
-│  All            7  ││  redis                                   started             ││ file       ~/Library/LaunchAgents/homebrew.mxcl.p… │
-│  Top-level      5  ││                                                              ││ log        /opt/homebrew/var/log/postgresql@16.log │
-│  Formulae       5  ││                                                              ││                                                    │
-│  Casks          2  ││                                                              ││ End of the log                                     │
-│  Dependencies   2  ││                                                              ││ nothing logged yet                                 │
-│  Outdated     ↑2   ││                                                              ││                                                    │
-│  Pinned         1  ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│ MANAGE             ││                                                              ││                                                    │
-│  Services     ✗1   ││                                                              ││                                                    │
-│  Taps           2  ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│ DISCOVER           ││                                                              ││                                                    │
-│  Popular tools     ││                                                              ││                                                    │
-│  Popular apps      ││                                                              ││                                                    │
-│  Rising            ││                                                              ││                                                    │
-│  New               ││                                                              ││                                                    │
-│  Fonts             ││                                                              ││                                                    │
-│  Search all        ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│ TOOLS              ││                                                              ││                                                    │
-│  History        2  ││                                                              ││                                                    │
-│  Maintenance       ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-╰────────────────────╯╰──────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
+╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
+│ brewery                ││ Services · 2                                               ││ postgresql@16                                    │
+│  Home                  ││  NAME                                  STATUS              ││ error (exit 1)                                   │
+│                        ││ ────────────────────────────────────────────────────────── ││ command    LC_ALL="en_US.UTF-8" /opt/homebrew/o… │
+│ PACKAGES               ││  postgresql@16                         error (exit 1)      ││ user       locutus                               │
+│  All                7  ││  redis                                 started             ││ file       ~/Library/LaunchAgents/homebrew.mxcl… │
+│  Top-level          5  ││                                                            ││ log        /opt/homebrew/var/log/postgresql@16.… │
+│  Formulae           5  ││                                                            ││                                                  │
+│  Casks              2  ││                                                            ││ End of the log                                   │
+│  Dependencies       2  ││                                                            ││ nothing logged yet                               │
+│  Outdated          ↑2  ││                                                            ││                                                  │
+│  Pinned             1  ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│ MANAGE                 ││                                                            ││                                                  │
+│  Services          ✗1  ││                                                            ││                                                  │
+│  Taps               2  ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│ DISCOVER               ││                                                            ││                                                  │
+│  Popular tools         ││                                                            ││                                                  │
+│  Popular apps          ││                                                            ││                                                  │
+│  Rising                ││                                                            ││                                                  │
+│  New                   ││                                                            ││                                                  │
+│  Fonts                 ││                                                            ││                                                  │
+│  Search all            ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│ TOOLS                  ││                                                            ││                                                  │
+│  History            2  ││                                                            ││                                                  │
+│  Maintenance           ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
  NORMAL  Services › postgresql@16                            s start · S stop · R restart · L log · l details · : command · ? help · q quit 

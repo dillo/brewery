@@ -74,7 +74,7 @@ func TestServicesPreview(t *testing.T) {
 	show(t, a, "Services") // postgresql@16
 	out := stripANSI(a.render())
 	for _, want := range []string{
-		"error (exit 1)", "LC_ALL=", "/opt/homebrew/var/log/postgresql@16.log",
+		"error (exit 1)", "LC_ALL=", "/opt/homebrew/var/log/postgresql@16",
 		"End of the log", "line 100",
 	} {
 		if !strings.Contains(out, want) {
