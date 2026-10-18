@@ -68,41 +68,8 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 	installed := tile{"Installed", fmt.Sprint(len(snap.Packages)), st.Title,
 		fmt.Sprintf("%d formulae · %d casks", formulae, casks), "All", -1}
 
-	outdated := tile{"Outdated", "✓ 0", st.OK, "everything is up to date", "Outdated", -1}
-	if n := len(snap.Outdated); n > 0 {
-		// Pinned packages are outdated too, but U skips them: count them
-		// first, where a narrow tile still shows it, then name the rest.
-		names, pinned := make([]string, 0, n), 0
-		for _, o := range snap.Outdated {
-			if o.Pinned {
-				pinned++
-			} else {
-				names = append(names, o.Name)
-			}
-		}
-		outdated.value, outdated.style, outdated.detail = fmt.Sprint(n), st.Warn, strings.Join(names, ", ")
-		switch {
-		case pinned == n:
-			outdated.style, outdated.detail = st.Muted, fmt.Sprintf("%d pinned · nothing to upgrade", n)
-		case pinned > 0:
-			outdated.detail = fmt.Sprintf("%d pinned · %s", pinned, outdated.detail)
-		}
-	}
-
-	running, failed := 0, []string{}
-	for _, s := range snap.Services {
-		switch s.Status {
-		case "started", "scheduled":
-			running++
-		case "error":
-			failed = append(failed, s.Name)
-		}
-	}
-	services := tile{"Services", fmt.Sprintf("%d running", running), st.OK,
-		fmt.Sprintf("%d registered", len(snap.Services)), "Services", -1}
-	if len(failed) > 0 {
-		services.value, services.style, services.detail = plural(len(failed), "error"), st.Err, strings.Join(failed, ", ")
-	}
+	outdated := h.outdatedTile(snap)
+	services := h.servicesTile(snap)
 
 	h.markUnknown(&installed, qInstalled)
 	h.markUnknown(&outdated, qOutdated)
@@ -128,6 +95,52 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 		cleanup.value, cleanup.style, cleanup.detail = size, st.Title, "c to reclaim"
 	}
 	return []tile{installed, outdated, services, doctor, cleanup}
+}
+
+// outdatedTile counts the outdated packages and names the ones U upgrades.
+func (h *homeTab) outdatedTile(snap state.Snapshot) tile {
+	st := h.st
+	outdated := tile{"Outdated", "✓ 0", st.OK, "everything is up to date", "Outdated", -1}
+	if n := len(snap.Outdated); n > 0 {
+		// Pinned packages are outdated too, but U skips them: count them
+		// first, where a narrow tile still shows it, then name the rest.
+		names, pinned := make([]string, 0, n), 0
+		for _, o := range snap.Outdated {
+			if o.Pinned {
+				pinned++
+			} else {
+				names = append(names, o.Name)
+			}
+		}
+		outdated.value, outdated.style, outdated.detail = fmt.Sprint(n), st.Warn, strings.Join(names, ", ")
+		switch {
+		case pinned == n:
+			outdated.style, outdated.detail = st.Muted, fmt.Sprintf("%d pinned · nothing to upgrade", n)
+		case pinned > 0:
+			outdated.detail = fmt.Sprintf("%d pinned · %s", pinned, outdated.detail)
+		}
+	}
+	return outdated
+}
+
+// servicesTile counts the running services, or names the failed ones.
+func (h *homeTab) servicesTile(snap state.Snapshot) tile {
+	st := h.st
+	running, failed := 0, []string{}
+	for _, s := range snap.Services {
+		switch s.Status {
+		case "started", "scheduled":
+			running++
+		case "error":
+			failed = append(failed, s.Name)
+		}
+	}
+	services := tile{"Services", fmt.Sprintf("%d running", running), st.OK,
+		fmt.Sprintf("%d registered", len(snap.Services)), "Services", -1}
+	if len(failed) > 0 {
+		services.value, services.style, services.detail = plural(len(failed), "error"), st.Err, strings.Join(failed, ", ")
+	}
+	return services
 }
 
 // markUnknown replaces a tile's numbers when its query has failed or has

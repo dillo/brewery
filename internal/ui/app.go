@@ -839,12 +839,8 @@ func (a *App) rowCount(tab int) int {
 	return 0
 }
 
-func (a *App) render() string {
-	if a.width == 0 {
-		return "starting brewery…"
-	}
-	bodyH := a.tabH
-	c := a.columnsFor(a.tab)
+// tabBody draws the active tab, or nothing when only the sidebar shows.
+func (a *App) tabBody(c columns, bodyH int) string {
 	var body string
 	switch {
 	case c.list == 0 && c.details == 0: // the sidebar alone
@@ -865,6 +861,16 @@ func (a *App) render() string {
 	case a.tab == tabMaintenance:
 		body = a.maint.view(nil, a.focus)
 	}
+	return body
+}
+
+func (a *App) render() string {
+	if a.width == 0 {
+		return "starting brewery…"
+	}
+	bodyH := a.tabH
+	c := a.columnsFor(a.tab)
+	body := a.tabBody(c, bodyH)
 	if bodyH > 0 && c.side > 0 {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
@@ -919,17 +925,10 @@ func (a *App) promptBar(mode, hint string, line func(w int) string) string {
 	return st.StatusBar.Width(a.width).Render(ansi.Truncate(badge+line(room)+hint, a.width, ""))
 }
 
-func (a *App) statusBar() string {
+// statusLeft is the mode's badge, the open entry and what is selected or
+// marked.
+func (a *App) statusLeft() string {
 	st := a.st
-	switch a.mode {
-	case modeCommand:
-		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
-	case modeFilter:
-		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
-			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
-			return a.filterIn.View()
-		})
-	}
 	badge := "NORMAL"
 	switch {
 	case a.mode == modeInsert:
@@ -948,6 +947,13 @@ func (a *App) statusBar() string {
 		}
 	}
 
+	return left
+}
+
+// statusRight is the flash, the running job and the state of the data,
+// joined for the right of the status bar.
+func (a *App) statusRight() string {
+	st := a.st
 	var right []string
 	if a.flash != "" {
 		right = append(right, a.flash)
@@ -982,7 +988,22 @@ func (a *App) statusBar() string {
 	if a.histErr != nil {
 		right = append(right, st.Warn.Render("history not saved"))
 	}
-	r := strings.Join(right, "  ")
+	return strings.Join(right, "  ")
+}
+
+func (a *App) statusBar() string {
+	st := a.st
+	switch a.mode {
+	case modeCommand:
+		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
+	case modeFilter:
+		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
+			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
+			return a.filterIn.View()
+		})
+	}
+	left := a.statusLeft()
+	r := a.statusRight()
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
