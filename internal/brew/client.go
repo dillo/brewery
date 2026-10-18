@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -92,6 +93,8 @@ type Client struct {
 	Timeout time.Duration
 	Prefix  string // where brew is installed (/opt/homebrew): Cellar and Caskroom are in it
 
+	AgentsDir string // where brew services keeps its launchd files
+
 	dirsMu      sync.Mutex
 	cache, repo string // brew --cache and --repository, once asked
 
@@ -99,7 +102,11 @@ type Client struct {
 }
 
 func NewClient(r Runner) *Client {
-	return &Client{r: r, Timeout: 30 * time.Second}
+	c := &Client{r: r, Timeout: 30 * time.Second}
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		c.AgentsDir = filepath.Join(home, "Library", "LaunchAgents")
+	}
+	return c
 }
 
 func (c *Client) query(ctx context.Context, args ...string) ([]byte, error) {
@@ -188,6 +195,37 @@ func (c *Client) Cleanup(ctx context.Context) (Cleanup, error) {
 // timeout, a failure to run brew, or a non-zero exit with no warnings parsed
 // (a crash, or only an `Error:` on stderr) is reported as an error rather
 // than as a clean result.
+// Autoremove asks brew which formulae autoremove would uninstall: those
+// installed only as dependencies that nothing needs any more.
+func (c *Client) Autoremove(ctx context.Context) ([]string, error) {
+	out, err := c.query(ctx, "autoremove", "--dry-run")
+	if err != nil {
+		return nil, err
+	}
+	return ParseAutoremove(string(out)), nil
+}
+
+// ServiceFiles lists brew's launchd files in AgentsDir, sorted, which
+// brew services cleanup removes when their service isn't loaded. A
+// missing directory has none.
+func (c *Client) ServiceFiles(context.Context) ([]string, error) {
+	entries, err := os.ReadDir(c.AgentsDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for _, e := range entries {
+		n := e.Name()
+		if (strings.HasPrefix(n, "homebrew.") || strings.HasPrefix(n, "sh.brew.")) && strings.HasSuffix(n, ".plist") {
+			files = append(files, filepath.Join(c.AgentsDir, n))
+		}
+	}
+	return files, nil
+}
+
 func (c *Client) Doctor(ctx context.Context) ([]DoctorWarning, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()

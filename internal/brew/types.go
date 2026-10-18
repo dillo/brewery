@@ -63,7 +63,9 @@ type Outdated struct {
 // Service is one entry of `brew services info --all --json`.
 type Service struct {
 	Name     string `json:"name"`
-	Status   string `json:"status"` // started, stopped, none, error, scheduled, unknown
+	Status   string `json:"status"`       // started, stopped, none, error, scheduled, unknown
+	Label    string `json:"service_name"` // launchd's label, homebrew.mxcl.<name>
+	Loaded   bool   `json:"loaded"`       // in launchctl list, which brew counts as running
 	User     string `json:"user"`
 	File     string `json:"file"`
 	ExitCode *int   `json:"exit_code"`
