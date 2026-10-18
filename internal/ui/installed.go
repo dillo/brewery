@@ -234,15 +234,11 @@ func (t *installedTab) view(err error, focus column) string {
 		return list
 	}
 
-	p, ok := t.selected()
-	previewTitle, body := "Preview", t.st.Muted.Render(t.emptyNote())
-	switch {
-	case ok:
-		_, ph := paneInner(t.pvW, t.h)
-		previewTitle, body = p.Name, t.pv.window(t.preview(p), ph)
-	case !t.loaded && err == nil:
-		body = t.st.Muted.Render("loading…")
-	}
+	// A details column exists only while the view has rows, so one is selected.
+	p, _ := t.selected()
+	_, ph := paneInner(t.pvW, t.h)
+	body = t.pv.window(t.preview(p), ph)
+	previewTitle := p.Name
 	return joinColumns(list, pane(t.st, previewTitle, body, t.pvW, t.h, focus == colDetails))
 }
 

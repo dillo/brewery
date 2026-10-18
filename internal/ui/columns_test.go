@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/jobs"
 )
 
@@ -151,15 +153,46 @@ func TestFilteringToNothingLeavesTheDetails(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Top-level")
 	keys(t, a, "l")
-	if a.focus != colDetails {
-		t.Fatalf("l: focus %d", a.focus)
-	}
 	keys(t, a, "/")
 	typeText(t, a, "zzzq") // matches nothing
 	keys(t, a, "enter")
-	if a.focus != colList {
-		t.Errorf("a filter that empties the list moves the focus to it: %d", a.focus)
+	if out := stripANSI(a.render()); a.focus != colList || !strings.Contains(out, a.installed.emptyNote()) {
+		t.Errorf("a filter that empties the list shows its note in the list: focus %d\n%s", a.focus, out)
 	}
+}
+
+// The guard in Update, not the filter, takes the focus off details that a
+// refresh left with nothing to show.
+func TestRefreshEmptyingAListLeavesTheDetails(t *testing.T) {
+	t.Run("services", func(t *testing.T) {
+		a := newJobApp(t, &fakeStarter{})
+		show(t, a, "Services")
+		keys(t, a, "l")
+		if a.focus != colDetails {
+			t.Fatalf("l: focus %d", a.focus)
+		}
+		a.Update(resultMsg{q: qServices, services: []brew.Service{}})
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "s start") {
+			t.Errorf("focus %d, hints %q", a.focus, h)
+		}
+	})
+	t.Run("pinned", func(t *testing.T) {
+		a := newJobApp(t, &fakeStarter{})
+		show(t, a, "Pinned") // the fixture pins git
+		pkgs := slices.Clone(a.snap.Packages)
+		keys(t, a, "l")
+		if a.focus != colDetails {
+			t.Fatalf("l on a pinned package: focus %d", a.focus)
+		}
+		unpinned := slices.Clone(pkgs)
+		for i := range unpinned {
+			unpinned[i].Pinned = false
+		}
+		a.Update(resultMsg{q: qInstalled, packages: unpinned})
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "u upgrade") || !strings.Contains(h, "l details") {
+			t.Errorf("focus %d, hints %q", a.focus, h)
+		}
+	})
 }
 
 func TestSwitchingToAnEmptyTabKeepsTheList(t *testing.T) {

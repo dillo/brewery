@@ -146,6 +146,9 @@ func TestCrashLogHandsOutTheTerminalsStderr(t *testing.T) {
 }
 
 func TestCrashLogNeedsAWritableDir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can write to a read-only directory")
+	}
 	dir := t.TempDir()
 	if err := os.Chmod(dir, 0o500); err != nil {
 		t.Fatal(err)

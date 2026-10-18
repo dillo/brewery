@@ -31,10 +31,22 @@ func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 
 func TestServicesDetailsHints(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
 	show(t, a, "Services")
 	keys(t, a, "l")
 	if h := a.actionHints(); !strings.HasPrefix(h, "j/k scroll the log · h back to the list") {
-		t.Errorf("Services details hints: %q", h)
+		t.Errorf("a long log scrolls, and the hint says so: %q", h)
+	}
+}
+
+func TestServicesDetailsHintsForAShortLog(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: "only line\n"}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	h := a.actionHints()
+	if a.focus != colDetails || strings.Contains(h, "scroll") || !strings.HasPrefix(h, "h back to the list") {
+		t.Errorf("a log that fits has nothing to scroll: focus %d, hint %q", a.focus, h)
 	}
 }
 

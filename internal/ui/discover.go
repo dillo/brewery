@@ -445,11 +445,7 @@ func (t *discoverTab) view(focus column) string {
 	if t.err != nil && !t.loaded {
 		return pane(t.st, "Discover", errorBody(t.st, t.err), t.listW+t.pvW, t.h, focus != colSidebar)
 	}
-	listW, pvW := t.listW, t.pvW
-	if !t.loaded {
-		listW, pvW = listW+pvW, 0 // nothing to preview yet
-	}
-	iw, ih := paneInner(listW, t.h)
+	iw, ih := paneInner(t.listW, t.h)
 	body := about(t.st, discoverViews[t.showing].about, iw) + "\n"
 	ih -= aboutHeight
 	if t.err != nil {
@@ -477,18 +473,17 @@ func (t *discoverTab) view(focus column) string {
 		body += t.table.View()
 	}
 	var list string
-	if listW > 0 {
-		list = pane(t.st, title, body, listW, t.h, focus == colList)
+	if t.listW > 0 {
+		list = pane(t.st, title, body, t.listW, t.h, focus == colList)
 	}
-	if pvW == 0 {
+	if t.pvW == 0 {
 		return list
 	}
-	previewTitle, preview := "Preview", t.st.Muted.Render("nothing in this view")
-	if r, ok := t.selected(); ok {
-		_, ph := paneInner(pvW, t.h)
-		previewTitle, preview = r.Name, t.pv.window(t.preview(r), ph)
-	}
-	return joinColumns(list, pane(t.st, previewTitle, preview, pvW, t.h, focus == colDetails))
+	// A details column exists only while the catalogue is loaded and has rows.
+	r, _ := t.selected()
+	_, ph := paneInner(t.pvW, t.h)
+	preview := t.pv.window(t.preview(r), ph)
+	return joinColumns(list, pane(t.st, r.Name, preview, t.pvW, t.h, focus == colDetails))
 }
 
 // empty says why the current view has no rows.

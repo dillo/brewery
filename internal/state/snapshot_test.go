@@ -108,6 +108,7 @@ func TestSaveFails(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = os.Chmod(readOnly, 0o700) })
+	root := os.Geteuid() == 0 // root writes to a read-only directory
 	good := filepath.Join(t.TempDir(), "snapshot.json")
 	for _, tt := range []struct {
 		name, path string
@@ -118,6 +119,10 @@ func TestSaveFails(t *testing.T) {
 		// JSON times stop at year 9999.
 		{"it can't be encoded", good, Snapshot{FetchedAt: time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)}},
 	} {
+		if root && tt.path == filepath.Join(readOnly, "snapshot.json") {
+			t.Log("skipping the read-only case: running as root")
+			continue
+		}
 		if err := Save(tt.path, tt.snap); err == nil {
 			t.Errorf("%s: Save should fail", tt.name)
 		}

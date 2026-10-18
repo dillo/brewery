@@ -371,7 +371,11 @@ func (a *App) actionHints() string {
 		return "u upgrade · A upgrade all"
 	case tabServices:
 		if a.focus == colDetails {
-			return "j/k scroll the log · h back to the list · s start · S stop · R restart · L log"
+			hint := "h back to the list · s start · S stop · R restart · L log"
+			if _, _, lines, room, ok := a.logWindow(a.services.pvW, a.services.h); ok && len(lines) > room {
+				hint = "j/k scroll the log · " + hint // only a log longer than the pane scrolls
+			}
+			return hint
 		}
 		return "s start · S stop · R restart · L log · l details"
 	case tabTaps:

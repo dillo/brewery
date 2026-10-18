@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -122,12 +123,18 @@ func unwritable(t *testing.T) string {
 
 func TestFetchWithoutAPlaceToKeepACopy(t *testing.T) {
 	srv, _ := server(t, http.StatusOK, fixture(t, "install-on-request-30d"), 0)
-	readOnly := t.TempDir()
-	if err := os.Chmod(readOnly, 0o500); err != nil {
-		t.Fatal(err)
+	dirs := map[string]string{"under a file": unwritable(t)}
+	if os.Geteuid() == 0 {
+		t.Log("skipping the read-only case: root can write to a read-only directory")
+	} else {
+		readOnly := t.TempDir()
+		if err := os.Chmod(readOnly, 0o500); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Chmod(readOnly, 0o700) })
+		dirs["read-only"] = readOnly
 	}
-	t.Cleanup(func() { _ = os.Chmod(readOnly, 0o700) })
-	for name, dir := range map[string]string{"under a file": unwritable(t), "read-only": readOnly} {
+	for name, dir := range dirs {
 		s := NewStore(dir, "dev")
 		s.Base = srv.URL + "/"
 		// The list still comes back: only the copy for next time is lost.
@@ -159,8 +166,9 @@ func TestFetchCutShort(t *testing.T) {
 func TestFetchFromABadBase(t *testing.T) {
 	s := NewStore(t.TempDir(), "dev")
 	s.Base = "http://\x7f/"
-	if _, err := s.Fetch(context.Background(), Tools30); err == nil || !strings.Contains(err.Error(), "invalid control character") {
-		t.Errorf("got %v, want the URL's error", err)
+	var urlErr *url.Error
+	if _, err := s.Fetch(context.Background(), Tools30); !errors.As(err, &urlErr) {
+		t.Errorf("got %v, want a *url.Error", err)
 	}
 }
 

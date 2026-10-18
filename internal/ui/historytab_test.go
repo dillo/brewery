@@ -227,13 +227,25 @@ func TestHistoryRecordDetails(t *testing.T) {
 		{Title: "upgrade", Args: []string{"upgrade"}, State: jobs.Canceled, Started: started, Ended: started.Add(time.Minute)},
 	})
 	show(t, a, "History")
-	if out := stripANSI(a.render()); strings.Count(out, "stopped") < 2 {
-		t.Errorf("a canceled job reads stopped in the list and the details:\n%s", out)
+	out := stripANSI(a.render())
+	var list, details strings.Builder
+	for line := range strings.SplitSeq(out, "\n") {
+		panes := strings.Split(line, "││") // the sidebar, the list and the details
+		if len(panes) == 3 {
+			list.WriteString(panes[1] + "\n")
+			details.WriteString(panes[2] + "\n")
+		}
 	}
-	if out := stripANSI(a.render()); !strings.Contains(out, "nothing printed") {
+	if !strings.Contains(list.String(), "stopped") {
+		t.Errorf("a canceled job reads stopped in the list:\n%s", out)
+	}
+	if !strings.Contains(details.String(), "stopped") {
+		t.Errorf("a canceled job reads stopped in the details:\n%s", out)
+	}
+	if !strings.Contains(out, "nothing printed") {
 		t.Errorf("a job with no output says so:\n%s", out)
 	}
-	if out := stripANSI(a.render()); !strings.Contains(out, "2026-03-04 17:05") {
+	if !strings.Contains(out, "2026-03-04 17:05") {
 		t.Errorf("started shows the date and time:\n%s", out)
 	}
 }

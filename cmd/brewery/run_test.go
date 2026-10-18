@@ -139,7 +139,9 @@ func TestRunMentionsLastTimesCrash(t *testing.T) {
 
 func TestRunWithoutACrashLog(t *testing.T) {
 	ran := false
-	fakeMachine(t, func(tea.Model) error { ran = true; return nil })
+	real := os.Stderr
+	var stderrDuring *os.File
+	fakeMachine(t, func(tea.Model) error { ran, stderrDuring = true, os.Stderr; return nil })
 	// The state dir can't be made (its parent is a file), so there is no
 	// crash log; brewery runs anyway.
 	blocker := filepath.Join(t.TempDir(), "file")
@@ -147,12 +149,11 @@ func TestRunWithoutACrashLog(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("XDG_STATE_HOME", blocker)
-	real := os.Stderr
 	var out, errb bytes.Buffer
 	if code := run(nil, &out, &errb); code != 0 || !ran {
 		t.Fatalf("exit %d, ran %v, stderr %q", code, ran, errb.String())
 	}
-	if os.Stderr != real {
+	if stderrDuring != real {
 		t.Error("without a crash log, stderr is never moved")
 	}
 }
