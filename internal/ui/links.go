@@ -28,12 +28,15 @@ func (a *App) UseClipboard(copy func(text string) error) { a.clipboard = copy }
 func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 	switch k {
 	case "g":
-		if a.sideFocus {
+		if a.focus == colSidebar {
 			return a.selectEntry(0), true
 		}
 		home := tea.KeyPressMsg{Code: tea.KeyHome}
 		if a.jobsOpen {
 			return a.jobs.update(home), true
+		}
+		if a.focus == colDetails {
+			return a.tabKey(home), true // gg scrolls the details to the top
 		}
 		switch a.tab {
 		case tabInstalled:
@@ -49,7 +52,7 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 		}
 		return nil, true
 	case "x":
-		if a.sideFocus {
+		if a.focus == colSidebar {
 			return nil, true // no row, so no homepage
 		}
 		return a.openHomepage(), true

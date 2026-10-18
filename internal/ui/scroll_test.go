@@ -40,7 +40,7 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 	selectInstalled(t, a, "git")
 	before := stripANSI(a.render())
 	keys(t, a, "tab")
-	if !a.installed.pv.focus || !strings.Contains(stripANSI(a.statusBar()), "j/k scroll · h back to the list") {
+	if a.focus != colDetails || !strings.Contains(stripANSI(a.statusBar()), "j/k scroll · h back to the list") {
 		t.Fatalf("tab should focus the preview: %q", stripANSI(a.statusBar()))
 	}
 	keys(t, a, "j", "j", "j")
@@ -51,7 +51,7 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 		t.Errorf("the preview should have scrolled past its first lines:\n%s", after)
 	}
 	keys(t, a, "esc")
-	if a.installed.pv.focus {
+	if a.focus == colDetails {
 		t.Error("esc goes back to the list")
 	}
 	keys(t, a, "j")
@@ -59,7 +59,7 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 		t.Error("with the list focused, j moves the selection")
 	}
 	keys(t, a, "k", "enter")
-	if !a.installed.pv.focus {
+	if a.focus != colDetails {
 		t.Error("enter focuses the preview too")
 	}
 	if out := stripANSI(a.render()); !strings.Contains(out, "git 2.51.0") {

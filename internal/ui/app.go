@@ -114,7 +114,7 @@ type App struct {
 
 	tab           int
 	sel           int             // the sidebar entry shown
-	sideFocus     bool            // keys go to the sidebar, not the tab
+	focus         column          // the sidebar, the list or the details
 	lastIn        map[section]int // each section's last-used entry, for 1-4
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
@@ -142,7 +142,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a := &App{
 		src: src, start: start, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
-		sideFocus: true, lastIn: map[section]int{},
+		focus: colSidebar, lastIn: map[section]int{},
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
 		detailsDelay: detailsDelay,
@@ -511,7 +511,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 			return cmd
 		}
 	}
-	if a.sideFocus {
+	if a.focus == colSidebar {
 		if cmd, ok := a.sidebarKey(k); ok {
 			return cmd
 		}
@@ -527,7 +527,7 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 		// The list is hidden behind the preview: its keys would act on rows
 		// you can't see. tab and enter go back to it.
 		if k == "tab" || k == "enter" {
-			a.services.pvOpen = false
+			a.focus = colList
 		}
 		return nil
 	}
@@ -629,9 +629,7 @@ func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
 	case "[":
 		return a.stepEntry(-1), true
 	case "h", "left":
-		if !a.unfocusDetails() {
-			a.sideFocus = true
-		}
+		a.focus = max(a.focus-1, colSidebar)
 	case "l", "right":
 		a.focusDetails()
 	case "r":
@@ -649,12 +647,8 @@ func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
 // the marks, then hides the drawer.
 func (a *App) escape() {
 	switch {
-	case a.tab == tabInstalled && a.installed.pv.focus:
-		a.installed.pv.focus = false // back to the list first
-	case a.tab == tabDiscover && a.discover.pv.focus:
-		a.discover.pv.focus = false
-	case a.tab == tabServices && a.services.previewShown():
-		a.services.pvOpen = false
+	case a.focus == colDetails:
+		a.focus = colList // back to the list first
 	case a.marks() > 0 && !a.drawerShown():
 		a.clearMarks()
 	default:
@@ -677,15 +671,34 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	case t == openCleanup:
 		return a.askCleanup(), true
 	case t == leaveHome:
-		a.sideFocus = true
+		a.focus = colSidebar
 	case t == showJobs:
 		return a.openJobs(), true
 	}
 	return nil, true
 }
 
-// tabKey gives the key to the current tab's list.
+// tabKey gives the key to the current tab: the list's keys move its
+// selection, and once the details have the focus, keys scroll them. tab
+// and enter go from the list to the details; tab goes back.
 func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
+	k := msg.String()
+	switch {
+	case a.focus == colList && (k == "tab" || k == "enter") && a.hasDetails():
+		a.focus = colDetails
+		return nil
+	case a.focus == colDetails && k == "tab":
+		a.focus = colList
+		return nil
+	case a.focus == colDetails:
+		switch a.tab {
+		case tabInstalled:
+			a.installed.scroll(k)
+		case tabDiscover:
+			a.discover.scroll(k)
+		} // Services' details show the end of the log, which L follows: nothing to scroll
+		return nil
+	}
 	switch a.tab {
 	case tabInstalled:
 		return a.installed.update(msg)
@@ -708,38 +721,38 @@ func (a *App) View() tea.View {
 	return v
 }
 
+// hasDetails reports whether what's showing has a details column.
+func (a *App) hasDetails() bool { return !a.jobsOpen && hasDetails(a.tab) }
+
 func (a *App) render() string {
 	if a.width == 0 {
 		return "starting brewery…"
 	}
 	bodyH := a.tabH
 	var body string
-	idle := a.sideFocus
-	a.home.idle, a.installed.idle, a.discover.idle = idle, idle, idle
-	a.outdated.idle, a.services.idle, a.taps.idle, a.jobs.idle = idle, idle, idle, idle
 	if a.jobsOpen {
-		body = a.jobs.view(nil)
+		body = a.jobs.view(nil, colList)
 	} else {
 		switch a.tab {
 		case tabHome:
-			body = a.home.view(a.snap, a.history, a.now(), a.contentWidth(), bodyH)
+			body = a.home.view(a.snap, a.history, a.now(), a.contentWidth(), bodyH, a.focus)
 		case tabInstalled:
-			body = a.installed.view(a.errs[qInstalled])
+			body = a.installed.view(a.errs[qInstalled], a.focus)
 		case tabOutdated:
-			body = a.outdated.view(a.errs[qOutdated])
+			body = a.outdated.view(a.errs[qOutdated], a.focus)
 		case tabServices:
-			body = a.services.view(a.errs[qServices])
+			body = a.services.view(a.errs[qServices], a.focus)
 		case tabTaps:
-			body = a.taps.view(a.errs[qTaps])
+			body = a.taps.view(a.errs[qTaps], a.focus)
 		case tabDiscover:
-			body = a.discover.view()
+			body = a.discover.view(a.focus)
 		}
 	}
 	switch {
 	case bodyH == 0:
 	case a.width >= sidebarBeside:
 		body = lipgloss.JoinHorizontal(lipgloss.Top, a.sidebarView(sidebarW, bodyH), body)
-	case a.sideFocus:
+	case a.focus == colSidebar:
 		body = a.sidebarView(a.width, bodyH)
 	}
 	drawer := a.drawerShown()
@@ -907,5 +920,5 @@ func (a *App) statusBar() string {
 
 // servicesPreviewAlone reports whether the Services preview fills the screen, hiding the list.
 func (a *App) servicesPreviewAlone() bool {
-	return a.tab == tabServices && !a.jobsOpen && a.services.previewShown()
+	return a.tab == tabServices && !a.jobsOpen && a.focus == colDetails && a.services.previewAlone()
 }

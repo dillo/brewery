@@ -173,7 +173,7 @@ func TestHomeDoctorScrollsBeforeGoingUp(t *testing.T) {
 	h := loadedHome()
 	snap := fixtureSnapshot(t)
 	h.update(press("j"), snap)
-	h.view(snap, nil, testNow, 140, 12) // a short pane: doctor's warnings don't fit
+	h.view(snap, nil, testNow, 140, 12, colList) // a short pane: doctor's warnings don't fit
 	h.update(press("j"), snap)
 	if h.doc.off != 1 || h.area != areaDoctor {
 		t.Fatalf("j in Doctor should scroll it: off %d, area %d", h.doc.off, h.area)
@@ -190,7 +190,7 @@ func TestHomeDoctorScrollsBeforeGoingUp(t *testing.T) {
 
 func TestHomeView(t *testing.T) {
 	h := loadedHome()
-	view := h.view(fixtureSnapshot(t), nil, testNow, 140, 30)
+	view := h.view(fixtureSnapshot(t), nil, testNow, 140, 30, colList)
 	out := stripANSI(view)
 	for _, want := range []string{"Installed", "5 formulae · 2 casks", "lua-language-server,", "1 error", "86.7MB",
 		"⚠ The following taps are not trusted:", "brew untap oven-sh/bun", "⚠ Some installed casks are deprecated"} {
@@ -201,7 +201,7 @@ func TestHomeView(t *testing.T) {
 	if lipgloss.Height(view) != 30 {
 		t.Errorf("home view height = %d, want 30", lipgloss.Height(view))
 	}
-	clean := stripANSI(h.view(state.Snapshot{DoctorRan: true}, nil, testNow, 140, 30))
+	clean := stripANSI(h.view(state.Snapshot{DoctorRan: true}, nil, testNow, 140, 30, colList))
 	if !strings.Contains(clean, "Your system is ready to brew.") {
 		t.Error("clean doctor message missing")
 	}
@@ -212,7 +212,7 @@ func TestHomeDoctorFailed(t *testing.T) {
 	if got := h.tiles(state.Snapshot{})[3]; got.value != "✗ failed" || got.detail != "see below" || got.tab != -1 {
 		t.Errorf("doctor tile = %+v", got)
 	}
-	out := stripANSI(h.view(state.Snapshot{}, nil, testNow, 140, 30))
+	out := stripANSI(h.view(state.Snapshot{}, nil, testNow, 140, 30, colList))
 	for _, want := range []string{"brew doctor failed", "timed out after 30s", "press r to retry"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q", want)
@@ -222,7 +222,7 @@ func TestHomeDoctorFailed(t *testing.T) {
 		t.Error("failed doctor should not claim to be running")
 	}
 
-	out = stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30))
+	out = stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30, colList))
 	for _, want := range []string{"Warnings from the last successful check:", "The following taps are not trusted"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q with earlier warnings", want)
@@ -233,7 +233,7 @@ func TestHomeDoctorFailed(t *testing.T) {
 func TestHomeShowsRecentJobs(t *testing.T) {
 	h := loadedHome()
 	for _, size := range [][2]int{{140, 30}, {80, 24}} {
-		view := h.view(fixtureSnapshot(t), pastJobs(), testNow, size[0], size[1])
+		view := h.view(fixtureSnapshot(t), pastJobs(), testNow, size[0], size[1], colList)
 		if lipgloss.Width(view) != size[0] || lipgloss.Height(view) != size[1] {
 			t.Errorf("at %v the view is %dx%d", size, lipgloss.Width(view), lipgloss.Height(view))
 		}
@@ -244,7 +244,7 @@ func TestHomeShowsRecentJobs(t *testing.T) {
 			}
 		}
 	}
-	out := stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30))
+	out := stripANSI(h.view(fixtureSnapshot(t), nil, testNow, 140, 30, colList))
 	if !strings.Contains(out, "no jobs yet") {
 		t.Errorf("empty recent jobs:\n%s", out)
 	}
@@ -256,7 +256,7 @@ func TestShortDoctorLinesAreNotCutOff(t *testing.T) {
 		Title: "The following taps are not trusted:",
 		Body:  "oven-sh/bun\nHomebrew is currently ignoring formulae, casks and commands from these taps because tap trust is required.",
 	}}}
-	out := stripANSI(h.view(snap, nil, testNow, 100, 30))
+	out := stripANSI(h.view(snap, nil, testNow, 100, 30, colList))
 	for line := range strings.SplitSeq(out, "\n") {
 		if strings.Contains(line, "oven-sh/bun") && strings.Contains(line, "…") {
 			t.Errorf("a short line is padded to the long one and cut off: %q", line)

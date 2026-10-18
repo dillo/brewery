@@ -124,7 +124,7 @@ func TestDiscoverPreviewFocusAndLinks(t *testing.T) {
 		t.Errorf("opened %q, copied %q", opened, copied)
 	}
 	keys(t, a, "tab")
-	if !a.discover.pv.focus {
+	if a.focus != colDetails {
 		t.Fatal("tab should focus the preview")
 	}
 	keys(t, a, "j")
@@ -132,7 +132,7 @@ func TestDiscoverPreviewFocusAndLinks(t *testing.T) {
 		t.Errorf("j scrolls the focused preview, not the list: on %s", r.Name)
 	}
 	keys(t, a, "esc")
-	if a.discover.pv.focus {
+	if a.focus == colDetails {
 		t.Error("esc goes back to the list")
 	}
 }
@@ -145,7 +145,10 @@ func TestDiscoverFitsSmallTerminals(t *testing.T) {
 		show(t, a, "Search all")
 		selectDiscover(t, a, "ripgrep")
 		for _, focus := range []bool{false, true} {
-			a.discover.pv.focus = focus
+			a.focus = colList
+			if focus {
+				a.focus = colDetails
+			}
 			out := a.render()
 			if h := lipgloss.Height(out); h != size.h {
 				t.Errorf("%dx%d focus=%v: %d lines\n%s", size.w, size.h, focus, h, stripANSI(out))

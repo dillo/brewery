@@ -48,7 +48,6 @@ type installedTab struct {
 	marked map[string]bool  // packages picked with space, by pkgKey
 	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
 	loaded bool
-	idle   bool // the sidebar has the focus: no pane here looks focused
 	table  table.Model
 	w, h   int
 }
@@ -176,23 +175,20 @@ func (t *installedTab) selected() (brew.Package, bool) {
 	return t.rows[c], true
 }
 
+// update moves the table's selection.
 func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	k := msg.String()
-	switch {
-	case k == "tab" || (k == "enter" && !t.pv.focus):
-		t.pv.focus = !t.pv.focus
-		return nil
-	case t.pv.focus:
-		sp := splitFor(t.w, t.h, true)
-		_, ih := paneInner(sp.pvW, sp.pvH)
-		t.pv.scroll(k, ih/2)
-		return nil
-	}
 	before := t.selectedKey()
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
 	t.followSelection(before)
 	return cmd
+}
+
+// scroll scrolls the preview by a key.
+func (t *installedTab) scroll(k string) {
+	sp := splitFor(t.w, t.h, true)
+	_, ih := paneInner(sp.pvW, sp.pvH)
+	t.pv.scroll(k, ih/2)
 }
 
 // resize must run before key handling: the table ignores navigation
@@ -209,12 +205,12 @@ func (t *installedTab) listWidth() int { return splitFor(t.w, t.h, false).listW 
 
 // view sizes the table each time because a failed refresh shares the list
 // pane with a banner above it.
-func (t *installedTab) view(err error) string {
+func (t *installedTab) view(err error, focus column) string {
 	w, h := t.w, t.h
 	if err != nil && len(t.all) == 0 {
-		return pane(t.st, "Installed", errorBody(t.st, err), w, h, !t.idle)
+		return pane(t.st, "Installed", errorBody(t.st, err), w, h, focus != colSidebar)
 	}
-	sp := splitFor(w, h, t.pv.focus)
+	sp := splitFor(w, h, focus == colDetails)
 	iw, ih := paneInner(sp.listW, sp.listH)
 	body := about(t.st, views[t.filter].about, iw) + "\n"
 	ih -= aboutHeight
@@ -231,7 +227,7 @@ func (t *installedTab) view(err error) string {
 	if !t.loaded && len(t.all) == 0 {
 		rows = skeleton(t.st, iw, ih) // nothing yet: show the shape of what's coming
 	}
-	list := pane(t.st, title, body+rows, sp.listW, sp.listH, !t.pv.focus && !t.idle)
+	list := pane(t.st, title, body+rows, sp.listW, sp.listH, focus == colList)
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
@@ -245,7 +241,7 @@ func (t *installedTab) view(err error) string {
 	case !t.loaded && err == nil:
 		body = t.st.Muted.Render("loading…")
 	}
-	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, t.pv.focus))
+	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, focus == colDetails))
 }
 
 func (t *installedTab) preview(p brew.Package) string {

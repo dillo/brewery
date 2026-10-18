@@ -344,12 +344,12 @@ func (a *App) actionHints() string {
 	if a.jobsOpen {
 		return "enter show output · esc close"
 	}
-	if a.sideFocus {
+	if a.focus == colSidebar {
 		return "j/k choose · l open · 1-4 sections"
 	}
 	switch a.tab {
 	case tabInstalled:
-		if a.installed.pv.focus {
+		if a.focus == colDetails {
 			return "j/k scroll · h back to the list · u upgrade · x uninstall"
 		}
 		return "u upgrade · x uninstall · p pin · l details"
@@ -360,7 +360,7 @@ func (a *App) actionHints() string {
 	case tabTaps:
 		return "x untap"
 	case tabDiscover:
-		if a.discover.pv.focus {
+		if a.focus == colDetails {
 			return "j/k scroll · h back to the list"
 		}
 		return "a install · / search · l details · r refetch"

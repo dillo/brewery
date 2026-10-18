@@ -43,7 +43,7 @@ func jobRows(st theme.Styles, recs []jobs.Record, now time.Time) []table.Row {
 // openJobs shows the jobs view over the current tab.
 func (a *App) openJobs() tea.Cmd {
 	a.jobsOpen = true
-	a.sideFocus = false // the jobs view's keys aren't the sidebar's
+	a.focus = colList // the jobs view's keys aren't the sidebar's
 	a.jobs.setRows(jobRows(a.st, a.history, a.now()))
 	return nil
 }

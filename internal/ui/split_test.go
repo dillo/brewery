@@ -100,23 +100,6 @@ func TestServicesPreviewTakesTurnsWhenShort(t *testing.T) {
 	}
 }
 
-func TestStalePreviewFlagDoesNotSwallowEsc(t *testing.T) {
-	p := newFakeProc(0)
-	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
-	waiting := settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
-	show(t, a, "Services")
-	a.services.pvOpen = true // left over from a narrower layout
-	if !a.drawer.open {
-		t.Fatal("the drawer should be open")
-	}
-	keys(t, a, "esc")
-	if a.drawer.open {
-		t.Error("esc hides the drawer; the stale flag must not take it")
-	}
-	p.exit()
-	resume(t, a, waiting)
-}
-
 func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
@@ -135,7 +118,7 @@ func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
 	if a.mode != modeNormal {
 		t.Errorf("/ opened a filter on the hidden list: mode %d", a.mode)
 	}
-	if !a.services.previewShown() {
+	if !a.servicesPreviewAlone() {
 		t.Fatal("the preview should still show")
 	}
 	name, _, _ := a.selection()
@@ -153,18 +136,5 @@ func TestServicesPreviewAloneIgnoresListKeys(t *testing.T) {
 	keys(t, a, "enter", "2")
 	if a.tab != tabInstalled {
 		t.Errorf("tab keys still work under the preview: on %d", a.tab)
-	}
-}
-
-func TestServicesPreviewFlagClearsWhenThereIsRoom(t *testing.T) {
-	a := newJobApp(t, &fakeStarter{})
-	a.readLog = (&fakeLogs{}).read
-	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
-	show(t, a, "Services")
-	keys(t, a, "enter")
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40}) // room beside the list
-	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})  // and narrow again
-	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") || strings.Contains(out, "End of the log") {
-		t.Errorf("after shrinking again, the list shows first:\n%s", out)
 	}
 }

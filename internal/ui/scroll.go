@@ -2,9 +2,8 @@ package ui
 
 import "strings"
 
-// scroller lets a preview scroll once it has the focus.
+// scroller is how far a preview has scrolled.
 type scroller struct {
-	focus bool // keys scroll the preview rather than move through the list
 	off   int  // lines scrolled past
 	last  int  // the furthest off can go, as of the last window
 	sized bool // a window has set last

@@ -180,7 +180,7 @@ func (a *App) sidebarView(w, h int) string {
 		end := max(selLine+1, ih)
 		lines = lines[end-ih : end]
 	}
-	return pane(st, "brewery", strings.Join(lines, "\n"), w, h, a.sideFocus)
+	return pane(st, "brewery", strings.Join(lines, "\n"), w, h, a.focus == colSidebar)
 }
 
 // sidebarKey handles a key while the sidebar has the focus. ok is false
@@ -196,14 +196,14 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 	case "home":
 		return a.selectEntry(0), true
 	case "l", "right", "enter", "tab":
-		a.sideFocus = false
+		a.focus = colList
 		if a.tab == tabHome {
 			a.home.enter() // Home starts on its first tile, whichever had the focus before
 		}
 		return nil, true
 	case "/":
 		if a.filterTarget() != nil {
-			a.sideFocus = false // the filter is the list's: go there to type it
+			a.focus = colList // the filter is the list's: go there to type it
 		}
 		return nil, false // Home has none: the note says so, and the focus stays
 	case "A":
@@ -222,32 +222,9 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 // focusDetails moves the focus from the list to the details, on tabs
 // that have them.
 func (a *App) focusDetails() {
-	switch a.tab {
-	case tabInstalled:
-		a.installed.pv.focus = true
-	case tabDiscover:
-		a.discover.pv.focus = true
-	case tabServices:
-		if a.services.previewAlone() {
-			a.services.pvOpen = true
-		}
+	if a.hasDetails() {
+		a.focus = colDetails
 	}
-}
-
-// unfocusDetails moves the focus from the details back to the list. ok is
-// false when the list had it already.
-func (a *App) unfocusDetails() (ok bool) {
-	switch {
-	case a.tab == tabInstalled && a.installed.pv.focus:
-		a.installed.pv.focus = false
-	case a.tab == tabDiscover && a.discover.pv.focus:
-		a.discover.pv.focus = false
-	case a.servicesPreviewAlone():
-		a.services.pvOpen = false
-	default:
-		return false
-	}
-	return true
 }
 
 // tileEntries are the entries Home's tiles open, by the tab they name.

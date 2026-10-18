@@ -62,3 +62,9 @@ func columnsFor(w int, focus column, hasDetails bool) columns {
 	}
 	return c
 }
+
+// hasDetails reports whether tab shows the selected row's details beside
+// its list.
+func hasDetails(tab int) bool {
+	return tab == tabInstalled || tab == tabDiscover || tab == tabServices
+}
