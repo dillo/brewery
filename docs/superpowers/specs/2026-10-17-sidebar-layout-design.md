@@ -129,8 +129,8 @@ The rule:
 | Width | Focus: sidebar | Focus: list | Focus: details |
 |---|---|---|---|
 | ≥ 122 | sidebar, list, details | sidebar, list, details | sidebar, list, details |
-| 102–121 | sidebar, list | list, details | list, details |
-| 82–101 | sidebar, list | sidebar, list | details |
+| 100–121 | sidebar, list | list, details | list, details |
+| 82–99 | sidebar, list | sidebar, list | details |
 | < 82 | sidebar | list | details |
 
 At the narrowest widths `h` and `l` turn pages, and the status bar's trail says where you are.
