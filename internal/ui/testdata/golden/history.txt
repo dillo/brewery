@@ -37,4 +37,4 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  History › upgrade fd                                                 j/k scroll · h back to the list · : command · ? help · q quit 
+ NORMAL  History › upgrade fd                                   j/k scroll · h back to the list · R run again · : command · ? help · q quit 

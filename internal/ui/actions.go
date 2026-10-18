@@ -66,6 +66,9 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.askUpgradeAll(), true
 	case a.tab == tabServices && (k == "s" || k == "S" || k == "R"):
 		return a.serviceKey(k), true
+	case a.tab == tabHistory && k == "R":
+		a.askRunAgain()
+		return nil, true
 	case a.tab == tabServices && k == "L":
 		return a.openLog(), true
 	case a.tab == tabTaps && k == "x":
@@ -446,6 +449,38 @@ func (a *App) serviceKey(k string) tea.Cmd {
 	return nil
 }
 
+// askRunAgain offers to run the selected History job again.
+func (a *App) askRunAgain() {
+	i := a.jobs.cursor()
+	if i < 0 || len(a.history[i].Args) == 0 {
+		return
+	}
+	r := a.history[i]
+	args := slices.Clone(r.Args)
+	a.confirm = &confirmBox{
+		title: "Run again?",
+		body:  []string{"brew " + strings.Join(args, " ")},
+		choices: []choice{
+			{"y", "run", func() tea.Cmd { return a.runAgain(args, r.Takeover) }},
+			{"n", "cancel", nil},
+		},
+	}
+}
+
+// runAgain runs args as brewery runs its own jobs: full screen if the job
+// took the terminal before, otherwise in the drawer without brew's
+// auto-update, refreshing what the command touches.
+func (a *App) runAgain(args []string, fullScreen bool) tea.Cmd {
+	if fullScreen || takesOver(args) {
+		return a.takeover(args)
+	}
+	if args[0] == "install" && a.queue.Pending(args) != nil {
+		return a.note(strings.Join(args, " ") + " is already queued")
+	}
+	refresh, all := refreshAfter(args)
+	return a.run(action{title: strings.Join(args, " "), args: args, refresh: refresh, full: all})
+}
+
 // actionHints are the status-bar hints for where the focus is.
 func (a *App) actionHints() string {
 	if a.focus == colSidebar {
@@ -477,9 +512,9 @@ func (a *App) actionHints() string {
 		return "a install · / search · l details · r refetch"
 	case tabHistory:
 		if a.focus == colDetails {
-			return "j/k scroll · h back to the list"
+			return "j/k scroll · h back to the list · R run again"
 		}
-		return "l details · / filter by command · y copy the command"
+		return "l details · R run again · / filter by command · y copy the command"
 	case tabMaintenance:
 		if a.focus == colDetails {
 			return "enter run · h back to the list"

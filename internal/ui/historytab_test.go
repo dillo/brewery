@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -260,5 +262,69 @@ func TestHistoryStartedUsesTheClockZone(t *testing.T) {
 	show(t, a, "History")
 	if out := stripANSI(a.render()); !strings.Contains(out, "2026-10-13 15:00") {
 		t.Errorf("started is in the app's zone (09:30 UTC is 15:00 at +5:30):\n%s", out)
+	}
+}
+
+func TestHistoryRunAgain(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{
+		{Title: "upgrade fd", Args: []string{"upgrade", "fd"}, State: jobs.Failed, ExitCode: 1, Started: testNow.Add(-time.Hour), Ended: testNow.Add(-time.Hour)},
+	})
+	show(t, a, "History")
+	keys(t, a, "R")
+	if a.confirm == nil || a.confirm.title != "Run again?" || !slices.Contains(a.confirm.body, "brew upgrade fd") {
+		t.Fatalf("R asks first: %+v", a.confirm)
+	}
+	keys(t, a, "y")
+	if want := []string{"upgrade", "fd"}; !reflect.DeepEqual(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+	if env := fs.envs[len(fs.envs)-1]; !slices.Contains(env, "HOMEBREW_NO_AUTO_UPDATE=1") {
+		t.Errorf("a retry runs as brewery's own jobs do, without auto-update: %v", env)
+	}
+
+	keys(t, a, "l", "R") // from the details too
+	if a.confirm == nil {
+		t.Error("R works from the details")
+	}
+}
+
+func TestHistoryRunAgainTakesOver(t *testing.T) {
+	for _, r := range []jobs.Record{
+		{Title: "edit fd", Args: []string{"edit", "fd"}},                 // by its args
+		{Title: "info fd", Args: []string{"info", "fd"}, Takeover: true}, // a ! line
+	} {
+		fs, tk := &fakeStarter{}, &fakeTakeover{}
+		a := newJobApp(t, fs)
+		a.UseTakeover(tk.cmd)
+		r.State, r.Started, r.Ended = jobs.Done, testNow, testNow
+		a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{r})
+		show(t, a, "History")
+		a.Update(press("R"))
+		_, cmd := a.Update(press("y"))
+		if len(tk.calls) != 1 || !reflect.DeepEqual(tk.calls[0], r.Args) || cmd == nil || len(fs.calls) != 0 {
+			t.Errorf("%v: took over with %v, drawer %v", r.Args, tk.calls, fs.calls)
+		}
+	}
+}
+
+func TestHistoryRunAgainEdges(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, nil)
+	show(t, a, "History")
+	keys(t, a, "R")
+	if a.confirm != nil {
+		t.Error("no job, no prompt")
+	}
+
+	fs := &fakeStarter{procs: []*fakeProc{newFakeProc(0)}} // never exits: the install stays running
+	a = newJobApp(t, fs)
+	install := []string{"install", "fd"}
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{{Title: "install fd", Args: install, State: jobs.Failed, Started: testNow, Ended: testNow}})
+	show(t, a, "History")
+	keys(t, a, "R", "y", "R", "y")
+	if !strings.Contains(stripANSI(a.statusBar()), "install fd is already queued") {
+		t.Errorf("a second install waits for the first: %q", stripANSI(a.statusBar()))
 	}
 }
