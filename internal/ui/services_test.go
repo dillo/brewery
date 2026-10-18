@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -277,5 +278,90 @@ func TestLogKeyWithoutAViewer(t *testing.T) {
 	keys(t, a, "L")
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "the log viewer isn't available") {
 		t.Errorf("status bar %q", bar)
+	}
+}
+
+// longLog is n log lines: "log line 1" to "log line n".
+func longLog(n int) string {
+	lines := make([]string, n)
+	for i := range lines {
+		lines[i] = fmt.Sprintf("log line %d", i+1)
+	}
+	return strings.Join(lines, "\n")
+}
+
+const (
+	pgLog    = "/opt/homebrew/var/log/postgresql@16.log"
+	redisLog = "/opt/homebrew/var/log/redis.log"
+)
+
+func TestServicesDetailsScrollTheLog(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "log line 200") {
+		t.Fatalf("the details start at the newest line:\n%s", out)
+	}
+	keys(t, a, "k")
+	if out := stripANSI(a.render()); strings.Contains(out, "log line 200") || !strings.Contains(out, "log line 199") || !strings.Contains(out, "The log · 1 lines back") {
+		t.Errorf("k scrolls back one line:\n%s", out)
+	}
+	keys(t, a, "j")
+	if !strings.Contains(stripANSI(a.render()), "log line 200") {
+		t.Error("j scrolls forward again")
+	}
+	keys(t, a, "g", "g")
+	if !regexp.MustCompile(`\blog line 1\b`).MatchString(stripANSI(a.render())) {
+		t.Error("gg goes to the oldest line read")
+	}
+	keys(t, a, "G")
+	if !strings.Contains(stripANSI(a.render()), "log line 200") {
+		t.Error("G goes back to the newest line")
+	}
+}
+
+func TestShortLogDoesNotScroll(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: "only line\n"}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	before := stripANSI(a.render())
+	keys(t, a, "k", "k", "ctrl+u")
+	if after := stripANSI(a.render()); after != before {
+		t.Errorf("a log that fits doesn't move:\n%s", after)
+	}
+}
+
+func TestLogScrollStartsAtTheNewestForEachService(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	logs := &fakeLogs{text: map[string]string{pgLog: longLog(200), redisLog: longLog(300)}}
+	a.readLog = logs.read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	a.render()
+	keys(t, a, "k", "k", "k")
+	if !strings.Contains(stripANSI(a.render()), "3 lines back") {
+		t.Fatalf("scrolled back on the first service:\n%s", stripANSI(a.render()))
+	}
+	keys(t, a, "h", "j")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "log line 300") || !strings.Contains(out, "End of the log") {
+		t.Errorf("the next service's log starts at its newest line:\n%s", out)
+	}
+}
+
+func TestLogScrollKeepsItsPlaceOnARefresh(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+	show(t, a, "Services")
+	keys(t, a, "l")
+	a.render()
+	keys(t, a, "k", "k")
+	_, cmd := a.Update(resultMsg{q: qServices, services: a.snap.Services})
+	settle(t, a, cmd)
+	if out := stripANSI(a.render()); !strings.Contains(out, "2 lines back") {
+		t.Errorf("a fresh read of the same log keeps the place:\n%s", out)
 	}
 }

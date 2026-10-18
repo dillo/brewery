@@ -742,7 +742,7 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 		case tabDiscover:
 			a.discover.scroll(k)
 		case tabServices:
-			a.services.scroll(k)
+			a.scrollLog(k)
 		case tabHistory:
 			a.jobs.scroll(k)
 		case tabMaintenance:

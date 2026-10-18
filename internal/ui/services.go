@@ -28,6 +28,9 @@ type logTail struct {
 	err    error
 	loaded bool // the read of path has come back
 	stale  bool // services were refreshed: read it again
+	back   int  // lines the view is scrolled back from the newest
+	most   int  // the most back can be, as of the last render
+	page   int  // half a pane of log lines, as of the last render
 }
 
 // logMsg carries the end of a log file back to the App.
@@ -235,7 +238,7 @@ func (a *App) servicePreview(w, h int) (title, body string) {
 		errLog = s.ErrorLog
 	}
 	top := head + "\n" + kv(st, "command", s.Command, "user", s.User, "file", tilde(s.File), "log", tilde(s.Log), "errors", tilde(errLog)) +
-		"\n" + st.Accent.Render("End of the log") + "\n"
+		"\n"
 
 	var lines []string
 	switch {
@@ -253,7 +256,35 @@ func (a *App) servicePreview(w, h int) (title, body string) {
 		lines = strings.Split(a.log.text, "\n")
 	}
 	_, ih := paneInner(w, h)
-	room := max(ih-strings.Count(top, "\n"), 1)
-	lines = lines[max(len(lines)-room, 0):] // the newest lines, which pane would cut
-	return s.Name, top + strings.Join(lines, "\n")
+	room := max(ih-strings.Count(top, "\n")-1, 1) // the heading takes a line
+	a.log.most, a.log.page = max(len(lines)-room, 0), max(room/2, 1)
+	a.log.back = min(a.log.back, a.log.most)
+	heading := "End of the log"
+	if a.log.back > 0 {
+		heading = fmt.Sprintf("The log · %d lines back", a.log.back)
+	}
+	end := len(lines) - a.log.back
+	lines = lines[max(end-room, 0):end] // the lines that fit, which pane would cut
+	return s.Name, top + st.Accent.Render(heading) + "\n" + strings.Join(lines, "\n")
+}
+
+// scrollLog scrolls the log in Services' details by a key. A log that fits
+// the pane has nowhere to go, so the keys do nothing.
+func (a *App) scrollLog(k string) {
+	l := &a.log
+	switch k {
+	case "j", "down":
+		l.back--
+	case "k", "up":
+		l.back++
+	case "ctrl+d":
+		l.back -= l.page
+	case "ctrl+u":
+		l.back += l.page
+	case "home":
+		l.back = l.most
+	case "end", "G":
+		l.back = 0
+	}
+	l.back = min(max(l.back, 0), l.most)
 }

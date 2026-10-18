@@ -371,7 +371,7 @@ func (a *App) actionHints() string {
 		return "u upgrade · A upgrade all"
 	case tabServices:
 		if a.focus == colDetails {
-			return "h back to the list · s start · S stop · R restart · L log"
+			return "j/k scroll the log · h back to the list · s start · S stop · R restart · L log"
 		}
 		return "s start · S stop · R restart · L log · l details"
 	case tabTaps:

@@ -24,7 +24,7 @@ func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 	}
 	show(t, a, "Services")
 	keys(t, a, "?")
-	if out := stripANSI(a.render()); !strings.Contains(out, "follow the log full screen") || !strings.Contains(out, "l tab enter") || strings.Contains(out, "uninstall") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "follow the log full screen") || !strings.Contains(out, "l tab enter") || !strings.Contains(out, "scroll the log") || strings.Contains(out, "uninstall") {
 		t.Errorf("Services help:\n%s", out)
 	}
 }
@@ -33,7 +33,7 @@ func TestServicesDetailsHints(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Services")
 	keys(t, a, "l")
-	if h := a.actionHints(); !strings.HasPrefix(h, "h back to the list") {
+	if h := a.actionHints(); !strings.HasPrefix(h, "j/k scroll the log · h back to the list") {
 		t.Errorf("Services details hints: %q", h)
 	}
 }
