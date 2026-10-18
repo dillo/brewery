@@ -107,11 +107,12 @@ func (a *App) stepEntry(d int) tea.Cmd {
 }
 
 // badge is what an entry shows on its right: a chip when something needs
-// attention, otherwise a muted count, or nothing before the data is in.
-func (a *App) badge(e entry) string {
+// attention (chip is true), otherwise a muted count, or nothing before the
+// data is in.
+func (a *App) badge(e entry) (b string, chip bool) {
 	st := a.st
 	if q, ok := tabQueries[e.tab]; ok && e.tab != tabHome && a.errs[q] != nil {
-		return st.ChipStale.Render("⚠") // stale data outranks any count
+		return st.ChipStale.Render("⚠"), true // stale data outranks any count
 	}
 	n := -1
 	switch e.tab {
@@ -121,7 +122,7 @@ func (a *App) badge(e entry) string {
 		}
 	case tabOutdated:
 		if k := len(a.snap.Outdated); k > 0 {
-			return st.ChipWarn.Render(fmt.Sprintf("↑%d", k))
+			return st.ChipWarn.Render(fmt.Sprintf("↑%d", k)), true
 		}
 		if a.loaded[qOutdated] {
 			n = 0
@@ -134,7 +135,7 @@ func (a *App) badge(e entry) string {
 			}
 		}
 		if failing > 0 {
-			return st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
+			return st.ChipErr.Render(fmt.Sprintf("✗%d", failing)), true
 		}
 		if a.loaded[qServices] {
 			n = len(a.snap.Services)
@@ -147,14 +148,14 @@ func (a *App) badge(e entry) string {
 		n = len(a.history)
 	}
 	if n < 0 {
-		return ""
+		return "", false
 	}
-	return st.Muted.Render(fmt.Sprint(n))
+	return st.Muted.Render(fmt.Sprint(n)), false
 }
 
 // sidebarW is the sidebar's width, border included: room for
-// " Dependencies  145 " inside it.
-const sidebarW = 22
+// " Dependencies    1450 " inside it.
+const sidebarW = 26
 
 // sidebarView draws the sidebar in a w×h pane. The selected entry is a
 // solid block, as the active tab was.
@@ -167,15 +168,24 @@ func (a *App) sidebarView(w, h int) string {
 		if i > 0 && e.sec != entries[i-1].sec {
 			lines = append(lines, "", st.Muted.Render(sectionNames[e.sec]))
 		}
-		b := a.badge(e)
+		b, chip := a.badge(e)
 		if i == a.sel {
 			b = ansi.Strip(b) // the block's colours carry it
 		}
-		label := ansi.Truncate(e.label, max(iw-3-ansi.StringWidth(b), 1), "…")
-		gap := max(iw-2-ansi.StringWidth(label)-ansi.StringWidth(b), 1)
-		line := " " + label + strings.Repeat(" ", gap) + b + " "
+		// A chip's right padding takes the margin, so its text ends in the
+		// same column as the counts.
+		end := " "
+		if chip {
+			end = ""
+		}
+		bw := ansi.StringWidth(b) + len(end)
+		label := ansi.Truncate(e.label, max(iw-3-bw, 1), "…")
+		gap := max(iw-1-ansi.StringWidth(label)-bw, 1)
+		head, tail := " "+label, strings.Repeat(" ", gap)+b+end
+		line := head + tail
 		if i == a.sel {
-			line = st.TabActive.Render(line)
+			// Only the label is bold, so the count reads apart from it.
+			line = st.TabActive.Render(head) + st.TabActive.Bold(false).Render(tail)
 			selLine = len(lines)
 		}
 		lines = append(lines, line)

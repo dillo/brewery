@@ -116,6 +116,31 @@ func TestSidebarShowsCountsAndChips(t *testing.T) {
 	}
 }
 
+// TestSidebarBadgesLineUp checks that chips end in the same column as the
+// plain counts, and that the selected entry's count isn't bold.
+func TestSidebarBadgesLineUp(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	end := func(entry string) int {
+		for l := range strings.SplitSeq(stripANSI(a.sidebarView(sidebarW, 40)), "\n") {
+			if strings.HasPrefix(strings.TrimLeft(l, "│ "), entry+" ") {
+				return lipgloss.Width(strings.TrimRight(strings.TrimSuffix(l, "│"), " "))
+			}
+		}
+		t.Fatalf("no %s entry", entry)
+		return 0
+	}
+	if chip, count := end("Outdated"), end("Pinned"); chip != count {
+		t.Errorf("the Outdated chip ends in column %d, the Pinned count in %d", chip, count)
+	}
+
+	show(t, a, "Dependencies")
+	bold := a.st.TabActive.Render(" Dependencies")
+	plain := a.st.TabActive.Bold(false).Render(strings.Repeat(" ", sidebarW-4-len(" Dependencies")-2) + "2 ")
+	if raw := a.sidebarView(sidebarW, 40); !strings.Contains(raw, bold+plain) {
+		t.Errorf("the selected label should be bold and its count not:\n%q", raw)
+	}
+}
+
 func label(a *App) string { return entries[a.sel].label }
 
 func TestSidebarKeysMoveThroughEntries(t *testing.T) {

@@ -1,40 +1,40 @@
-╭────────────────────╮╭─────────────────────╮╭─────────────────────╮╭─────────────────────╮╭─────────────────────╮╭────────────────────────╮
-│ brewery            ││ Installed           ││ Outdated            ││ Services            ││ Doctor              ││ Cleanup                │
-│  Home              ││ 7                   ││ 2                   ││ 1 error             ││ 2 warnings          ││ 86.7MB                 │
-│                    ││ 5 formulae · 2 cas… ││ lua-language-serve… ││ postgresql@16       ││ see below           ││ c to reclaim           │
-│ PACKAGES           │╰─────────────────────╯╰─────────────────────╯╰─────────────────────╯╰─────────────────────╯╰────────────────────────╯
-│  All            7  │╭────────────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────╮
-│  Top-level      5  ││ Doctor                                                             ││ Recent jobs                                  │
-│  Formulae       5  ││ ⚠ The following taps are not trusted:                              ││ ✗ upgrade fd                          1m ago │
-│  Casks          2  ││   oven-sh/bun                                                      ││ ✓ update                              2h ago │
-│  Dependencies   2  ││                                                                    ││ 5 History has them all                       │
-│  Outdated     ↑2   ││   Untap them with:                                                 ││                                              │
-│  Pinned         1  ││     brew untap oven-sh/bun                                         ││                                              │
-│                    ││                                                                    ││                                              │
-│ MANAGE             ││ ⚠ Some installed casks are deprecated or disabled.                 ││                                              │
-│  Services     ✗1   ││   fontbase                                                         ││                                              │
-│  Taps           2  ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│ DISCOVER           ││                                                                    ││                                              │
-│  Popular tools     ││                                                                    ││                                              │
-│  Popular apps      ││                                                                    ││                                              │
-│  Rising            ││                                                                    ││                                              │
-│  New               ││                                                                    ││                                              │
-│  Fonts             ││                                                                    ││                                              │
-│  Search all        ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│ TOOLS              ││                                                                    ││                                              │
-│  History        2  ││                                                                    ││                                              │
-│  Maintenance       ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-│                    ││                                                                    ││                                              │
-╰────────────────────╯╰────────────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────╯
+╭────────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────────╮
+│ brewery                ││ Installed          ││ Outdated           ││ Services           ││ Doctor             ││ Cleanup                │
+│  Home                  ││ 7                  ││ 2                  ││ 1 error            ││ 2 warnings         ││ 86.7MB                 │
+│                        ││ 5 formulae · 2 ca… ││ lua-language-serv… ││ postgresql@16      ││ see below          ││ c to reclaim           │
+│ PACKAGES               │╰────────────────────╯╰────────────────────╯╰────────────────────╯╰────────────────────╯╰────────────────────────╯
+│  All                7  │╭──────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────╮
+│  Top-level          5  ││ Doctor                                                           ││ Recent jobs                                │
+│  Formulae           5  ││ ⚠ The following taps are not trusted:                            ││ ✗ upgrade fd                        1m ago │
+│  Casks              2  ││   oven-sh/bun                                                    ││ ✓ update                            2h ago │
+│  Dependencies       2  ││                                                                  ││ 5 History has them all                     │
+│  Outdated          ↑2  ││   Untap them with:                                               ││                                            │
+│  Pinned             1  ││     brew untap oven-sh/bun                                       ││                                            │
+│                        ││                                                                  ││                                            │
+│ MANAGE                 ││ ⚠ Some installed casks are deprecated or disabled.               ││                                            │
+│  Services          ✗1  ││   fontbase                                                       ││                                            │
+│  Taps               2  ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│ DISCOVER               ││                                                                  ││                                            │
+│  Popular tools         ││                                                                  ││                                            │
+│  Popular apps          ││                                                                  ││                                            │
+│  Rising                ││                                                                  ││                                            │
+│  New                   ││                                                                  ││                                            │
+│  Fonts                 ││                                                                  ││                                            │
+│  Search all            ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│ TOOLS                  ││                                                                  ││                                            │
+│  History            2  ││                                                                  ││                                            │
+│  Maintenance           ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+╰────────────────────────╯╰──────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────╯
  NORMAL  Home                        h/l move · j/k down, up · enter open · r refresh · U update · c clean up · : command · ? help · q quit 
