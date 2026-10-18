@@ -29,8 +29,6 @@ type logTail struct {
 	loaded bool // the read of path has come back
 	stale  bool // services were refreshed: read it again
 	back   int  // lines the view is scrolled back from the newest
-	most   int  // the most back can be, as of the last render
-	page   int  // half a pane of log lines, as of the last render
 }
 
 // logMsg carries the end of a log file back to the App.
@@ -212,13 +210,15 @@ func serviceStatus(s brew.Service) string {
 	return s.Status
 }
 
-// servicePreview shows the selected service's details over as much of the
-// end of its log as fits a w×h pane.
-func (a *App) servicePreview(w, h int) (title, body string) {
+// logWindow is what the selected service's details show in a w×h pane: the
+// service, the details above the log, the log's lines, and how many of
+// them fit below the heading. Both the render and the scroll keys use it,
+// so they agree on the pane without anything stored from a render.
+func (a *App) logWindow(w, h int) (s brew.Service, top string, lines []string, room int, ok bool) {
 	st := a.st
-	s, ok := a.selectedService()
+	s, ok = a.selectedService()
 	if !ok {
-		return "Preview", ""
+		return s, "", nil, 0, false
 	}
 	style := st.Warn
 	switch s.Status {
@@ -237,10 +237,9 @@ func (a *App) servicePreview(w, h int) (title, body string) {
 	if s.ErrorLog != s.Log {
 		errLog = s.ErrorLog
 	}
-	top := head + "\n" + kv(st, "command", s.Command, "user", s.User, "file", tilde(s.File), "log", tilde(s.Log), "errors", tilde(errLog)) +
+	top = head + "\n" + kv(st, "command", s.Command, "user", s.User, "file", tilde(s.File), "log", tilde(s.Log), "errors", tilde(errLog)) +
 		"\n"
 
-	var lines []string
 	switch {
 	case s.Log == "":
 		lines = []string{st.Muted.Render("brew knows no log for this service")}
@@ -253,38 +252,53 @@ func (a *App) servicePreview(w, h int) (title, body string) {
 	case a.log.text == "":
 		lines = []string{st.Muted.Render("the log is empty")}
 	default:
-		lines = strings.Split(a.log.text, "\n")
+		lines = strings.Split(strings.TrimSuffix(a.log.text, "\n"), "\n")
 	}
 	_, ih := paneInner(w, h)
-	room := max(ih-strings.Count(top, "\n")-1, 1) // the heading takes a line
-	a.log.most, a.log.page = max(len(lines)-room, 0), max(room/2, 1)
-	a.log.back = min(a.log.back, a.log.most)
-	heading := "End of the log"
-	if a.log.back > 0 {
-		heading = fmt.Sprintf("The log · %d lines back", a.log.back)
+	room = max(ih-strings.Count(top, "\n")-1, 1) // the heading takes a line
+	return s, top, lines, room, true
+}
+
+// servicePreview shows the selected service's details over as much of the
+// end of its log as fits a w×h pane.
+func (a *App) servicePreview(w, h int) (title, body string) {
+	s, top, lines, room, ok := a.logWindow(w, h)
+	if !ok {
+		return "Preview", ""
 	}
-	end := len(lines) - a.log.back
+	back := min(a.log.back, max(len(lines)-room, 0)) // a pane that grew shows less back
+	heading := "End of the log"
+	if back > 0 {
+		heading = "The log · " + plural(back, "line") + " back"
+	}
+	end := len(lines) - back
 	lines = lines[max(end-room, 0):end] // the lines that fit, which pane would cut
-	return s.Name, top + st.Accent.Render(heading) + "\n" + strings.Join(lines, "\n")
+	return s.Name, top + a.st.Accent.Render(heading) + "\n" + strings.Join(lines, "\n")
 }
 
 // scrollLog scrolls the log in Services' details by a key. A log that fits
 // the pane has nowhere to go, so the keys do nothing.
 func (a *App) scrollLog(k string) {
+	_, _, lines, room, ok := a.logWindow(a.services.pvW, a.services.h)
+	if !ok {
+		return
+	}
+	most, page := max(len(lines)-room, 0), max(room/2, 1)
 	l := &a.log
+	l.back = min(l.back, most) // the pane may have grown since the last key
 	switch k {
 	case "j", "down":
 		l.back--
 	case "k", "up":
 		l.back++
 	case "ctrl+d":
-		l.back -= l.page
+		l.back -= page
 	case "ctrl+u":
-		l.back += l.page
+		l.back += page
 	case "home":
-		l.back = l.most
+		l.back = most
 	case "end", "G":
 		l.back = 0
 	}
-	l.back = min(max(l.back, 0), l.most)
+	l.back = min(max(l.back, 0), most)
 }
