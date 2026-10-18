@@ -312,12 +312,12 @@ func cleanupLines(cl brew.Cleanup) []string {
 // found, after naming them.
 func (a *App) askAutoremove() tea.Cmd {
 	names := a.snap.Autoremove
-	switch {
-	case a.errs[qAutoremove] != nil:
+	switch a.autoremoveState() {
+	case tidyFailed:
 		return a.note("couldn't check · r retries")
-	case !a.loaded[qAutoremove]:
+	case tidyChecking:
 		return a.note("still checking")
-	case len(names) == 0:
+	case tidyNone:
 		return a.note("nothing to remove")
 	}
 	act := action{title: "autoremove", args: []string{"autoremove"}, refresh: diskQueries}
@@ -335,13 +335,13 @@ func (a *App) askAutoremove() tea.Cmd {
 // askServicesCleanup confirms brew services cleanup, after naming the
 // files it would remove and the services it would stop.
 func (a *App) askServicesCleanup() tea.Cmd {
-	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
-	switch {
-	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
+	state, remove, stop := a.servicesState()
+	switch state {
+	case tidyFailed:
 		return a.note("couldn't check · r retries")
-	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
+	case tidyChecking:
 		return a.note("still checking")
-	case len(remove)+len(stop) == 0:
+	case tidyNone:
 		return a.note("nothing to clean")
 	}
 	act := action{title: "services cleanup", args: []string{"services", "cleanup"}, refresh: []query{qServices, qServiceFiles}}

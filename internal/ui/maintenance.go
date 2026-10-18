@@ -26,68 +26,130 @@ const (
 	maintUpdate
 )
 
+// tidyState is how far an Autoremove or Services cleanup row has got.
+type tidyState int
+
+const (
+	tidyFailed   tidyState = iota // a query it needs failed
+	tidyChecking                  // a query it needs hasn't answered yet
+	tidyNone                      // there is nothing to do
+	tidySome                      // there is something to do
+)
+
+// autoremoveState is where Autoremove stands, failure first, then
+// checking.
+func (a *App) autoremoveState() tidyState {
+	switch {
+	case a.errs[qAutoremove] != nil:
+		return tidyFailed
+	case !a.loaded[qAutoremove]:
+		return tidyChecking
+	case len(a.snap.Autoremove) == 0:
+		return tidyNone
+	}
+	return tidySome
+}
+
+// servicesState is where Services cleanup stands, and the files it would
+// remove and the services it would stop.
+func (a *App) servicesState() (state tidyState, remove, stop []string) {
+	remove, stop = unusedServices(a.snap.ServiceFiles, a.snap.Services)
+	switch {
+	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
+		state = tidyFailed
+	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
+		state = tidyChecking
+	case len(remove)+len(stop) == 0:
+		state = tidyNone
+	default:
+		state = tidySome
+	}
+	return state, remove, stop
+}
+
 // syncMaint rebuilds Maintenance's rows from what doctor, the
 // dry-runs, the service files and History say now.
 func (a *App) syncMaint() {
+	a.maint.setRows([]table.Row{{"Doctor", a.doctorStatus()}, {"Cleanup", a.cleanupStatus()},
+		{"Autoremove", a.autoremoveStatus()}, {"Services cleanup", a.servicesStatus()},
+		{"Update Homebrew", a.updateStatus()}})
+}
+
+// doctorStatus is the Doctor row's status.
+func (a *App) doctorStatus() string {
 	st := a.st
-	doctor := theme.Tint(st.P.Overlay0, "…")
-	switch n := len(a.snap.Doctor); {
+	n := len(a.snap.Doctor)
+	switch {
 	case a.errs[qDoctor] != nil:
-		doctor = theme.Tint(st.P.Red, "✗ failed")
+		return theme.Tint(st.P.Red, "✗ failed")
 	case !a.loaded[qDoctor]:
+		return theme.Tint(st.P.Overlay0, "…")
 	case a.snap.DoctorRan && n == 0:
-		doctor = theme.Tint(st.P.Green, "all clear")
-	default:
-		doctor = theme.Tint(st.P.Yellow, plural(n, "warning"))
+		return theme.Tint(st.P.Green, "all clear")
 	}
+	return theme.Tint(st.P.Yellow, plural(n, "warning"))
+}
+
+// cleanupStatus is the Cleanup row's status.
+func (a *App) cleanupStatus() string {
+	st := a.st
 	cl := a.snap.Cleanup
-	var cleanup string
 	switch {
 	case a.errs[qCleanup] != nil:
-		cleanup = theme.Tint(st.P.Red, "✗ failed")
+		return theme.Tint(st.P.Red, "✗ failed")
 	case !a.loaded[qCleanup]:
-		cleanup = theme.Tint(st.P.Overlay0, "…")
+		return theme.Tint(st.P.Overlay0, "…")
 	case cl.Standard.Size == "" && cl.All.Size == "":
-		cleanup = theme.Tint(st.P.Green, "nothing to clean")
+		return theme.Tint(st.P.Green, "nothing to clean")
 	case cl.Standard.Size != "":
-		cleanup = theme.Tint(st.P.Blue, "frees "+cl.Standard.Size)
-	default:
-		cleanup = theme.Tint(st.P.Blue, "frees "+cl.All.Size+" (whole cache)")
+		return theme.Tint(st.P.Blue, "frees "+cl.Standard.Size)
 	}
-	autoremove := theme.Tint(st.P.Overlay0, "…")
-	switch n := len(a.snap.Autoremove); {
-	case a.errs[qAutoremove] != nil:
-		autoremove = theme.Tint(st.P.Red, "✗ failed")
-	case !a.loaded[qAutoremove]:
-	case n == 0:
-		autoremove = theme.Tint(st.P.Green, "nothing to remove")
-	default:
-		autoremove = theme.Tint(st.P.Blue, "removes "+formulae(n))
+	return theme.Tint(st.P.Blue, "frees "+cl.All.Size+" (whole cache)")
+}
+
+// autoremoveStatus is the Autoremove row's status.
+func (a *App) autoremoveStatus() string {
+	st := a.st
+	switch a.autoremoveState() {
+	case tidyFailed:
+		return theme.Tint(st.P.Red, "✗ failed")
+	case tidyChecking:
+		return theme.Tint(st.P.Overlay0, "…")
+	case tidyNone:
+		return theme.Tint(st.P.Green, "nothing to remove")
 	}
-	services := theme.Tint(st.P.Overlay0, "…")
-	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
-	switch {
-	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
-		services = theme.Tint(st.P.Red, "✗ failed")
-	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
-	case len(remove)+len(stop) == 0:
-		services = theme.Tint(st.P.Green, "nothing to clean")
-	default:
-		var parts []string
-		if len(remove) > 0 {
-			parts = append(parts, plural(len(remove), "unused file"))
-		}
-		if len(stop) > 0 {
-			parts = append(parts, "stops "+plural(len(stop), "service"))
-		}
-		services = theme.Tint(st.P.Blue, strings.Join(parts, " · "))
+	return theme.Tint(st.P.Blue, "removes "+formulae(len(a.snap.Autoremove)))
+}
+
+// servicesStatus is the Services cleanup row's status.
+func (a *App) servicesStatus() string {
+	st := a.st
+	state, remove, stop := a.servicesState()
+	switch state {
+	case tidyFailed:
+		return theme.Tint(st.P.Red, "✗ failed")
+	case tidyChecking:
+		return theme.Tint(st.P.Overlay0, "…")
+	case tidyNone:
+		return theme.Tint(st.P.Green, "nothing to clean")
 	}
-	update := theme.Tint(st.P.Overlay0, "not yet")
+	var parts []string
+	if len(remove) > 0 {
+		parts = append(parts, plural(len(remove), "unused file"))
+	}
+	if len(stop) > 0 {
+		parts = append(parts, "stops "+plural(len(stop), "service"))
+	}
+	return theme.Tint(st.P.Blue, strings.Join(parts, " · "))
+}
+
+// updateStatus is the Update Homebrew row's status: when brew update last
+// finished.
+func (a *App) updateStatus() string {
 	if r, ok := a.lastUpdate(); ok {
-		update = ago(a.now(), r.Ended)
+		return ago(a.now(), r.Ended)
 	}
-	a.maint.setRows([]table.Row{{"Doctor", doctor}, {"Cleanup", cleanup}, {"Autoremove", autoremove},
-		{"Services cleanup", services}, {"Update Homebrew", update}})
+	return theme.Tint(a.st.P.Overlay0, "not yet")
 }
 
 // lastUpdate is the newest brew update in History that finished cleanly.
@@ -127,25 +189,25 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 		}
 		return "Cleanup", body
 	case maintAutoremove:
-		switch {
-		case a.errs[qAutoremove] != nil:
+		switch a.autoremoveState() {
+		case tidyFailed:
 			body = st.Err.Render("couldn't check · r retries")
-		case !a.loaded[qAutoremove]:
+		case tidyChecking:
 			body = st.Muted.Render("still checking")
-		case len(a.snap.Autoremove) == 0:
+		case tidyNone:
 			body = st.OK.Render("nothing to remove")
 		default:
 			body = strings.Join(autoremoveLines(a.snap.Autoremove), "\n") + "\n\n" + st.Muted.Render("enter removes them")
 		}
 		return "Autoremove", body
 	case maintServices:
-		remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
-		switch {
-		case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
+		state, remove, stop := a.servicesState()
+		switch state {
+		case tidyFailed:
 			body = st.Err.Render("couldn't check · r retries")
-		case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
+		case tidyChecking:
 			body = st.Muted.Render("still checking")
-		case len(remove)+len(stop) == 0:
+		case tidyNone:
 			body = st.OK.Render("nothing to clean")
 		default:
 			body = strings.Join(servicesCleanupLines(remove, stop), "\n") + "\n\n" + st.Muted.Render("enter cleans up")

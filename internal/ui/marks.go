@@ -100,33 +100,7 @@ func (a *App) byKind(ts []target, build func(kind brew.Kind, names []string) act
 // upgradeMarked upgrades the marked packages that brew would: outdated and
 // not pinned.
 func (a *App) upgradeMarked() tea.Cmd {
-	var ts []target
-	if a.tab == tabInstalled {
-		for _, p := range a.installed.markedPackages() {
-			if p.Outdated && !p.Pinned {
-				ts = append(ts, target{p.FullName, p.Kind})
-			}
-		}
-	} else {
-		for _, i := range a.outdated.markedIdx() {
-			if o := a.snap.Outdated[i]; !o.Pinned {
-				ts = append(ts, target{o.Name, o.Kind})
-			}
-		}
-	}
-	// brew would refuse those with a dependency pinned behind: leave them out.
-	var skipped, behind []string
-	ts = slices.DeleteFunc(ts, func(t target) bool {
-		b := a.pinnedBehind(t.name, t.kind)
-		if len(b) > 0 {
-			skipped, behind = append(skipped, t.name), append(behind, b...)
-		}
-		return len(b) > 0
-	})
-	why := ""
-	if len(skipped) > 0 {
-		why = "skipped " + strings.Join(skipped, ", ") + ": needs " + strings.Join(a.ix.PinnedBehind(behind...), ", ") + " unpinned"
-	}
+	ts, why := a.withoutPinnedBehind(a.upgradable())
 	if len(ts) == 0 {
 		if why != "" {
 			return a.note(why)
@@ -148,6 +122,43 @@ func (a *App) upgradeMarked() tea.Cmd {
 		a.flash = note
 	}
 	return cmd
+}
+
+// upgradable is the marked packages on this tab that are outdated and not
+// pinned.
+func (a *App) upgradable() []target {
+	var ts []target
+	if a.tab == tabInstalled {
+		for _, p := range a.installed.markedPackages() {
+			if p.Outdated && !p.Pinned {
+				ts = append(ts, target{p.FullName, p.Kind})
+			}
+		}
+		return ts
+	}
+	for _, i := range a.outdated.markedIdx() {
+		if o := a.snap.Outdated[i]; !o.Pinned {
+			ts = append(ts, target{o.Name, o.Kind})
+		}
+	}
+	return ts
+}
+
+// withoutPinnedBehind drops the targets brew would refuse because a
+// dependency is pinned behind them, and says which and why; "" if none.
+func (a *App) withoutPinnedBehind(ts []target) ([]target, string) {
+	var skipped, behind []string
+	ts = slices.DeleteFunc(ts, func(t target) bool {
+		b := a.pinnedBehind(t.name, t.kind)
+		if len(b) > 0 {
+			skipped, behind = append(skipped, t.name), append(behind, b...)
+		}
+		return len(b) > 0
+	})
+	if len(skipped) == 0 {
+		return ts, ""
+	}
+	return ts, "skipped " + strings.Join(skipped, ", ") + ": needs " + strings.Join(a.ix.PinnedBehind(behind...), ", ") + " unpinned"
 }
 
 // askUninstallMarked confirms uninstalling the marked packages. If an
