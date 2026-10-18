@@ -37,4 +37,4 @@
 │                    ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │
 ╰────────────────────╯╰──────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Services                                                        s start · S stop · R restart · L log · : command · ? help · q quit 
+ NORMAL  Services                                            s start · S stop · R restart · L log · l details · : command · ? help · q quit 

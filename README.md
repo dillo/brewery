@@ -40,10 +40,13 @@ brew's own output, live — answer its questions right in the drawer.
 
 - **Home**: counts, doctor's warnings, recent jobs
 - **Packages**: All, Top-level, Formulae, Casks, Dependencies, Outdated, Pinned,
-  each with a preview of the selected package
+  each with the selected package's details beside it
 - **Manage**: Services, with each service's log; Taps, where `x` untaps one
 - **Discover**: Popular tools, Popular apps, Rising, New, Fonts, and Search all
   for the whole catalogue
+
+From 122 columns the sidebar, list and details sit side by side. In a narrower
+window the columns slide with the focus, so `h` and `l` turn pages.
 
 ## Keys
 
@@ -51,7 +54,7 @@ Press `?` anywhere for the keys that work there.
 
 | Key | What it does |
 |---|---|
-| `h` `l` | move between the sidebar, the list and the preview |
+| `h` `l` | move between the sidebar, the list and the details; in a narrow window, a page at a time |
 | `1`–`4` | Home, Packages, Manage, Discover |
 | `[` `]` | previous or next entry |
 | `h` `l` on Home | along the tiles, and from Doctor to Recent jobs; `h` from the first tile or Doctor goes back to the sidebar |
@@ -65,7 +68,7 @@ Press `?` anywhere for the keys that work there.
 | `space` | mark several for `u` or `x` |
 | `s` `S` `R` | start, stop, restart a service; `L` follows its log |
 | `a` | install (Discover) |
-| `l` `tab` `enter` | preview, then `j` `k` scroll |
+| `l` `tab` `enter` | details, then `j` `k` scroll |
 | `y` | copy the name |
 | `gx` | open the homepage |
 | `:` | run any brew command |

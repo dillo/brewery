@@ -37,7 +37,7 @@ func (a *App) helpGroups() []helpGroup {
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{{"u", "upgrade"}, {"A", "upgrade all"}, {"space", "mark for u on several"}}}
 	case a.tab == tabServices:
-		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"L", "follow the log full screen"}}}
+		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab enter", "details"}, {"L", "follow the log full screen"}}}
 	case a.tab == tabTaps:
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	case a.tab == tabDiscover:

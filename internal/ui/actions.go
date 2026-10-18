@@ -356,7 +356,10 @@ func (a *App) actionHints() string {
 	case tabOutdated:
 		return "u upgrade · A upgrade all"
 	case tabServices:
-		return "s start · S stop · R restart · L log"
+		if a.focus == colDetails {
+			return "h back to the list · s start · S stop · R restart · L log"
+		}
+		return "s start · S stop · R restart · L log · l details"
 	case tabTaps:
 		return "x untap"
 	case tabDiscover:
