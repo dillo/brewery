@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"fmt"
 	"strconv"
 
@@ -22,7 +23,9 @@ type listTab struct {
 	n      int                    // rows shown
 	key    func(table.Row) string // identifies a row across refreshes
 	table  table.Model
-	w, h   int
+	listW  int // the list pane's width; 0 hides it
+	pvW    int // the preview's width; 0 hides it
+	h      int
 
 	all      []table.Row     // every row, before the filter
 	idx      []int           // for each row shown, its index in all
@@ -111,35 +114,20 @@ func (t *listTab) title() string {
 	return s
 }
 
-// layout is how the table and any preview share the tab.
-func (t *listTab) layout(showPreview bool) split {
-	if t.preview == nil {
-		return split{listW: t.w, listH: t.h}
-	}
-	return splitFor(t.w, t.h, showPreview)
-}
-
-// previewAlone reports whether the tab has a preview that the layout
-// doesn't show beside or under the list, so it takes turns with the list.
-func (t *listTab) previewAlone() bool {
-	return t.preview != nil && splitFor(t.w, t.h, false).pvW == 0
-}
-
-func (t *listTab) resize(w, h int) {
-	t.w, t.h = w, h
-	sp := t.layout(false)
-	if sp.listW == 0 {
-		sp = splitFor(w, h, false) // the table keeps its size while the preview shows
-	}
-	iw, ih := paneInner(sp.listW, sp.listH)
+// resize sizes the table for a list pane listW wide, beside a preview
+// pvW wide. A hidden list is sized to the preview, so it still takes
+// navigation.
+func (t *listTab) resize(listW, pvW, h int) {
+	t.listW, t.pvW, t.h = listW, pvW, h
+	iw, ih := paneInner(cmp.Or(listW, pvW), h)
 	sizeTable(&t.table, t.cols, iw, ih)
 }
 
 // view sizes the table each time because a failed refresh shares the pane
 // with a banner above it.
 func (t *listTab) view(err error, focus column) string {
-	w, h, sp := t.w, t.h, t.layout(focus == colDetails)
-	iw, ih := paneInner(sp.listW, sp.listH)
+	w, h := t.listW+t.pvW, t.h
+	iw, ih := paneInner(cmp.Or(t.listW, w), h) // the state panes below span the tab
 	switch {
 	case err != nil && t.n == 0:
 		return pane(t.st, t.name, errorBody(t.st, err), w, h, focus != colSidebar)
@@ -156,12 +144,15 @@ func (t *listTab) view(err error, focus column) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(ih)
-	list := pane(t.st, t.title(), body+t.table.View(), sp.listW, sp.listH, focus == colList)
-	if sp.pvW == 0 {
+	var list string
+	if t.listW > 0 {
+		list = pane(t.st, t.title(), body+t.table.View(), t.listW, h, focus == colList)
+	}
+	if t.pvW == 0 || t.preview == nil {
 		return list
 	}
-	title, preview := t.preview(sp.pvW, sp.pvH)
-	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, focus == colDetails))
+	title, preview := t.preview(t.pvW, h)
+	return joinColumns(list, pane(t.st, title, preview, t.pvW, h, focus == colDetails))
 }
 
 // kindCell is a package's TYPE cell: "formula" or "cask", after its icon.

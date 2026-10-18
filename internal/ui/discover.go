@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -186,9 +187,11 @@ type discoverTab struct {
 	reloadAfter bool
 	err         error // the last read failed
 	table       table.Model
-	w, h        int
+	listW       int // the list pane's width; 0 hides it
+	pvW         int // the preview's width; 0 hides it
+	h           int
 
-	pv         scroller                // the preview, which tab or enter focuses
+	pv         scroller                // where the preview is scrolled to
 	details    map[string]brew.Details // what brew said about each package, by entryKey
 	detailsErr map[string]error        // why brew couldn't say, by entryKey
 	waiting    string                  // the package the cursor is resting on, before brew is asked
@@ -420,35 +423,33 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 
 // scroll scrolls the preview by a key.
 func (t *discoverTab) scroll(k string) {
-	sp := splitFor(t.w, t.h, true)
-	_, ih := paneInner(sp.pvW, sp.pvH)
+	_, ih := paneInner(t.pvW, t.h)
 	t.pv.scroll(k, ih/2)
 }
 
-// size fits the table to the list pane, under the bar of views.
+// size fits the table to the list pane, under the bar of views. A hidden
+// list is sized to the preview, so it still takes navigation.
 func (t *discoverTab) size() {
-	sp := splitFor(t.w, t.h, false)
-	iw, ih := paneInner(sp.listW, sp.listH)
+	iw, ih := paneInner(cmp.Or(t.listW, t.pvW), t.h)
 	sizeTable(&t.table, discoverCols[t.showing], iw, max(ih-aboutHeight, 0))
 }
 
 // resize must run before key handling: the table ignores navigation
 // until it has been sized.
-func (t *discoverTab) resize(w, h int) {
-	t.w, t.h = w, h
+func (t *discoverTab) resize(listW, pvW, h int) {
+	t.listW, t.pvW, t.h = listW, pvW, h
 	t.size()
 }
 
 func (t *discoverTab) view(focus column) string {
-	w, h := t.w, t.h
 	if t.err != nil && !t.loaded {
-		return pane(t.st, "Discover", errorBody(t.st, t.err), w, h, focus != colSidebar)
+		return pane(t.st, "Discover", errorBody(t.st, t.err), t.listW+t.pvW, t.h, focus != colSidebar)
 	}
-	sp := splitFor(w, h, focus == colDetails)
+	listW, pvW := t.listW, t.pvW
 	if !t.loaded {
-		sp = split{listW: w, listH: h} // nothing to preview yet
+		listW, pvW = listW+pvW, 0 // nothing to preview yet
 	}
-	iw, ih := paneInner(sp.listW, sp.listH)
+	iw, ih := paneInner(listW, t.h)
 	body := about(t.st, discoverViews[t.showing].about, iw) + "\n"
 	ih -= aboutHeight
 	if t.err != nil {
@@ -475,16 +476,19 @@ func (t *discoverTab) view(focus column) string {
 		t.table.SetHeight(max(ih, 0))
 		body += t.table.View()
 	}
-	list := pane(t.st, title, body, sp.listW, sp.listH, focus == colList)
-	if sp.pvW == 0 {
+	var list string
+	if listW > 0 {
+		list = pane(t.st, title, body, listW, t.h, focus == colList)
+	}
+	if pvW == 0 {
 		return list
 	}
 	previewTitle, preview := "Preview", t.st.Muted.Render("nothing in this view")
 	if r, ok := t.selected(); ok {
-		_, ph := paneInner(sp.pvW, sp.pvH)
+		_, ph := paneInner(pvW, t.h)
 		previewTitle, preview = r.Name, t.pv.window(t.preview(r), ph)
 	}
-	return sp.join(list, pane(t.st, previewTitle, preview, sp.pvW, sp.pvH, focus == colDetails))
+	return joinColumns(list, pane(t.st, previewTitle, preview, pvW, t.h, focus == colDetails))
 }
 
 // empty says why the current view has no rows.

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"sort"
 	"strings"
 
@@ -44,12 +45,14 @@ type installedTab struct {
 	ix     *state.Index
 	rows   []brew.Package   // the filtered rows, in table order
 	match  string           // the "/" filter on names
-	pv     scroller         // the preview, which tab or enter focuses
+	pv     scroller         // where the preview is scrolled to
 	marked map[string]bool  // packages picked with space, by pkgKey
 	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
 	loaded bool
 	table  table.Model
-	w, h   int
+	listW  int // the list pane's width; 0 hides it
+	pvW    int // the preview's width; 0 hides it
+	h      int
 }
 
 func newInstalledTab(st theme.Styles) installedTab {
@@ -186,32 +189,26 @@ func (t *installedTab) update(msg tea.KeyPressMsg) tea.Cmd {
 
 // scroll scrolls the preview by a key.
 func (t *installedTab) scroll(k string) {
-	sp := splitFor(t.w, t.h, true)
-	_, ih := paneInner(sp.pvW, sp.pvH)
+	_, ih := paneInner(t.pvW, t.h)
 	t.pv.scroll(k, ih/2)
 }
 
 // resize must run before key handling: the table ignores navigation
-// until it has been sized.
-func (t *installedTab) resize(w, h int) {
-	t.w, t.h = w, h
-	sp := splitFor(w, h, false)
-	iw, ih := paneInner(sp.listW, sp.listH)
+// until it has been sized. A hidden list is sized to the preview, so it
+// still takes navigation.
+func (t *installedTab) resize(listW, pvW, h int) {
+	t.listW, t.pvW, t.h = listW, pvW, h
+	iw, ih := paneInner(cmp.Or(listW, pvW), h)
 	sizeTable(&t.table, installedCols, iw, max(ih-aboutHeight, 0))
 }
-
-// listWidth is the list pane's width with the preview closed.
-func (t *installedTab) listWidth() int { return splitFor(t.w, t.h, false).listW }
 
 // view sizes the table each time because a failed refresh shares the list
 // pane with a banner above it.
 func (t *installedTab) view(err error, focus column) string {
-	w, h := t.w, t.h
 	if err != nil && len(t.all) == 0 {
-		return pane(t.st, "Installed", errorBody(t.st, err), w, h, focus != colSidebar)
+		return pane(t.st, "Installed", errorBody(t.st, err), t.listW+t.pvW, t.h, focus != colSidebar)
 	}
-	sp := splitFor(w, h, focus == colDetails)
-	iw, ih := paneInner(sp.listW, sp.listH)
+	iw, ih := paneInner(t.listW, t.h)
 	body := about(t.st, views[t.filter].about, iw) + "\n"
 	ih -= aboutHeight
 	if err != nil {
@@ -227,7 +224,13 @@ func (t *installedTab) view(err error, focus column) string {
 	if !t.loaded && len(t.all) == 0 {
 		rows = skeleton(t.st, iw, ih) // nothing yet: show the shape of what's coming
 	}
-	list := pane(t.st, title, body+rows, sp.listW, sp.listH, focus == colList)
+	var list string
+	if t.listW > 0 {
+		list = pane(t.st, title, body+rows, t.listW, t.h, focus == colList)
+	}
+	if t.pvW == 0 {
+		return list
+	}
 
 	p, ok := t.selected()
 	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
@@ -236,12 +239,12 @@ func (t *installedTab) view(err error, focus column) string {
 	}
 	switch {
 	case ok:
-		_, ph := paneInner(sp.pvW, sp.pvH)
+		_, ph := paneInner(t.pvW, t.h)
 		previewTitle, body = p.Name, t.pv.window(t.preview(p), ph)
 	case !t.loaded && err == nil:
 		body = t.st.Muted.Render("loading…")
 	}
-	return sp.join(list, pane(t.st, previewTitle, body, sp.pvW, sp.pvH, focus == colDetails))
+	return joinColumns(list, pane(t.st, previewTitle, body, t.pvW, t.h, focus == colDetails))
 }
 
 func (t *installedTab) preview(p brew.Package) string {

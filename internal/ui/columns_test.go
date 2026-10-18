@@ -1,6 +1,11 @@
 package ui
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	tea "charm.land/bubbletea/v2"
+)
 
 func TestColumnsFor(t *testing.T) {
 	for _, tt := range []struct {
@@ -39,5 +44,78 @@ func TestColumnsFor(t *testing.T) {
 		if got := columnsFor(tt.w, tt.focus, tt.hasDetails); got != tt.want {
 			t.Errorf("columnsFor(%d, %d, %v) = %+v, want %+v", tt.w, tt.focus, tt.hasDetails, got, tt.want)
 		}
+	}
+}
+
+func TestColumnsSlideWithTheFocus(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 30})
+	show(t, a, "Top-level")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "PACKAGES") || !strings.Contains(out, "NAME") || strings.Contains(out, "App to build and share") {
+		t.Errorf("at 90 columns the list sits beside the sidebar, without details:\n%s", out)
+	}
+	keys(t, a, "l")
+	out = stripANSI(a.render())
+	if strings.Contains(out, "NAME") || strings.Contains(out, "PACKAGES") || !strings.Contains(out, "App to build and share") {
+		t.Errorf("l turns the page to the details, alone:\n%s", out)
+	}
+	keys(t, a, "h")
+	if out := stripANSI(a.render()); !strings.Contains(out, "NAME") || !strings.Contains(out, "PACKAGES") {
+		t.Errorf("h turns back to the sidebar and list:\n%s", out)
+	}
+
+	a.Update(tea.WindowSizeMsg{Width: 110, Height: 30})
+	keys(t, a, "l")
+	out = stripANSI(a.render())
+	if strings.Contains(out, "PACKAGES") || !strings.Contains(out, "NAME") || !strings.Contains(out, "App to build and share") {
+		t.Errorf("at 110 columns the details push the sidebar out:\n%s", out)
+	}
+}
+
+func TestRowKeysWorkFromTheDetailsAlone(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	a.readLog = (&fakeLogs{}).read
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
+	show(t, a, "Services")
+	keys(t, a, "l")
+	if out := stripANSI(a.render()); !strings.Contains(out, "End of the log") || strings.Contains(out, "STATUS") {
+		t.Fatalf("l shows the details alone:\n%s", out)
+	}
+	name, _, _ := a.selection()
+	keys(t, a, "S")
+	if a.confirm == nil || !strings.Contains(a.confirm.title, name) {
+		t.Errorf("S from the details asks to stop %s: %+v", name, a.confirm)
+	}
+	keys(t, a, "n", "esc")
+	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
+		t.Errorf("esc goes back to the list:\n%s", out)
+	}
+}
+
+func TestFilterFromTheDetailsGoesToTheList(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 30})
+	show(t, a, "All")
+	keys(t, a, "l", "/")
+	if a.mode != modeFilter || a.focus != colList {
+		t.Errorf("/ from the details filters the list, with the focus on it: mode %d, focus %d", a.mode, a.focus)
+	}
+}
+
+func TestDetailsShowAloneAfterAResize(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.readLog = (&fakeLogs{}).read
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
+	show(t, a, "Services")
+	keys(t, a, "l")
+	a.Update(tea.WindowSizeMsg{Width: 50, Height: 24})
+	if out := stripANSI(a.render()); !strings.Contains(out, "End of the log") || strings.Contains(out, "STATUS") {
+		t.Errorf("after the resize the details show alone:\n%s", out)
+	}
+	keys(t, a, "esc")
+	if out := stripANSI(a.render()); !strings.Contains(out, "STATUS") {
+		t.Errorf("esc brings back the list:\n%s", out)
 	}
 }

@@ -34,7 +34,7 @@ func golden(t *testing.T, name, got string) {
 	}
 }
 
-// TestScreens snapshots brewery's main screens at 120×40, icons off, from
+// TestScreens snapshots brewery's main screens at 140×40, icons off, from
 // the test fixtures. The machine running it mustn't show through: paths
 // under $HOME are shortened to ~ (the fixtures were captured under
 // /Users/locutus), and dates are written in the local time zone.

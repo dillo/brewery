@@ -15,7 +15,7 @@ import (
 func newFixtureInstalled(t *testing.T) installedTab {
 	snap := fixtureSnapshot(t)
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(snap.Packages, state.NewIndex(snap.Packages))
 	return it
 }
@@ -56,7 +56,7 @@ func TestInstalledTitleNamesTheViewAndSaysWhatItShows(t *testing.T) {
 	it := newFixtureInstalled(t)
 	it.filter = filterCasks
 	it.apply()
-	it.resize(120, 30)
+	it.resize(66, 54, 30)
 	out := stripANSI(it.view(nil, colList))
 	for _, want := range []string{"Casks", "macOS apps and fonts (casks)."} {
 		if !strings.Contains(out, want) {
@@ -119,7 +119,7 @@ func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
 		}
 	}
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(snap.Packages, state.NewIndex(snap.Packages))
 	out := stripANSI(it.view(nil, colList)) // docker-desktop is first
 	if !strings.Contains(out, "Dependencies") || !strings.Contains(out, "└─ fd") {
@@ -129,7 +129,7 @@ func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
 
 func TestInstalledEmptyFilter(t *testing.T) {
 	it := newInstalledTab(testStyles)
-	it.resize(100, 12)
+	it.resize(55, 45, 12)
 	it.setData(nil, state.NewIndex(nil))
 	if out := stripANSI(it.view(nil, colList)); !strings.Contains(out, "loading…") || strings.Contains(out, "nothing in this view") {
 		t.Errorf("before its first result the preview should say it is loading:\n%s", out)
@@ -154,7 +154,7 @@ func TestInstalledPreviewKeepsBorderWithManyDeps(t *testing.T) {
 	}
 	pkgs = append(pkgs, big)
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(pkgs, state.NewIndex(pkgs))
 	if p, ok := it.selected(); !ok || p.Name != "big" {
 		t.Fatalf("selected %q, want big", p.Name)
@@ -165,7 +165,7 @@ func TestInstalledPreviewKeepsBorderWithManyDeps(t *testing.T) {
 	}
 	rows := strings.Split(stripANSI(out), "\n")
 	last := []rune(rows[len(rows)-1])
-	if preview := string(last[it.listWidth():]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
+	if preview := string(last[it.listW:]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
 		t.Errorf("preview pane lost its bottom border: %q", preview)
 	}
 }
@@ -202,7 +202,7 @@ func TestInstalledKeepsSelectionAcrossRefresh(t *testing.T) {
 
 func TestInstalledSortsSameNameFormulaBeforeCask(t *testing.T) {
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.filter = filterAll
 	pkgs := []brew.Package{
 		{Name: "docker", FullName: "docker", Kind: brew.KindCask},

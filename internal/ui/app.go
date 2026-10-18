@@ -118,7 +118,7 @@ type App struct {
 	lastIn        map[section]int // each section's last-used entry, for 1-4
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
-	laidOut       [3]int // width, height and drawer state of the last layout
+	laidOut       [6]int // width, height, drawer state, focus, tab and jobs view of the last layout
 
 	// brew asked a question while the command line was open; answer it
 	// once the line closes.
@@ -422,10 +422,15 @@ func (a *App) layout() {
 	if a.drawerShown() {
 		shown = 1
 	}
-	if a.laidOut == [3]int{a.width, a.height, shown} {
+	jobs := 0
+	if a.jobsOpen {
+		jobs = 1
+	}
+	key := [6]int{a.width, a.height, shown, int(a.focus), a.tab, jobs}
+	if a.laidOut == key {
 		return
 	}
-	a.laidOut = [3]int{a.width, a.height, shown}
+	a.laidOut = key
 	bodyH := a.bodyHeight()
 	dh := drawerHeight(bodyH)
 	// The drawer's terminal is always sized for when it is shown, so a job
@@ -438,12 +443,21 @@ func (a *App) layout() {
 	if shown == 1 {
 		a.tabH -= dh
 	}
-	cw := a.contentWidth()
-	a.installed.resize(cw, a.tabH)
-	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs} {
-		t.resize(cw, a.tabH)
+	for tab, resize := range map[int]func(listW, pvW, h int){
+		tabInstalled: a.installed.resize, tabOutdated: a.outdated.resize,
+		tabServices: a.services.resize, tabTaps: a.taps.resize, tabDiscover: a.discover.resize,
+	} {
+		c := a.columnsFor(tab)
+		resize(c.list, c.details, a.tabH)
 	}
-	a.discover.resize(cw, a.tabH)
+	c := columnsFor(a.width, a.focus, false)
+	a.jobs.resize(c.list, 0, a.tabH)
+}
+
+// columnsFor is how the columns share the window for tab, as the focus
+// stands.
+func (a *App) columnsFor(tab int) columns {
+	return columnsFor(a.width, a.focus, hasDetails(tab) && !a.jobsOpen)
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -523,14 +537,6 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	if cmd, ok := a.globalKey(k); ok {
 		return cmd
 	}
-	if a.servicesPreviewAlone() {
-		// The list is hidden behind the preview: its keys would act on rows
-		// you can't see. tab and enter go back to it.
-		if k == "tab" || k == "enter" {
-			a.focus = colList
-		}
-		return nil
-	}
 	if cmd, ok := a.actionKey(k); ok {
 		return cmd
 	}
@@ -578,9 +584,6 @@ func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 // false for a key that isn't part of one, which then does what it always
 // does.
 func (a *App) gPrefixKey(k string) (cmd tea.Cmd, ok bool) {
-	if (k == "g" || k == "/") && a.servicesPreviewAlone() {
-		return nil, true // they'd move or filter the list hidden behind the preview
-	}
 	if a.gPending {
 		a.gPending = false
 		return a.gKey(k)
@@ -729,31 +732,27 @@ func (a *App) render() string {
 		return "starting brewery…"
 	}
 	bodyH := a.tabH
+	c := a.columnsFor(a.tab)
 	var body string
-	if a.jobsOpen {
-		body = a.jobs.view(nil, colList)
-	} else {
-		switch a.tab {
-		case tabHome:
-			body = a.home.view(a.snap, a.history, a.now(), a.contentWidth(), bodyH, a.focus)
-		case tabInstalled:
-			body = a.installed.view(a.errs[qInstalled], a.focus)
-		case tabOutdated:
-			body = a.outdated.view(a.errs[qOutdated], a.focus)
-		case tabServices:
-			body = a.services.view(a.errs[qServices], a.focus)
-		case tabTaps:
-			body = a.taps.view(a.errs[qTaps], a.focus)
-		case tabDiscover:
-			body = a.discover.view(a.focus)
-		}
-	}
 	switch {
-	case bodyH == 0:
-	case a.width >= sidebarBeside:
-		body = lipgloss.JoinHorizontal(lipgloss.Top, a.sidebarView(sidebarW, bodyH), body)
-	case a.focus == colSidebar:
-		body = a.sidebarView(a.width, bodyH)
+	case c.list == 0 && c.details == 0: // the sidebar alone
+	case a.jobsOpen:
+		body = a.jobs.view(nil, colList)
+	case a.tab == tabHome:
+		body = a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
+	case a.tab == tabInstalled:
+		body = a.installed.view(a.errs[qInstalled], a.focus)
+	case a.tab == tabOutdated:
+		body = a.outdated.view(a.errs[qOutdated], a.focus)
+	case a.tab == tabServices:
+		body = a.services.view(a.errs[qServices], a.focus)
+	case a.tab == tabTaps:
+		body = a.taps.view(a.errs[qTaps], a.focus)
+	case a.tab == tabDiscover:
+		body = a.discover.view(a.focus)
+	}
+	if bodyH > 0 && c.side > 0 {
+		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
 	drawer := a.drawerShown()
 	if bodyH == 0 && (a.confirm != nil || a.help) {
@@ -790,19 +789,6 @@ func clipLines(s string, n int) string {
 
 // bodyHeight is the space above the status bar.
 func (a *App) bodyHeight() int { return max(a.height-1, 3) }
-
-// sidebarBeside is the narrowest window with room for the sidebar beside
-// a list of 60 columns.
-const sidebarBeside = sidebarW + 60
-
-// contentWidth is the width left for the tab: the whole window when it's
-// too narrow for the sidebar to sit beside the tab.
-func (a *App) contentWidth() int {
-	if a.width >= sidebarBeside {
-		return a.width - sidebarW
-	}
-	return a.width
-}
 
 // promptBar is the status bar while a line is being typed: the mode's
 // badge, the line in what room is left, and a hint when it fits.
@@ -916,9 +902,4 @@ func (a *App) statusBar() string {
 	gap := max(room-lipgloss.Width(left)-lipgloss.Width(r), 1)
 	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "…") // … says something was cut
 	return st.StatusBar.Width(a.width).Render(line)
-}
-
-// servicesPreviewAlone reports whether the Services preview fills the screen, hiding the list.
-func (a *App) servicesPreviewAlone() bool {
-	return a.tab == tabServices && !a.jobsOpen && a.focus == colDetails && a.services.previewAlone()
 }

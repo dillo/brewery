@@ -1,5 +1,7 @@
 package ui
 
+import "charm.land/lipgloss/v2"
+
 // column is where the focus is: the sidebar, the list, or the details of
 // the list's selected row.
 type column int
@@ -67,4 +69,15 @@ func columnsFor(w int, focus column, hasDetails bool) columns {
 // its list.
 func hasDetails(tab int) bool {
 	return tab == tabInstalled || tab == tabDiscover || tab == tabServices
+}
+
+// joinColumns puts the shown columns side by side.
+func joinColumns(panes ...string) string {
+	var shown []string
+	for _, p := range panes {
+		if p != "" {
+			shown = append(shown, p)
+		}
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Top, shown...)
 }
