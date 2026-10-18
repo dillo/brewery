@@ -575,12 +575,12 @@ func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
 
 func TestCachedSnapshotCountsAsLoaded(t *testing.T) {
 	a := New(newFakeSource(t), nil, fixtureSnapshot(t), "")
-	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor} {
+	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor, qAutoremove, qServiceFiles} {
 		if !a.loaded[q] {
 			t.Errorf("%s not loaded from a non-empty cache", queryNames[q])
 		}
 	}
-	if a := New(newFakeSource(t), nil, state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor]) {
+	if a := New(newFakeSource(t), nil, state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor] || a.loaded[qAutoremove] || a.loaded[qServiceFiles]) {
 		t.Error("an empty cache should load nothing")
 	}
 }
