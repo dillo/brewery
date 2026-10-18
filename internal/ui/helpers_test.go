@@ -85,7 +85,7 @@ func press(k string) tea.KeyPressMsg {
 func show(t *testing.T, a *App, label string) {
 	t.Helper()
 	settle(t, a, a.selectEntry(entryIndex(label)))
-	a.sideFocus = false
+	a.focus = colList
 	_, cmd := a.Update(nil) // what follows any key: Services' log, Discover's details, the layout
 	settle(t, a, cmd)
 }

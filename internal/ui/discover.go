@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -51,8 +52,9 @@ func loadCatalogue(ctx context.Context, c Catalog) tea.Cmd {
 // it opens, and the analytics as wantStats says.
 func (a *App) showTab(t int) tea.Cmd {
 	if t != a.tab {
-		// Coming back to a tab starts on its list, not a preview left focused.
-		a.installed.pv.focus, a.discover.pv.focus = false, false
+		if a.focus == colDetails && !a.tabHasDetails(t) {
+			a.focus = colList // the new tab has no details: its list has the focus
+		}
 	}
 	a.tab = t
 	if t != tabDiscover {
@@ -185,10 +187,11 @@ type discoverTab struct {
 	reloadAfter bool
 	err         error // the last read failed
 	table       table.Model
-	w, h        int
-	idle        bool // the sidebar has the focus: no pane here looks focused
+	listW       int // the list pane's width; 0 hides it
+	pvW         int // the preview's width; 0 hides it
+	h           int
 
-	pv         scroller                // the preview, which tab or enter focuses
+	pv         scroller                // where the preview is scrolled to
 	details    map[string]brew.Details // what brew said about each package, by entryKey
 	detailsErr map[string]error        // why brew couldn't say, by entryKey
 	waiting    string                  // the package the cursor is resting on, before brew is asked
@@ -409,18 +412,8 @@ func (t *discoverTab) setMatch(m string) {
 	t.apply()
 }
 
+// update moves the table's selection.
 func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	k := msg.String()
-	switch {
-	case k == "tab" || (k == "enter" && !t.pv.focus):
-		t.pv.focus = !t.pv.focus
-		return nil
-	case t.pv.focus:
-		sp := splitFor(t.w, t.h, true)
-		_, ih := paneInner(sp.pvW, sp.pvH)
-		t.pv.scroll(k, ih/2)
-		return nil
-	}
 	before := t.selectedKey()
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
@@ -428,30 +421,35 @@ func (t *discoverTab) update(msg tea.KeyPressMsg) tea.Cmd {
 	return cmd
 }
 
-// size fits the table to the list pane, under the bar of views.
+// scroll scrolls the preview by a key.
+func (t *discoverTab) scroll(k string) {
+	_, ih := paneInner(t.pvW, t.h)
+	t.pv.scroll(k, ih/2)
+}
+
+// size fits the table to the list pane, under the one-line description. A hidden
+// list is sized to the preview, so it still takes navigation.
 func (t *discoverTab) size() {
-	sp := splitFor(t.w, t.h, false)
-	iw, ih := paneInner(sp.listW, sp.listH)
+	iw, ih := paneInner(cmp.Or(t.listW, t.pvW), t.h)
 	sizeTable(&t.table, discoverCols[t.showing], iw, max(ih-aboutHeight, 0))
 }
 
 // resize must run before key handling: the table ignores navigation
 // until it has been sized.
-func (t *discoverTab) resize(w, h int) {
-	t.w, t.h = w, h
+func (t *discoverTab) resize(listW, pvW, h int) {
+	t.listW, t.pvW, t.h = listW, pvW, h
 	t.size()
 }
 
-func (t *discoverTab) view() string {
-	w, h := t.w, t.h
+func (t *discoverTab) view(focus column) string {
 	if t.err != nil && !t.loaded {
-		return pane(t.st, "Discover", errorBody(t.st, t.err), w, h, !t.idle)
+		return pane(t.st, "Discover", errorBody(t.st, t.err), t.listW+t.pvW, t.h, focus != colSidebar)
 	}
-	sp := splitFor(w, h, t.pv.focus)
+	listW, pvW := t.listW, t.pvW
 	if !t.loaded {
-		sp = split{listW: w, listH: h} // nothing to preview yet
+		listW, pvW = listW+pvW, 0 // nothing to preview yet
 	}
-	iw, ih := paneInner(sp.listW, sp.listH)
+	iw, ih := paneInner(listW, t.h)
 	body := about(t.st, discoverViews[t.showing].about, iw) + "\n"
 	ih -= aboutHeight
 	if t.err != nil {
@@ -478,16 +476,19 @@ func (t *discoverTab) view() string {
 		t.table.SetHeight(max(ih, 0))
 		body += t.table.View()
 	}
-	list := pane(t.st, title, body, sp.listW, sp.listH, !t.pv.focus && !t.idle)
-	if sp.pvW == 0 {
+	var list string
+	if listW > 0 {
+		list = pane(t.st, title, body, listW, t.h, focus == colList)
+	}
+	if pvW == 0 {
 		return list
 	}
 	previewTitle, preview := "Preview", t.st.Muted.Render("nothing in this view")
 	if r, ok := t.selected(); ok {
-		_, ph := paneInner(sp.pvW, sp.pvH)
+		_, ph := paneInner(pvW, t.h)
 		previewTitle, preview = r.Name, t.pv.window(t.preview(r), ph)
 	}
-	return sp.join(list, pane(t.st, previewTitle, preview, sp.pvW, sp.pvH, t.pv.focus))
+	return joinColumns(list, pane(t.st, previewTitle, preview, pvW, t.h, focus == colDetails))
 }
 
 // empty says why the current view has no rows.

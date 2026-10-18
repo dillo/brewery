@@ -20,7 +20,7 @@ func (a *App) helpGroups() []helpGroup {
 	switch {
 	case a.jobsOpen:
 		here = helpGroup{"Jobs", [][2]string{{"enter", "replay the job's output"}, {"esc q", "close"}}}
-	case a.sideFocus:
+	case a.focus == colSidebar:
 		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"l enter", "go to the list"}}}
 	case a.tab == tabHome:
 		here = helpGroup{"Home", [][2]string{
@@ -37,7 +37,7 @@ func (a *App) helpGroups() []helpGroup {
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{{"u", "upgrade"}, {"A", "upgrade all"}, {"space", "mark for u on several"}}}
 	case a.tab == tabServices:
-		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"L", "follow the log full screen"}}}
+		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab enter", "details"}, {"L", "follow the log full screen"}}}
 	case a.tab == tabTaps:
 		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
 	case a.tab == tabDiscover:
@@ -53,7 +53,7 @@ func (a *App) helpGroups() []helpGroup {
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
 		}})
-	case a.tab != tabHome && !a.sideFocus:
+	case a.tab != tabHome && a.focus != colSidebar:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by name"}, {"/ esc", "clear the filter"}, {"y", "copy the name"}, {"gx", "open the homepage"},

@@ -18,30 +18,30 @@ import (
 func TestListTabRendersRows(t *testing.T) {
 	snap := fixtureSnapshot(t)
 	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
-	lt.resize(120, 10)
+	lt.resize(120, 0, 10)
 	lt.setRows(outdatedRows(theme.Icons{}, snap.Outdated))
-	out := stripANSI(lt.view(nil))
+	out := stripANSI(lt.view(nil, colList))
 	for _, want := range []string{"Outdated · 2", "NAME", "lua-language-server", "3.19.1", "3.19.2", "4.95.0,242831", "cask"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}
 	}
-	if h, w := lipgloss.Height(lt.view(nil)), lipgloss.Width(lt.view(nil)); h != 10 || w != 120 {
+	if h, w := lipgloss.Height(lt.view(nil, colList)), lipgloss.Width(lt.view(nil, colList)); h != 10 || w != 120 {
 		t.Errorf("rendered %dx%d, want 120x10", w, h)
 	}
 }
 
 func TestListTabEmptyAndError(t *testing.T) {
 	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date")
-	lt.resize(80, 8)
-	if out := stripANSI(lt.view(nil)); !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
+	lt.resize(80, 0, 8)
+	if out := stripANSI(lt.view(nil, colList)); !strings.Contains(out, "loading…") || strings.Contains(out, "up to date") {
 		t.Errorf("before its first result the tab should say it is loading:\n%s", out)
 	}
 	lt.loaded = true
-	if out := stripANSI(lt.view(nil)); !strings.Contains(out, "everything is up to date") {
+	if out := stripANSI(lt.view(nil, colList)); !strings.Contains(out, "everything is up to date") {
 		t.Errorf("empty message missing:\n%s", out)
 	}
-	out := stripANSI(lt.view(errors.New("brew outdated --json=v2: exit status 1")))
+	out := stripANSI(lt.view(errors.New("brew outdated --json=v2: exit status 1"), colList))
 	if !strings.Contains(out, "couldn't load this view") || !strings.Contains(out, "exit status 1") || !strings.Contains(out, "press r to retry") {
 		t.Errorf("error body missing:\n%s", out)
 	}
@@ -169,9 +169,9 @@ func TestPaneClipsLongBodyAboveTheBorder(t *testing.T) {
 
 func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
 	lt := newListTab(testStyles, "Outdated", outdatedCols, outdatedKey, "all good")
-	lt.resize(120, 10)
+	lt.resize(120, 0, 10)
 	lt.setRows(outdatedRows(theme.Icons{}, fixtureSnapshot(t).Outdated))
-	view := lt.view(errors.New("brew outdated --json=v2: exit status 1\nError: second line"))
+	view := lt.view(errors.New("brew outdated --json=v2: exit status 1\nError: second line"), colList)
 	out := stripANSI(view)
 	for _, want := range []string{"refresh failed · r to retry", "exit status 1", "lua-language-server", "docker-desktop"} {
 		if !strings.Contains(out, want) {
@@ -191,7 +191,7 @@ func TestListTabErrorWithRowsShowsBanner(t *testing.T) {
 
 func TestListTabKeepsSelectionAcrossRefresh(t *testing.T) {
 	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
-	lt.resize(120, 10)
+	lt.resize(120, 0, 10)
 	lt.setRows([]table.Row{{"mysql", ""}, {"postgresql@16", ""}, {"redis", ""}})
 	lt.update(press("j"))
 	lt.update(press("j")) // redis
@@ -214,8 +214,8 @@ func TestListTabKeepsSelectionAcrossRefresh(t *testing.T) {
 
 func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 	lt := newListTab(testStyles, "Taps", tapCols, firstCell, "none")
-	lt.resize(60, 20)
-	out := stripANSI(lt.view(nil))
+	lt.resize(60, 0, 20)
+	out := stripANSI(lt.view(nil, colList))
 	n := 0
 	for l := range strings.SplitSeq(out, "\n") {
 		if strings.Contains(l, "░") {
@@ -226,10 +226,10 @@ func TestSkeletonRowsBeforeTheFirstResult(t *testing.T) {
 		t.Errorf("want %d placeholder rows, got %d:\n%s", skeletonRows, n, out)
 	}
 	it := newInstalledTab(testStyles)
-	it.resize(140, 6)
+	it.resize(77, 63, 6)
 	it.setData(nil, state.NewIndex(nil))
-	out = stripANSI(it.view(nil))
-	if !strings.Contains(out, "░░░░") || lipgloss.Height(it.view(nil)) != 6 {
+	out = stripANSI(it.view(nil, colList))
+	if !strings.Contains(out, "░░░░") || lipgloss.Height(it.view(nil, colList)) != 6 {
 		t.Errorf("Installed shows placeholders too, within its height:\n%s", out)
 	}
 	if got := skeleton(testStyles, 10, 3); lipgloss.Width(got) > 10 || lipgloss.Height(got) != 3 {
@@ -263,7 +263,7 @@ func TestIconsInRows(t *testing.T) {
 
 func TestSelectedRowStaysHighlighted(t *testing.T) {
 	lt := newListTab(testStyles, "Services", serviceCols, firstCell, "none")
-	lt.resize(60, 10)
+	lt.resize(60, 0, 10)
 	lt.setRows(serviceRows(testStyles, fixtureSnapshot(t).Services))
 	found := false
 	for line := range strings.SplitSeq(lt.table.View(), "\n") {
@@ -289,12 +289,12 @@ func TestSkeletonOnTinyPanes(t *testing.T) {
 		}
 	}
 	lt := newListTab(testStyles, "Taps", tapCols, firstCell, "none")
-	lt.resize(40, 3)
-	_ = lt.view(nil)
+	lt.resize(40, 0, 3)
+	_ = lt.view(nil, colList)
 	it := newInstalledTab(testStyles)
-	it.resize(40, 4)
+	it.resize(40, 0, 4)
 	it.setData(nil, state.NewIndex(nil))
-	_ = it.view(nil)
+	_ = it.view(nil, colList)
 }
 
 func TestServiceStatusFitsWithAnIcon(t *testing.T) {

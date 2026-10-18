@@ -15,7 +15,7 @@ import (
 func newFixtureInstalled(t *testing.T) installedTab {
 	snap := fixtureSnapshot(t)
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(snap.Packages, state.NewIndex(snap.Packages))
 	return it
 }
@@ -56,8 +56,8 @@ func TestInstalledTitleNamesTheViewAndSaysWhatItShows(t *testing.T) {
 	it := newFixtureInstalled(t)
 	it.filter = filterCasks
 	it.apply()
-	it.resize(120, 30)
-	out := stripANSI(it.view(nil))
+	it.resize(66, 54, 30)
+	out := stripANSI(it.view(nil, colList))
 	for _, want := range []string{"Casks", "macOS apps and fonts (casks)."} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q:\n%s", want, out)
@@ -77,7 +77,7 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 	if !ok || p.Name != "git" {
 		t.Fatalf("selected %q, want git", p.Name)
 	}
-	out := stripANSI(it.view(nil))
+	out := stripANSI(it.view(nil, colList))
 	for _, want := range []string{
 		"Top-level", "git 2.51.0", "Distributed revision control system",
 		"on request · ", "pinned", "Dependencies", "└─ pcre2", "json-c",
@@ -87,7 +87,7 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 			t.Errorf("missing %q", want)
 		}
 	}
-	if h, w := lipgloss.Height(it.view(nil)), lipgloss.Width(it.view(nil)); h != 30 || w != 140 {
+	if h, w := lipgloss.Height(it.view(nil, colList)), lipgloss.Width(it.view(nil, colList)); h != 30 || w != 140 {
 		t.Errorf("rendered %dx%d, want 140x30", w, h)
 	}
 }
@@ -99,13 +99,13 @@ func TestInstalledPreviewForDependencyAndCask(t *testing.T) {
 	for range 4 {
 		it.update(press("j")) // [docker-desktop] fd fontbase git json-c
 	}
-	out := stripANSI(it.view(nil))
+	out := stripANSI(it.view(nil, colList))
 	if !strings.Contains(out, "as a dependency") || !strings.Contains(out, "git, pcre2") {
 		t.Errorf("json-c preview should show it is a dependency used by git and pcre2:\n%s", out)
 	}
 
 	it.update(press("home")) // docker-desktop
-	out = stripANSI(it.view(nil))
+	out = stripANSI(it.view(nil, colList))
 	if !strings.Contains(out, "4.95.0,242831 ↑") || strings.Contains(out, "Used by") {
 		t.Errorf("cask preview should show the newer version and no dependency sections:\n%s", out)
 	}
@@ -119,9 +119,9 @@ func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
 		}
 	}
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(snap.Packages, state.NewIndex(snap.Packages))
-	out := stripANSI(it.view(nil)) // docker-desktop is first
+	out := stripANSI(it.view(nil, colList)) // docker-desktop is first
 	if !strings.Contains(out, "Dependencies") || !strings.Contains(out, "└─ fd") {
 		t.Errorf("a cask that needs something should show it:\n%s", out)
 	}
@@ -129,16 +129,16 @@ func TestInstalledPreviewForCaskWithDependencies(t *testing.T) {
 
 func TestInstalledEmptyFilter(t *testing.T) {
 	it := newInstalledTab(testStyles)
-	it.resize(100, 12)
+	it.resize(55, 45, 12)
 	it.setData(nil, state.NewIndex(nil))
-	if out := stripANSI(it.view(nil)); !strings.Contains(out, "loading…") || strings.Contains(out, "nothing in this view") {
+	if out := stripANSI(it.view(nil, colList)); !strings.Contains(out, "loading…") || strings.Contains(out, "nothing in this view") {
 		t.Errorf("before its first result the preview should say it is loading:\n%s", out)
 	}
 	it.loaded = true
 	if _, ok := it.selected(); ok {
 		t.Error("nothing should be selected in an empty list")
 	}
-	if out := stripANSI(it.view(nil)); !strings.Contains(out, "nothing in this view") {
+	if out := stripANSI(it.view(nil, colList)); !strings.Contains(out, "nothing in this view") {
 		t.Errorf("empty preview missing:\n%s", out)
 	}
 }
@@ -154,25 +154,25 @@ func TestInstalledPreviewKeepsBorderWithManyDeps(t *testing.T) {
 	}
 	pkgs = append(pkgs, big)
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.setData(pkgs, state.NewIndex(pkgs))
 	if p, ok := it.selected(); !ok || p.Name != "big" {
 		t.Fatalf("selected %q, want big", p.Name)
 	}
-	out := it.view(nil)
+	out := it.view(nil, colList)
 	if h := lipgloss.Height(out); h != 30 {
 		t.Errorf("height = %d, want 30", h)
 	}
 	rows := strings.Split(stripANSI(out), "\n")
 	last := []rune(rows[len(rows)-1])
-	if preview := string(last[it.listWidth():]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
+	if preview := string(last[it.listW:]); !strings.HasPrefix(preview, "╰") || !strings.HasSuffix(preview, "╯") {
 		t.Errorf("preview pane lost its bottom border: %q", preview)
 	}
 }
 
 func TestInstalledErrorWithRowsShowsBanner(t *testing.T) {
 	it := newFixtureInstalled(t)
-	view := it.view(errors.New("brew info --json=v2 --installed: exit status 1\nError: second line"))
+	view := it.view(errors.New("brew info --json=v2 --installed: exit status 1\nError: second line"), colList)
 	out := stripANSI(view)
 	for _, want := range []string{"refresh failed · r to retry", "exit status 1", "lua-language-server", "10.5.0"} {
 		if !strings.Contains(out, want) {
@@ -202,7 +202,7 @@ func TestInstalledKeepsSelectionAcrossRefresh(t *testing.T) {
 
 func TestInstalledSortsSameNameFormulaBeforeCask(t *testing.T) {
 	it := newInstalledTab(testStyles)
-	it.resize(140, 30)
+	it.resize(77, 63, 30)
 	it.filter = filterAll
 	pkgs := []brew.Package{
 		{Name: "docker", FullName: "docker", Kind: brew.KindCask},
@@ -235,12 +235,16 @@ func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Top-level")
 	keys(t, a, "tab")
-	if !a.installed.pv.focus {
+	if a.focus != colDetails {
 		t.Fatal("tab should focus the preview")
 	}
-	show(t, a, "Outdated")
-	show(t, a, "Top-level")
-	if a.installed.pv.focus {
+	for i := 0; label(a) != "Outdated" && i < 10; i++ {
+		keys(t, a, "]") // Outdated has no details: the focus drops to its list
+	}
+	for i := 0; label(a) != "Top-level" && i < 10; i++ {
+		keys(t, a, "[")
+	}
+	if a.focus == colDetails {
 		t.Error("coming back to Installed starts on the list")
 	}
 }

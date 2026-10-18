@@ -1,0 +1,40 @@
+╭────────────────────────────────────────────────────────────────────────────────────────╮
+│ git                                                                                    │
+│ git 2.51.0                                                                             │
+│ Distributed revision control system                                                    │
+│                                                                                        │
+│ type       formula                                                                     │
+│ tap        homebrew/core                                                               │
+│ size       50.0MB                                                                      │
+│ installed  on request · 2026-08-29                                                     │
+│ latest     2.51.0                                                                      │
+│ pinned     yes                                                                         │
+│ homepage   https://git-scm.com                                                         │
+│                                                                                        │
+│ Dependencies                                                                           │
+│ git                                                                                    │
+│ └─ pcre2                                                                               │
+│    └─ json-c                                                                           │
+│                                                                                        │
+│ Used by                                                                                │
+│ nothing installed depends on this                                                      │
+│                                                                                        │
+│ Caveats                                                                                │
+│ Bash completion has been installed.                                                    │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+│                                                                                        │
+╰────────────────────────────────────────────────────────────────────────────────────────╯
+ NORMAL  Top-level › git                                                                  

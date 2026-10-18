@@ -1,40 +1,40 @@
-╭────────────────────╮╭────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ brewery            ││ Top-level                                                                                      │
-│  Home              ││ Things you installed that nothing else needs.                                                  │
-│                    ││  NAME       ╭─────────────────────────────────────────────╮   TYPE       STATUS      SIZE      │
-│ PACKAGES           ││ ────────────│ Installed                                   │─────────────────────────────────── │
-│  All            7  ││  docker-desk│ u          upgrade                          │   cask       ↑           2.2GB     │
-│  Top-level      5  ││  fd         │ x          uninstall                        │   formula                3.0MB     │
-│  Formulae       5  ││  fontbase   │ p          pin or unpin                     │   cask                             │
-│  Casks          2  ││  git        │ space      mark for u/x on several          │   formula    pinned      50.0MB    │
-│  Dependencies   2  ││  lua-languag│ l tab enter details, then j/k scroll        │   formula    ↑                     │
-│  Outdated     ↑2   ││             │                                             │                                    │
-│  Pinned         1  ││             │ Lists                                       │                                    │
-│                    ││             │ j k        move                             │                                    │
-│ MANAGE             ││             │ gg G       top, bottom                      │                                    │
-│  Services     ✗1   ││             │ ctrl+d/u   half a page                      │                                    │
-│  Taps           2  ││             │ /          filter by name                   │                                    │
-│                    ││             │ / esc      clear the filter                 │                                    │
-│ DISCOVER           ││             │ y          copy the name                    │                                    │
-│  Popular tools     ││             │ gx         open the homepage                │                                    │
-│  Popular apps      ││             │                                             │                                    │
-│  Rising            ││             │ Everywhere                                  │                                    │
-│  New               │╰─────────────│ h l        sidebar, list, details           │────────────────────────────────────╯
-│  Fonts             │╭─────────────│ 1-4        Home, Packages, Manage, Discover │────────────────────────────────────╮
-│  Search all        ││ git         │ [ ]        previous or next entry           │                                    │
-│                    ││ git 2.51.0  │ :          run any brew command             │                                    │
-│                    ││ Distributed │ r          refresh                          │                                    │
-│                    ││             │ U          brew update                      │                                    │
-│                    ││ type       f│ c          clean up                         │                                    │
-│                    ││ tap        h│ o          show or hide output              │                                    │
-│                    ││ size       5│ i          type into the running job        │                                    │
-│                    ││ installed  o│ ctrl+c     stop the running job             │                                    │
-│                    ││ latest     2│ q          quit                             │                                    │
-│                    ││ pinned     y│                                             │                                    │
-│                    ││ homepage   h│ any key closes this                         │                                    │
-│                    ││             ╰─────────────────────────────────────────────╯                                    │
-│                    ││ Dependencies                                                                                   │
-│                    ││ git                                                                                            │
-│                    ││ … 8 more                                                                                       │
-╰────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────╯
- NORMAL  Top-level › git                      u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 
+╭────────────────────╮╭──────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
+│ brewery            ││ Top-level                                                    ││ git                                                │
+│  Home              ││ Things you installed that nothing else needs.                ││ git 2.51.0                                         │
+│                    ││  NAME                 ╭─────────────────────────────────────────────╮ibuted revision control system                │
+│ PACKAGES           ││ ──────────────────────│ Installed                                   │                                              │
+│  All            7  ││  docker-desktop       │ u          upgrade                          │      formula                                 │
+│  Top-level      5  ││  fd                   │ x          uninstall                        │      homebrew/core                           │
+│  Formulae       5  ││  fontbase             │ p          pin or unpin                     │      50.0MB                                  │
+│  Casks          2  ││  git                  │ space      mark for u/x on several          │lled  on request · 2026-08-29                 │
+│  Dependencies   2  ││  lua-language-server  │ l tab enter details, then j/k scroll        │t     2.51.0                                  │
+│  Outdated     ↑2   ││                       │                                             │d     yes                                     │
+│  Pinned         1  ││                       │ Lists                                       │age   https://git-scm.com                     │
+│                    ││                       │ j k        move                             │                                              │
+│ MANAGE             ││                       │ gg G       top, bottom                      │dencies                                       │
+│  Services     ✗1   ││                       │ ctrl+d/u   half a page                      │                                              │
+│  Taps           2  ││                       │ /          filter by name                   │re2                                           │
+│                    ││                       │ / esc      clear the filter                 │ json-c                                       │
+│ DISCOVER           ││                       │ y          copy the name                    │                                              │
+│  Popular tools     ││                       │ gx         open the homepage                │by                                            │
+│  Popular apps      ││                       │                                             │ng installed depends on this                  │
+│  Rising            ││                       │ Everywhere                                  │                                              │
+│  New               ││                       │ h l        sidebar, list, details           │ts                                            │
+│  Fonts             ││                       │ 1-4        Home, Packages, Manage, Discover │completion has been installed.                │
+│  Search all        ││                       │ [ ]        previous or next entry           │                                              │
+│                    ││                       │ :          run any brew command             │                                              │
+│                    ││                       │ r          refresh                          │                                              │
+│                    ││                       │ U          brew update                      │                                              │
+│                    ││                       │ c          clean up                         │                                              │
+│                    ││                       │ o          show or hide output              │                                              │
+│                    ││                       │ i          type into the running job        │                                              │
+│                    ││                       │ ctrl+c     stop the running job             │                                              │
+│                    ││                       │ q          quit                             │                                              │
+│                    ││                       │                                             │                                              │
+│                    ││                       │ any key closes this                         │                                              │
+│                    ││                       ╰─────────────────────────────────────────────╯                                              │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+╰────────────────────╯╰──────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
+ NORMAL  Top-level › git                                          u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 

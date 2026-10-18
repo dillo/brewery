@@ -120,16 +120,16 @@ func label(a *App) string { return entries[a.sel].label }
 
 func TestSidebarKeysMoveThroughEntries(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	if label(a) != "Home" || !a.sideFocus {
-		t.Fatalf("brewery should open on Home with the sidebar focused: %s %v", label(a), a.sideFocus)
+	if label(a) != "Home" || a.focus != colSidebar {
+		t.Fatalf("brewery should open on Home with the sidebar focused: %s %v", label(a), a.focus == colSidebar)
 	}
 	keys(t, a, "k")
 	if label(a) != "Home" {
 		t.Errorf("k at the top: %s", label(a))
 	}
 	keys(t, a, "j", "j", "j", "j")
-	if label(a) != "Casks" || a.tab != tabInstalled || a.installed.filter != filterCasks || !a.sideFocus {
-		t.Errorf("4×j: %s tab %d filter %d focus %v", label(a), a.tab, a.installed.filter, a.sideFocus)
+	if label(a) != "Casks" || a.tab != tabInstalled || a.installed.filter != filterCasks || a.focus != colSidebar {
+		t.Errorf("4×j: %s tab %d filter %d focus %v", label(a), a.tab, a.installed.filter, a.focus == colSidebar)
 	}
 	keys(t, a, "G")
 	if label(a) != "Search all" {
@@ -144,23 +144,23 @@ func TestSidebarKeysMoveThroughEntries(t *testing.T) {
 func TestFocusMovesAcrossColumns(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "j", "l")
-	if a.sideFocus || a.installed.pv.focus {
+	if a.focus != colList {
 		t.Fatalf("l from the sidebar should focus the list")
 	}
 	keys(t, a, "l")
-	if !a.installed.pv.focus {
+	if a.focus != colDetails {
 		t.Fatalf("l from the list should focus the details")
 	}
 	keys(t, a, "h")
-	if a.installed.pv.focus || a.sideFocus {
+	if a.focus != colList {
 		t.Fatalf("h from the details should focus the list")
 	}
 	keys(t, a, "h")
-	if !a.sideFocus {
+	if a.focus != colSidebar {
 		t.Fatalf("h from the list should focus the sidebar")
 	}
 	keys(t, a, "enter")
-	if a.sideFocus {
+	if a.focus == colSidebar {
 		t.Errorf("enter in the sidebar should focus the list")
 	}
 }
@@ -168,8 +168,8 @@ func TestFocusMovesAcrossColumns(t *testing.T) {
 func TestNumberKeysJumpToSections(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "4", "j")
-	if label(a) != "Popular apps" || !a.sideFocus {
-		t.Fatalf("4 then j: %s, focus %v", label(a), a.sideFocus)
+	if label(a) != "Popular apps" || a.focus != colSidebar {
+		t.Fatalf("4 then j: %s, focus %v", label(a), a.focus == colSidebar)
 	}
 	keys(t, a, "1", "4")
 	if label(a) != "Popular apps" {
@@ -185,8 +185,8 @@ func TestBracketsStepEntriesAndKeepTheFocus(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Taps")
 	keys(t, a, "]")
-	if label(a) != "Popular tools" || a.sideFocus {
-		t.Errorf("] from Taps: %s, focus %v", label(a), a.sideFocus)
+	if label(a) != "Popular tools" || a.focus == colSidebar {
+		t.Errorf("] from Taps: %s, focus %v", label(a), a.focus == colSidebar)
 	}
 	keys(t, a, "[")
 	if label(a) != "Taps" {
@@ -210,8 +210,8 @@ func TestRowKeysDoNothingInTheSidebar(t *testing.T) {
 func TestSlashFromTheSidebarOnHomeKeepsTheFocus(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "/")
-	if a.mode == modeFilter || !a.sideFocus {
-		t.Errorf("Home has no filter: mode %d, focus %v", a.mode, a.sideFocus)
+	if a.mode == modeFilter || a.focus != colSidebar {
+		t.Errorf("Home has no filter: mode %d, focus %v", a.mode, a.focus == colSidebar)
 	}
 }
 
@@ -239,35 +239,35 @@ func TestSidebarKeepsItsSelectedEntryInView(t *testing.T) {
 func TestSlashFromTheSidebarFiltersTheList(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "j", "/")
-	if a.mode != modeFilter || a.sideFocus {
-		t.Errorf("/ should filter the list: mode %d, focus %v", a.mode, a.sideFocus)
+	if a.mode != modeFilter || a.focus == colSidebar {
+		t.Errorf("/ should filter the list: mode %d, focus %v", a.mode, a.focus == colSidebar)
 	}
 }
 
 func TestHomeTileOpensItsEntry(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "l", "l", "enter") // Home's first tile, then the Outdated tile
-	if label(a) != "Outdated" || a.sideFocus {
-		t.Errorf("enter on the Outdated tile: %s, focus %v", label(a), a.sideFocus)
+	if label(a) != "Outdated" || a.focus == colSidebar {
+		t.Errorf("enter on the Outdated tile: %s, focus %v", label(a), a.focus == colSidebar)
 	}
 }
 
 func TestHomeKeysWalkTheTilesAndBackToTheSidebar(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "l", "l", "l")
-	if a.sideFocus || a.home.sel != 2 {
-		t.Fatalf("l from the sidebar, then l twice: focus %v, tile %d; want the Services tile", a.sideFocus, a.home.sel)
+	if a.focus == colSidebar || a.home.sel != 2 {
+		t.Fatalf("l from the sidebar, then l twice: focus %v, tile %d; want the Services tile", a.focus == colSidebar, a.home.sel)
 	}
 	keys(t, a, "h", "h", "h")
-	if !a.sideFocus || label(a) != "Home" {
-		t.Fatalf("h past the first tile should reach the sidebar: focus %v, %s", a.sideFocus, label(a))
+	if a.focus != colSidebar || label(a) != "Home" {
+		t.Fatalf("h past the first tile should reach the sidebar: focus %v, %s", a.focus == colSidebar, label(a))
 	}
 	keys(t, a, "l")
 	if a.home.sel != 0 || a.home.area != areaTiles {
 		t.Errorf("l from the sidebar should start on Installed: tile %d, area %d", a.home.sel, a.home.area)
 	}
 	keys(t, a, "j", "h")
-	if !a.sideFocus {
+	if a.focus != colSidebar {
 		t.Errorf("h from Doctor should reach the sidebar")
 	}
 }
@@ -277,5 +277,52 @@ func TestEnterOnRecentJobsOpensTheJobsList(t *testing.T) {
 	keys(t, a, "l", "j", "l", "enter")
 	if !a.jobsOpen {
 		t.Errorf("enter on Recent jobs should open the jobs list")
+	}
+}
+
+func TestEntryKeysKeepTheFocusInItsColumn(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "All")
+	keys(t, a, "l")
+	if a.focus != colDetails {
+		t.Fatalf("l from the list: focus %d, want details", a.focus)
+	}
+	keys(t, a, "]") // Top-level: Installed again, with details
+	if label(a) != "Top-level" || a.focus != colDetails {
+		t.Errorf("] keeps the details focus: %s, focus %d", label(a), a.focus)
+	}
+	keys(t, a, "3") // Services
+	if a.focus != colDetails {
+		t.Errorf("3 keeps the details focus on Services: %d", a.focus)
+	}
+	keys(t, a, "4") // Popular tools: no catalogue here, so no details yet
+	if a.tab != tabDiscover || a.focus != colList {
+		t.Errorf("4 onto an unloaded Discover: tab %d, focus %d, want the list", a.tab, a.focus)
+	}
+	keys(t, a, "3", "l")
+	keys(t, a, "]") // Taps has no details: the focus is its list's
+	if label(a) != "Taps" || a.focus != colList {
+		t.Errorf("] onto Taps: %s, focus %d, want the list", label(a), a.focus)
+	}
+	keys(t, a, "h")
+	if a.focus != colSidebar {
+		t.Errorf("h from the list: focus %d, want the sidebar", a.focus)
+	}
+	keys(t, a, "2")
+	if a.focus != colSidebar {
+		t.Errorf("2 from the sidebar keeps the sidebar focus: %d", a.focus)
+	}
+}
+
+func TestStatusTrailNamesTheSelectedService(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	drain(t, a, a.Init())
+	show(t, a, "Services")
+	s, ok := a.selectedService()
+	if !ok {
+		t.Fatal("no service selected")
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "Services › "+s.Name) {
+		t.Errorf("status bar lacks %q:\n%s", "Services › "+s.Name, bar)
 	}
 }

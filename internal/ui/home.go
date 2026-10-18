@@ -52,7 +52,6 @@ type homeTab struct {
 	doctorErr error    // last doctor failure; nil once a run succeeds
 	errs      map[query]error
 	loaded    map[query]bool
-	idle      bool // the sidebar has the focus: no pane here looks focused
 }
 
 func (h *homeTab) tiles(snap state.Snapshot) []tile {
@@ -204,7 +203,7 @@ func (h *homeTab) tileKey(k string, snap state.Snapshot) int {
 
 // view renders the tiles over doctor's findings and the recent jobs
 // (newest first).
-func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time, w, height int) string {
+func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time, w, height int, focus column) string {
 	st := h.st
 	tiles := h.tiles(snap)
 	tileH := 5
@@ -217,7 +216,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 		}
 		iw, _ := paneInner(tw, tileH)
 		body := t.style.Bold(true).Render(t.value) + "\n" + st.Muted.Render(ansi.Truncate(t.detail, iw, "…"))
-		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel && h.area == areaTiles && !h.idle)
+		parts[i] = pane(st, t.title, body, tw, tileH, i == h.sel && h.area == areaTiles && focus != colSidebar)
 	}
 	row := lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 
@@ -242,8 +241,8 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 	doctorW := w * 3 / 5
 	_, docH := paneInner(doctorW, lowH)
 	h.docPage = max(docH/2, 1)
-	doctor := pane(st, "Doctor", h.doc.window(b.String(), docH), doctorW, lowH, h.area == areaDoctor && !h.idle)
-	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, h.area == areaJobs && !h.idle)
+	doctor := pane(st, "Doctor", h.doc.window(b.String(), docH), doctorW, lowH, h.area == areaDoctor && focus != colSidebar)
+	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, h.area == areaJobs && focus != colSidebar)
 	return lipgloss.JoinVertical(lipgloss.Left, row, lipgloss.JoinHorizontal(lipgloss.Top, doctor, jobsPane))
 }
 

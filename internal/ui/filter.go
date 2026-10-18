@@ -60,6 +60,9 @@ func (a *App) openFilter() tea.Cmd {
 	if t == nil {
 		return a.note("/ filters a list · Home has none")
 	}
+	if a.focus == colDetails {
+		a.focus = colList // the filter is the list's, which the details may hide
+	}
 	a.mode = modeFilter
 	a.filterIn.SetValue(t.matchText())
 	a.filterIn.CursorEnd()

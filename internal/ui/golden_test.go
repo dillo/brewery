@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 // update rewrites the golden snapshots: go test ./internal/ui -run TestScreens -update
@@ -34,7 +36,7 @@ func golden(t *testing.T, name, got string) {
 	}
 }
 
-// TestScreens snapshots brewery's main screens at 120×40, icons off, from
+// TestScreens snapshots brewery's main screens at 140×40, icons off, from
 // the test fixtures. The machine running it mustn't show through: paths
 // under $HOME are shortened to ~ (the fixtures were captured under
 // /Users/locutus), and dates are written in the local time zone.
@@ -70,4 +72,9 @@ func TestScreens(t *testing.T) {
 			keys(t, a, "esc") // any key closes help
 		}
 	}
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 40})
+	show(t, a, "Top-level")
+	golden(t, "narrow-list", stripANSI(a.render()))
+	keys(t, a, "l")
+	golden(t, "narrow-details", stripANSI(a.render()))
 }

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"fmt"
 	"strconv"
 
@@ -21,9 +22,10 @@ type listTab struct {
 	loaded bool                   // a result has arrived, so an empty table means "nothing"
 	n      int                    // rows shown
 	key    func(table.Row) string // identifies a row across refreshes
-	idle   bool                   // the sidebar has the focus: no pane here looks focused
 	table  table.Model
-	w, h   int
+	listW  int // the list pane's width; 0 hides it
+	pvW    int // the preview's width; 0 hides it
+	h      int
 
 	all      []table.Row     // every row, before the filter
 	idx      []int           // for each row shown, its index in all
@@ -34,7 +36,6 @@ type listTab struct {
 	// preview, if set, fills a pane beside the table with what it returns
 	// for a w×h pane.
 	preview func(w, h int) (title, body string)
-	pvOpen  bool // when the list would stand alone, the preview shows instead of it
 
 	note func() string // if set and not "", added to the title
 }
@@ -92,11 +93,8 @@ func firstCell(r table.Row) string { return r[0] }
 // outdatedKey identifies an Outdated row by name and type.
 func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[4] }
 
+// update moves the table's selection.
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
-	if k := msg.String(); t.previewAlone() && (k == "tab" || k == "enter") {
-		t.pvOpen = true // the list stands alone: the preview takes turns with it
-		return nil
-	}
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
 	return cmd
@@ -116,50 +114,29 @@ func (t *listTab) title() string {
 	return s
 }
 
-// layout is how the table and any preview share the tab.
-func (t *listTab) layout() split {
-	if t.preview == nil {
-		return split{listW: t.w, listH: t.h}
-	}
-	return splitFor(t.w, t.h, t.pvOpen)
-}
-
-// previewAlone reports whether the tab has a preview that the layout
-// doesn't show beside or under the list, so it takes turns with the list.
-func (t *listTab) previewAlone() bool {
-	return t.preview != nil && splitFor(t.w, t.h, false).pvW == 0
-}
-
-// previewShown reports whether the preview stands in for the list.
-func (t *listTab) previewShown() bool { return t.pvOpen && t.previewAlone() }
-
-func (t *listTab) resize(w, h int) {
-	t.w, t.h = w, h
-	if !t.previewAlone() {
-		t.pvOpen = false // the preview has room beside the list: a later shrink starts on the list
-	}
-	sp := t.layout()
-	if sp.listW == 0 {
-		sp = splitFor(w, h, false) // the table keeps its size while the preview shows
-	}
-	iw, ih := paneInner(sp.listW, sp.listH)
+// resize sizes the table for a list pane listW wide, beside a preview
+// pvW wide. A hidden list is sized to the preview, so it still takes
+// navigation.
+func (t *listTab) resize(listW, pvW, h int) {
+	t.listW, t.pvW, t.h = listW, pvW, h
+	iw, ih := paneInner(cmp.Or(listW, pvW), h)
 	sizeTable(&t.table, t.cols, iw, ih)
 }
 
 // view sizes the table each time because a failed refresh shares the pane
 // with a banner above it.
-func (t *listTab) view(err error) string {
-	w, h, sp := t.w, t.h, t.layout()
-	iw, ih := paneInner(sp.listW, sp.listH)
+func (t *listTab) view(err error, focus column) string {
+	w, h := t.listW+t.pvW, t.h
+	iw, ih := paneInner(cmp.Or(t.listW, w), h) // the state panes below span the tab
 	switch {
 	case err != nil && t.n == 0:
-		return pane(t.st, t.name, errorBody(t.st, err), w, h, !t.idle)
+		return pane(t.st, t.name, errorBody(t.st, err), w, h, focus != colSidebar)
 	case t.n == 0 && !t.loaded:
-		return pane(t.st, t.name, t.st.Muted.Render("loading…")+"\n"+skeleton(t.st, iw, ih-1), w, h, !t.idle)
+		return pane(t.st, t.name, t.st.Muted.Render("loading…")+"\n"+skeleton(t.st, iw, ih-1), w, h, focus != colSidebar)
 	case t.n == 0 && len(t.all) > 0:
-		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, !t.idle)
+		return pane(t.st, t.title(), t.st.Muted.Render("nothing matches /"+t.match+" · / then esc clears it"), w, h, focus != colSidebar)
 	case t.n == 0:
-		return pane(t.st, t.title(), t.st.OK.Render(t.empty), w, h, !t.idle) // "up to date" says as of when
+		return pane(t.st, t.title(), t.st.OK.Render(t.empty), w, h, focus != colSidebar) // "up to date" says as of when
 	}
 	body := ""
 	if err != nil {
@@ -167,12 +144,15 @@ func (t *listTab) view(err error) string {
 		ih -= bannerHeight
 	}
 	t.table.SetHeight(ih)
-	list := pane(t.st, t.title(), body+t.table.View(), sp.listW, sp.listH, !t.idle)
-	if sp.pvW == 0 {
+	var list string
+	if t.listW > 0 {
+		list = pane(t.st, t.title(), body+t.table.View(), t.listW, h, focus == colList)
+	}
+	if t.pvW == 0 || t.preview == nil {
 		return list
 	}
-	title, preview := t.preview(sp.pvW, sp.pvH)
-	return sp.join(list, pane(t.st, title, preview, sp.pvW, sp.pvH, sp.listW == 0 && !t.idle))
+	title, preview := t.preview(t.pvW, h)
+	return joinColumns(list, pane(t.st, title, preview, t.pvW, h, focus == colDetails))
 }
 
 // kindCell is a package's TYPE cell: "formula" or "cask", after its icon.

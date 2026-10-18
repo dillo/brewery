@@ -134,7 +134,7 @@ func newJobApp(t *testing.T, fs *fakeStarter) *App {
 	a.now = func() time.Time { return testNow }
 	a.tickEvery = 0
 	a.backoff = func(int) time.Duration { return 0 }
-	a.Update(tea.WindowSizeMsg{Width: 120, Height: 40})
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	return a
 }
 
@@ -232,8 +232,8 @@ func TestJobPTYSizeMatchesDrawer(t *testing.T) {
 	p := newFakeProc(0)
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})
 	waiting := settle(t, a, a.run(action{title: "x", args: []string{"x"}}))
-	if p.cols != 116 || p.rows != 12 {
-		t.Errorf("pty is %dx%d, want the drawer's inner 116x12", p.cols, p.rows)
+	if p.cols != 136 || p.rows != 12 {
+		t.Errorf("pty is %dx%d, want the drawer's inner 136x12", p.cols, p.rows)
 	}
 	a.Update(tea.WindowSizeMsg{Width: 100, Height: 30})
 	if p.cols != 96 || p.rows != 10 {
