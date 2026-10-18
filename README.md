@@ -44,6 +44,8 @@ brew's own output, live — answer its questions right in the drawer.
 - **Manage**: Services, with each service's log; Taps, where `x` untaps one
 - **Discover**: Popular tools, Popular apps, Rising, New, Fonts, and Search all
   for the whole catalogue
+- **Tools**: History, every job brewery ran, with its command and output;
+  Maintenance, where `enter` runs doctor, a cleanup or `brew update`
 
 From 122 columns the sidebar, list and details sit side by side. In a narrower
 window the columns slide with the focus, so `h` and `l` turn pages.
@@ -55,10 +57,10 @@ Press `?` anywhere for the keys that work there.
 | Key | What it does |
 |---|---|
 | `h` `l` | move between the sidebar, the list and the details; in a narrow window, a page at a time |
-| `1`–`4` | Home, Packages, Manage, Discover |
+| `1`–`5` | Home, Packages, Manage, Discover, Tools |
 | `[` `]` | previous or next entry |
 | `h` `l` on Home | along the tiles, and from Doctor to Recent jobs; `h` from the first tile or Doctor goes back to the sidebar |
-| `j` `k` on Home | down from the tiles to Doctor (then scroll it), back up to the tile; `enter` opens a tile, or the jobs list from Recent jobs |
+| `j` `k` on Home | down from the tiles to Doctor (then scroll it), back up to the tile; `enter` opens a tile, or History from Recent jobs |
 | `j` `k`, `gg` `G`, `ctrl+d` `ctrl+u` | move in a list |
 | `/` | filter the list |
 | `u` | upgrade (Packages) |
@@ -68,10 +70,10 @@ Press `?` anywhere for the keys that work there.
 | `space` | mark several for `u` or `x` |
 | `s` `S` `R` | start, stop, restart a service; `L` follows its log |
 | `a` | install (Discover) |
-| `l` `tab` `enter` | details, then `j` `k` scroll |
+| `l` `tab` `enter` | details, then `j` `k` scroll (on Maintenance, `enter` runs the row) |
 | `y` | copy the name |
 | `gx` | open the homepage |
-| `:` | run any brew command |
+| `:` | run any brew command; `:jobs` opens History |
 | `r` | refresh |
 | `U` | `brew update` |
 | `c` | clean up |

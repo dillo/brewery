@@ -24,7 +24,7 @@
 │  Search all        ││                    │ [ ]        previous or next entry                  │                                          │
 │                    ││                    │ :          run any brew command                    │                                          │
 │ TOOLS              ││                    │ r          refresh                                 │                                          │
-│  History        0  ││                    │ U          brew update                             │                                          │
+│  History        2  ││                    │ U          brew update                             │                                          │
 │  Maintenance       ││                    │ c          clean up                                │                                          │
 │                    ││                    │ o          show or hide output                     │                                          │
 │                    ││                    │ i          type into the running job               │                                          │

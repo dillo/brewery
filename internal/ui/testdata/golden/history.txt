@@ -1,0 +1,40 @@
+╭────────────────────╮╭──────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
+│ brewery            ││ Jobs · 2                                                     ││ upgrade fd                                         │
+│  Home              ││  STATUS     COMMAND                    STARTED       TOOK    ││ command    brew upgrade fd                         │
+│                    ││ ──────────────────────────────────────────────────────────── ││ ended      ✗ exit 1                                │
+│ PACKAGES           ││  ✗ exit 1   brew upgrade fd            09:29         0:03    ││ started    2026-10-13 09:29                        │
+│  All            7  ││  ✓ done     brew update                07:30         0:04    ││ took       0:03                                    │
+│  Top-level      5  ││                                                              ││                                                    │
+│  Formulae       5  ││                                                              ││ Output                                             │
+│  Casks          2  ││                                                              ││ ==> Upgrading fd                                   │
+│  Dependencies   2  ││                                                              ││ Error: download failed                             │
+│  Outdated     ↑2   ││                                                              ││                                                    │
+│  Pinned         1  ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│ MANAGE             ││                                                              ││                                                    │
+│  Services     ✗1   ││                                                              ││                                                    │
+│  Taps           2  ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│ DISCOVER           ││                                                              ││                                                    │
+│  Popular tools     ││                                                              ││                                                    │
+│  Popular apps      ││                                                              ││                                                    │
+│  Rising            ││                                                              ││                                                    │
+│  New               ││                                                              ││                                                    │
+│  Fonts             ││                                                              ││                                                    │
+│  Search all        ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│ TOOLS              ││                                                              ││                                                    │
+│  History        2  ││                                                              ││                                                    │
+│  Maintenance       ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+│                    ││                                                              ││                                                    │
+╰────────────────────╯╰──────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
+ NORMAL  History › upgrade fd                                                 j/k scroll · h back to the list · : command · ? help · q quit 

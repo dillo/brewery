@@ -24,7 +24,7 @@
 │  Search all        ││                                                                  │
 │                    ││                                                                  │
 │ TOOLS              ││                                                                  │
-│  History        0  ││                                                                  │
+│  History        2  ││                                                                  │
 │  Maintenance       ││                                                                  │
 │                    ││                                                                  │
 │                    ││                                                                  │

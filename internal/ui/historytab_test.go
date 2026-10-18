@@ -32,16 +32,21 @@ func newJobsViewApp(t *testing.T, fs *fakeStarter) *App {
 func historyApp(t *testing.T) *App {
 	t.Helper()
 	a := newJobApp(t, &fakeStarter{})
-	now := a.now()
-	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, recentJobs(a.now()))
+	return a
+}
+
+// recentJobs are two finished jobs, newest first: a failed upgrade a minute
+// before now and an update two hours before.
+func recentJobs(now time.Time) []jobs.Record {
+	return []jobs.Record{
 		{Title: "upgrade fd", Args: []string{"upgrade", "fd"}, State: jobs.Failed, ExitCode: 1,
 			Started: now.Add(-time.Minute), Ended: now.Add(-time.Minute + 3*time.Second),
 			Output: "==> Upgrading fd\r\n\x1b[31mError:\x1b[0m download failed\r\n"},
 		{Title: "update", Args: []string{"update"}, State: jobs.Done,
 			Started: now.Add(-2 * time.Hour), Ended: now.Add(-2*time.Hour + 4*time.Second),
 			Output: "Updated 2 taps.\r\n"},
-	})
-	return a
+	}
 }
 
 func TestFiveSelectsHistory(t *testing.T) {
