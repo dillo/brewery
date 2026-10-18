@@ -108,3 +108,68 @@ func TestTried(t *testing.T) {
 		t.Errorf("got %q", got)
 	}
 }
+
+// unwritable is a path that can't be made into a directory: its parent
+// is a regular file.
+func unwritable(t *testing.T) string {
+	t.Helper()
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return filepath.Join(file, "analytics")
+}
+
+func TestFetchWithoutAPlaceToKeepACopy(t *testing.T) {
+	srv, _ := server(t, http.StatusOK, fixture(t, "install-on-request-30d"), 0)
+	readOnly := t.TempDir()
+	if err := os.Chmod(readOnly, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(readOnly, 0o700) })
+	for name, dir := range map[string]string{"under a file": unwritable(t), "read-only": readOnly} {
+		s := NewStore(dir, "dev")
+		s.Base = srv.URL + "/"
+		// The list still comes back: only the copy for next time is lost.
+		if l, err := s.Fetch(context.Background(), Tools30); err != nil || len(l.Items) != 7 {
+			t.Errorf("%s: got %d items, %v", name, len(l.Items), err)
+		}
+		if _, _, err := s.Cached(Tools30); err == nil {
+			t.Errorf("%s: no copy could be kept, yet Cached found one", name)
+		}
+	}
+}
+
+func TestFetchCutShort(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "100000")
+		_, _ = w.Write([]byte(`{"items": [`)) // and the connection closes
+	}))
+	t.Cleanup(srv.Close)
+	s := NewStore(t.TempDir(), "dev")
+	s.Base = srv.URL + "/"
+	if _, err := s.Fetch(context.Background(), Tools30); err == nil || errors.Is(err, ErrBadList) {
+		t.Errorf("got %v, want the download's error", err)
+	}
+	if _, _, err := s.Cached(Tools30); err == nil {
+		t.Error("half a download must not be kept")
+	}
+}
+
+func TestFetchFromABadBase(t *testing.T) {
+	s := NewStore(t.TempDir(), "dev")
+	s.Base = "http://\x7f/"
+	if _, err := s.Fetch(context.Background(), Tools30); err == nil || !strings.Contains(err.Error(), "invalid control character") {
+		t.Errorf("got %v, want the URL's error", err)
+	}
+}
+
+func TestSetTriedFails(t *testing.T) {
+	s := NewStore(unwritable(t), "dev")
+	if err := s.SetTried("2026-10-16"); err == nil {
+		t.Error("want an error when the dir can't be made")
+	}
+	if got := s.Tried(); got != "" {
+		t.Errorf("nothing was recorded, got %q", got)
+	}
+}

@@ -100,3 +100,14 @@ func TestCounts(t *testing.T) {
 		t.Errorf("got %v", got)
 	}
 }
+
+func TestCompareNewFirst(t *testing.T) {
+	fresh := Riser{Name: "b", Count: 10, New: true}
+	grown := Riser{Name: "a", Count: 9000, Growth: 50}
+	if got := Compare(grown, fresh); got != 1 {
+		t.Errorf("Compare(grown, new) = %d, want 1: a new package comes first, however much the other grew", got)
+	}
+	if got := Compare(fresh, grown); got != -1 {
+		t.Errorf("Compare(new, grown) = %d, want -1", got)
+	}
+}

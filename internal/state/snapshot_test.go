@@ -87,3 +87,45 @@ func TestDefaultCachePathIgnoresARelativeXDG(t *testing.T) {
 		t.Errorf("a relative XDG_CACHE_HOME is ignored, got %s", got)
 	}
 }
+
+func TestLoadCorruptFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "snapshot.json")
+	if err := os.WriteFile(path, []byte(`{"version": 3, "packages": [`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if s, err := Load(path); err == nil || !strings.Contains(err.Error(), "read snapshot cache") || len(s.Packages) != 0 {
+		t.Errorf("want an empty snapshot and a read error, got %+v, %v", s, err)
+	}
+}
+
+func TestSaveFails(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	readOnly := t.TempDir()
+	if err := os.Chmod(readOnly, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(readOnly, 0o700) })
+	good := filepath.Join(t.TempDir(), "snapshot.json")
+	for _, tt := range []struct {
+		name, path string
+		snap       Snapshot
+	}{
+		{"its dir is under a file", filepath.Join(file, "brewery", "snapshot.json"), Snapshot{}},
+		{"its dir is read-only", filepath.Join(readOnly, "snapshot.json"), Snapshot{}},
+		// JSON times stop at year 9999.
+		{"it can't be encoded", good, Snapshot{FetchedAt: time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC)}},
+	} {
+		if err := Save(tt.path, tt.snap); err == nil {
+			t.Errorf("%s: Save should fail", tt.name)
+		}
+		if _, err := os.Stat(tt.path); err == nil {
+			t.Errorf("%s: nothing should be written", tt.name)
+		}
+	}
+	if left, _ := filepath.Glob(filepath.Join(filepath.Dir(good), "*")); len(left) != 0 {
+		t.Errorf("files left behind: %v", left)
+	}
+}

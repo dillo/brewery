@@ -175,3 +175,13 @@ func TestPinnedBehind(t *testing.T) {
 		t.Errorf("PinnedBehind() = %v, want nil", got)
 	}
 }
+
+func TestGet(t *testing.T) {
+	ix := NewIndex(testPkgs)
+	if p, ok := ix.Get("pcre2"); !ok || !reflect.DeepEqual(p, testPkgs[1]) {
+		t.Errorf("Get(pcre2) = %+v, %v", p, ok)
+	}
+	if p, ok := ix.Get("ripgrep"); ok || !reflect.DeepEqual(p, brew.Package{}) {
+		t.Errorf("Get(ripgrep), not installed = %+v, %v", p, ok)
+	}
+}

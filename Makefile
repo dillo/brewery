@@ -1,4 +1,4 @@
-.PHONY: build test test-live lint snapshot screenshots run
+.PHONY: build test test-live cover lint snapshot screenshots run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -8,6 +8,10 @@ test:
 
 test-live:
 	go test -tags live -count=1 ./internal/brew/
+
+# Each package's statement coverage, then the total.
+cover:
+	go test -count=1 -coverprofile=cover.out ./... && go tool cover -func=cover.out | tail -1 && rm -f cover.out
 
 # golangci-lint v2: brew install golangci-lint
 lint:
