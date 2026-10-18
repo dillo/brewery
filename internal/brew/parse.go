@@ -263,7 +263,7 @@ func ParseAutoremove(out string) []string {
 		switch {
 		case strings.HasPrefix(line, "==> Would autoremove"):
 			listing = true
-		case !listing:
+		case !listing: // before the heading: not a name
 		case line == "" || strings.HasPrefix(line, "==>"):
 			return names
 		default:

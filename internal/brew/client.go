@@ -190,11 +190,6 @@ func (c *Client) Cleanup(ctx context.Context) (Cleanup, error) {
 	return Cleanup{Standard: s.e, All: a.e}, nil
 }
 
-// Doctor runs `brew doctor`. It exits 1 whenever it finds warnings, so a
-// non-zero exit that produced at least one warning is a normal result. A
-// timeout, a failure to run brew, or a non-zero exit with no warnings parsed
-// (a crash, or only an `Error:` on stderr) is reported as an error rather
-// than as a clean result.
 // Autoremove asks brew which formulae autoremove would uninstall: those
 // installed only as dependencies that nothing needs any more.
 func (c *Client) Autoremove(ctx context.Context) ([]string, error) {
@@ -219,6 +214,9 @@ func (c *Client) ServiceFiles(context.Context) ([]string, error) {
 	var files []string
 	for _, e := range entries {
 		n := e.Name()
+		if e.IsDir() {
+			continue
+		}
 		if (strings.HasPrefix(n, "homebrew.") || strings.HasPrefix(n, "sh.brew.")) && strings.HasSuffix(n, ".plist") {
 			files = append(files, filepath.Join(c.AgentsDir, n))
 		}
@@ -226,6 +224,11 @@ func (c *Client) ServiceFiles(context.Context) ([]string, error) {
 	return files, nil
 }
 
+// Doctor runs `brew doctor`. It exits 1 whenever it finds warnings, so a
+// non-zero exit that produced at least one warning is a normal result. A
+// timeout, a failure to run brew, or a non-zero exit with no warnings parsed
+// (a crash, or only an `Error:` on stderr) is reported as an error rather
+// than as a clean result.
 func (c *Client) Doctor(ctx context.Context) ([]DoctorWarning, error) {
 	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
 	defer cancel()

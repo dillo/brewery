@@ -217,6 +217,9 @@ func TestClientServiceFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	if err := os.Mkdir(filepath.Join(dir, "homebrew.mxcl.dir.plist"), 0o755); err != nil {
+		t.Fatal(err)
+	}
 	c := NewClient(fakeRunner{})
 	c.AgentsDir = dir
 	got, err := c.ServiceFiles(context.Background())
