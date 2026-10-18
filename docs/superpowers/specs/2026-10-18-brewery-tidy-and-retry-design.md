@@ -100,8 +100,8 @@ Homebrew. The constants are `maintDoctor`, `maintCleanup`,
 - **Autoremove:** "Unneeded formulae, which only other formulae needed:",
   then one name per line, then muted "enter removes them". If none:
   "nothing to remove" (OK). Errors and loading read like Cleanup's.
-- **Services cleanup:** "Unused service files:", then each path with
-  `$HOME` shown as `~`. If any services would be stopped: "Running
+- **Services cleanup:** "Unused service files in ~/Library/LaunchAgents:"
+  (their directory, `$HOME` shown as `~`), then each file's name. If any services would be stopped: "Running
   services whose file is gone:", then their names. Then muted "enter
   cleans up". If none: "nothing to clean" (OK).
 
@@ -127,8 +127,8 @@ The confirm boxes:
   - Runs `action{title: "services cleanup", args: ["services",
     "cleanup"], refresh: [qServices, qServiceFiles]}`.
 
-**Help:** the Maintenance group's enter line reads "run doctor, clean up,
-autoremove, or brew update".
+**Help:** the Maintenance group's enter line reads "run the selected task"
+(the longer list of tasks didn't fit the help box).
 
 ## History: run a job again
 
