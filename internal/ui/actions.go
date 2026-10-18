@@ -41,41 +41,83 @@ var (
 // actionKey handles the keys that ask brew to do something. ok is false
 // when k is not an action on the current tab.
 func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
-	switch {
-	case k == "U":
+	switch k {
+	case "U":
 		return a.brewUpdate(), true
-	case k == "c":
+	case "c":
 		return a.askCleanup(), true
-	case k == "space" && (a.tab == tabInstalled || a.tab == tabOutdated):
+	}
+	switch a.tab {
+	case tabInstalled:
+		return a.installedKey(k)
+	case tabOutdated:
+		return a.outdatedKey(k)
+	case tabServices:
+		return a.servicesTabKey(k)
+	case tabHistory:
+		if k == "R" {
+			a.askRunAgain()
+			return nil, true
+		}
+	case tabTaps:
+		if k == "x" {
+			a.askUntap()
+			return nil, true
+		}
+	case tabDiscover:
+		if k == "a" {
+			return a.askInstall(), true
+		}
+	}
+	return nil, false
+}
+
+// markKey handles the keys that Installed and Outdated share: space marks
+// a row, and u upgrades the marked rows or else the selected one.
+func (a *App) markKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "space":
 		return a.toggleMark(), true
-	case k == "u" && (a.tab == tabInstalled || a.tab == tabOutdated):
+	case "u":
 		if a.marks() > 0 {
 			return a.upgradeMarked(), true
 		}
 		return a.upgradeSelected(), true
-	case k == "x" && a.tab == tabInstalled:
+	}
+	return nil, false
+}
+
+// installedKey handles the action keys on Installed.
+func (a *App) installedKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "x":
 		if a.marks() > 0 {
 			a.askUninstallMarked()
 			return nil, true
 		}
 		a.askUninstall()
 		return nil, true
-	case k == "p" && a.tab == tabInstalled:
+	case "p":
 		return a.togglePin(), true
-	case k == "A" && a.tab == tabOutdated:
+	}
+	return a.markKey(k)
+}
+
+// outdatedKey handles the action keys on Outdated.
+func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
+	if k == "A" {
 		return a.askUpgradeAll(), true
-	case a.tab == tabServices && (k == "s" || k == "S" || k == "R"):
+	}
+	return a.markKey(k)
+}
+
+// servicesTabKey handles the action keys on Services.
+func (a *App) servicesTabKey(k string) (cmd tea.Cmd, ok bool) {
+	switch k {
+	case "s", "S", "R":
 		return a.serviceKey(k), true
-	case a.tab == tabHistory && k == "R":
-		a.askRunAgain()
-		return nil, true
-	case a.tab == tabServices && k == "L":
+	case "L":
 		return a.openLog(), true
-	case a.tab == tabTaps && k == "x":
-		a.askUntap()
-		return nil, true
-	case a.tab == tabDiscover && k == "a":
-		return a.askInstall(), true
 	}
 	return nil, false
 }
@@ -270,12 +312,12 @@ func cleanupLines(cl brew.Cleanup) []string {
 // found, after naming them.
 func (a *App) askAutoremove() tea.Cmd {
 	names := a.snap.Autoremove
-	switch {
-	case a.errs[qAutoremove] != nil:
+	switch a.autoremoveState() {
+	case tidyFailed:
 		return a.note("couldn't check · r retries")
-	case !a.loaded[qAutoremove]:
+	case tidyChecking:
 		return a.note("still checking")
-	case len(names) == 0:
+	case tidyNone:
 		return a.note("nothing to remove")
 	}
 	act := action{title: "autoremove", args: []string{"autoremove"}, refresh: diskQueries}
@@ -293,13 +335,13 @@ func (a *App) askAutoremove() tea.Cmd {
 // askServicesCleanup confirms brew services cleanup, after naming the
 // files it would remove and the services it would stop.
 func (a *App) askServicesCleanup() tea.Cmd {
-	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
-	switch {
-	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
+	state, remove, stop := a.servicesState()
+	switch state {
+	case tidyFailed:
 		return a.note("couldn't check · r retries")
-	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
+	case tidyChecking:
 		return a.note("still checking")
-	case len(remove)+len(stop) == 0:
+	case tidyNone:
 		return a.note("nothing to clean")
 	}
 	act := action{title: "services cleanup", args: []string{"services", "cleanup"}, refresh: []query{qServices, qServiceFiles}}

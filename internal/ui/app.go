@@ -396,10 +396,7 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case takeoverDoneMsg:
 		return a.takeoverDone(msg)
 	case quitNowMsg:
-		if a.proc == nil {
-			return nil // the job has stopped and brewery is already saving it on the way out
-		}
-		return a.quitNow()
+		return a.quitDue()
 	case logMsg:
 		a.gotLog(msg)
 	case pagerDoneMsg:
@@ -407,24 +404,44 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	case openedMsg, copiedMsg:
 		a.linkDone(msg)
 	case completionsMsg:
-		if msg.err == nil {
-			a.comp = msg.comp // without them, only brewery's own commands complete
-		}
+		a.gotCompletions(msg)
 	case tea.KeyPressMsg:
 		return a.handleKey(msg)
 	case tea.PasteMsg:
-		switch {
-		case a.mode == modeInsert && a.proc != nil:
-			_, _ = a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
-		case a.mode == modeCommand:
-			cmd := a.cmd.update(msg)
-			a.suggest(false)
-			return cmd
-		case a.mode == modeFilter:
-			return a.filterKey(msg)
-		}
+		return a.paste(msg)
 	case jobOutputMsg, jobEOFMsg, jobExitMsg, jobRetryMsg, tickMsg:
 		return a.handleJob(msg)
+	}
+	return nil
+}
+
+// quitDue quits at once, unless the job has already stopped.
+func (a *App) quitDue() tea.Cmd {
+	if a.proc == nil {
+		return nil // the job has stopped and brewery is already saving it on the way out
+	}
+	return a.quitNow()
+}
+
+// gotCompletions keeps the shell completions that loaded.
+func (a *App) gotCompletions(msg completionsMsg) {
+	if msg.err == nil {
+		a.comp = msg.comp // without them, only brewery's own commands complete
+	}
+}
+
+// paste sends pasted text to the job in insert mode, or to the prompt
+// being typed. Anywhere else it is ignored.
+func (a *App) paste(msg tea.PasteMsg) tea.Cmd {
+	switch {
+	case a.mode == modeInsert && a.proc != nil:
+		_, _ = a.proc.Write([]byte(msg.Content)) // raw: sudo wants no bracketed-paste wrapping
+	case a.mode == modeCommand:
+		cmd := a.cmd.update(msg)
+		a.suggest(false)
+		return cmd
+	case a.mode == modeFilter:
+		return a.filterKey(msg)
 	}
 	return nil
 }
@@ -742,20 +759,30 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 		a.focus = colList
 		return nil
 	case a.focus == colDetails:
-		switch a.tab {
-		case tabInstalled:
-			a.installed.scroll(k)
-		case tabDiscover:
-			a.discover.scroll(k)
-		case tabServices:
-			a.scrollLog(k)
-		case tabHistory:
-			a.jobs.scroll(k)
-		case tabMaintenance:
-			a.maint.scroll(k)
-		}
+		a.scrollDetails(k)
 		return nil
 	}
+	return a.listUpdate(msg)
+}
+
+// scrollDetails scrolls the details of the current tab.
+func (a *App) scrollDetails(k string) {
+	switch a.tab {
+	case tabInstalled:
+		a.installed.scroll(k)
+	case tabDiscover:
+		a.discover.scroll(k)
+	case tabServices:
+		a.scrollLog(k)
+	case tabHistory:
+		a.jobs.scroll(k)
+	case tabMaintenance:
+		a.maint.scroll(k)
+	}
+}
+
+// listUpdate gives the key to the current tab's list.
+func (a *App) listUpdate(msg tea.KeyPressMsg) tea.Cmd {
 	switch a.tab {
 	case tabInstalled:
 		return a.installed.update(msg)
@@ -812,32 +839,38 @@ func (a *App) rowCount(tab int) int {
 	return 0
 }
 
+// tabBody draws the active tab, or nothing when only the sidebar shows.
+func (a *App) tabBody(c columns, bodyH int) string {
+	switch {
+	case c.list == 0 && c.details == 0: // the sidebar alone
+		return ""
+	case a.tab == tabHome:
+		return a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
+	case a.tab == tabInstalled:
+		return a.installed.view(a.errs[qInstalled], a.focus)
+	case a.tab == tabOutdated:
+		return a.outdated.view(a.errs[qOutdated], a.focus)
+	case a.tab == tabServices:
+		return a.services.view(a.errs[qServices], a.focus)
+	case a.tab == tabTaps:
+		return a.taps.view(a.errs[qTaps], a.focus)
+	case a.tab == tabDiscover:
+		return a.discover.view(a.focus)
+	case a.tab == tabHistory:
+		return a.jobs.view(nil, a.focus)
+	case a.tab == tabMaintenance:
+		return a.maint.view(nil, a.focus)
+	}
+	return ""
+}
+
 func (a *App) render() string {
 	if a.width == 0 {
 		return "starting brewery…"
 	}
 	bodyH := a.tabH
 	c := a.columnsFor(a.tab)
-	var body string
-	switch {
-	case c.list == 0 && c.details == 0: // the sidebar alone
-	case a.tab == tabHome:
-		body = a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
-	case a.tab == tabInstalled:
-		body = a.installed.view(a.errs[qInstalled], a.focus)
-	case a.tab == tabOutdated:
-		body = a.outdated.view(a.errs[qOutdated], a.focus)
-	case a.tab == tabServices:
-		body = a.services.view(a.errs[qServices], a.focus)
-	case a.tab == tabTaps:
-		body = a.taps.view(a.errs[qTaps], a.focus)
-	case a.tab == tabDiscover:
-		body = a.discover.view(a.focus)
-	case a.tab == tabHistory:
-		body = a.jobs.view(nil, a.focus)
-	case a.tab == tabMaintenance:
-		body = a.maint.view(nil, a.focus)
-	}
+	body := a.tabBody(c, bodyH)
 	if bodyH > 0 && c.side > 0 {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
@@ -892,17 +925,10 @@ func (a *App) promptBar(mode, hint string, line func(w int) string) string {
 	return st.StatusBar.Width(a.width).Render(ansi.Truncate(badge+line(room)+hint, a.width, ""))
 }
 
-func (a *App) statusBar() string {
+// statusLeft is the mode's badge, the open entry and what is selected or
+// marked.
+func (a *App) statusLeft() string {
 	st := a.st
-	switch a.mode {
-	case modeCommand:
-		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
-	case modeFilter:
-		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
-			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
-			return a.filterIn.View()
-		})
-	}
 	badge := "NORMAL"
 	switch {
 	case a.mode == modeInsert:
@@ -920,7 +946,13 @@ func (a *App) statusBar() string {
 			left += fmt.Sprintf(" · %d hidden", h)
 		}
 	}
+	return left
+}
 
+// statusRight is the flash, the running job and the state of the data,
+// joined for the right of the status bar.
+func (a *App) statusRight() string {
+	st := a.st
 	var right []string
 	if a.flash != "" {
 		right = append(right, a.flash)
@@ -955,7 +987,22 @@ func (a *App) statusBar() string {
 	if a.histErr != nil {
 		right = append(right, st.Warn.Render("history not saved"))
 	}
-	r := strings.Join(right, "  ")
+	return strings.Join(right, "  ")
+}
+
+func (a *App) statusBar() string {
+	st := a.st
+	switch a.mode {
+	case modeCommand:
+		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
+	case modeFilter:
+		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
+			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
+			return a.filterIn.View()
+		})
+	}
+	left := a.statusLeft()
+	r := a.statusRight()
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space

@@ -27,50 +27,54 @@ func deref(s *string) string {
 }
 
 type infoJSON struct {
-	Formulae []struct {
-		Name     string  `json:"name"`
-		FullName string  `json:"full_name"`
-		Tap      string  `json:"tap"`
-		Desc     *string `json:"desc"`
-		Homepage string  `json:"homepage"`
-		License  *string `json:"license"`
-		Versions struct {
-			Stable string `json:"stable"`
-		} `json:"versions"`
-		Installed []struct {
-			Version            string `json:"version"`
-			Time               int64  `json:"time"`
-			InstalledOnRequest bool   `json:"installed_on_request"`
-			RuntimeDeps        []struct {
-				FullName         string `json:"full_name"`
-				DeclaredDirectly bool   `json:"declared_directly"`
-			} `json:"runtime_dependencies"`
-		} `json:"installed"`
-		Pinned     bool    `json:"pinned"`
-		Outdated   bool    `json:"outdated"`
-		Deprecated bool    `json:"deprecated"`
-		Caveats    *string `json:"caveats"`
-	} `json:"formulae"`
-	Casks []struct {
-		Token         string   `json:"token"`
-		FullToken     string   `json:"full_token"`
-		Tap           string   `json:"tap"`
-		Names         []string `json:"name"`
-		Desc          *string  `json:"desc"`
-		Homepage      string   `json:"homepage"`
-		Version       string   `json:"version"`
-		Installed     *string  `json:"installed"`
-		InstalledTime *int64   `json:"installed_time"`
-		Pinned        bool     `json:"pinned"`
-		Outdated      bool     `json:"outdated"`
-		Deprecated    bool     `json:"deprecated"`
-		Caveats       *string  `json:"caveats"`
-		DependsOn     struct {
-			Formula []string `json:"formula"`
-			Cask    []string `json:"cask"`
-		} `json:"depends_on"`
-		Artifacts []json.RawMessage `json:"artifacts"` // read one by one: their shapes vary
-	} `json:"casks"`
+	Formulae []formulaJSON `json:"formulae"`
+	Casks    []caskJSON    `json:"casks"`
+}
+
+type formulaJSON struct {
+	Name     string  `json:"name"`
+	FullName string  `json:"full_name"`
+	Tap      string  `json:"tap"`
+	Desc     *string `json:"desc"`
+	Homepage string  `json:"homepage"`
+	License  *string `json:"license"`
+	Versions struct {
+		Stable string `json:"stable"`
+	} `json:"versions"`
+	Installed []struct {
+		Version            string `json:"version"`
+		Time               int64  `json:"time"`
+		InstalledOnRequest bool   `json:"installed_on_request"`
+		RuntimeDeps        []struct {
+			FullName         string `json:"full_name"`
+			DeclaredDirectly bool   `json:"declared_directly"`
+		} `json:"runtime_dependencies"`
+	} `json:"installed"`
+	Pinned     bool    `json:"pinned"`
+	Outdated   bool    `json:"outdated"`
+	Deprecated bool    `json:"deprecated"`
+	Caveats    *string `json:"caveats"`
+}
+
+type caskJSON struct {
+	Token         string   `json:"token"`
+	FullToken     string   `json:"full_token"`
+	Tap           string   `json:"tap"`
+	Names         []string `json:"name"`
+	Desc          *string  `json:"desc"`
+	Homepage      string   `json:"homepage"`
+	Version       string   `json:"version"`
+	Installed     *string  `json:"installed"`
+	InstalledTime *int64   `json:"installed_time"`
+	Pinned        bool     `json:"pinned"`
+	Outdated      bool     `json:"outdated"`
+	Deprecated    bool     `json:"deprecated"`
+	Caveats       *string  `json:"caveats"`
+	DependsOn     struct {
+		Formula []string `json:"formula"`
+		Cask    []string `json:"cask"`
+	} `json:"depends_on"`
+	Artifacts []json.RawMessage `json:"artifacts"` // read one by one: their shapes vary
 }
 
 // ParseInfo parses `brew info --json=v2 --installed`.
@@ -81,52 +85,67 @@ func ParseInfo(b []byte) ([]Package, error) {
 	}
 	pkgs := make([]Package, 0, len(in.Formulae)+len(in.Casks))
 	for _, f := range in.Formulae {
-		p := Package{
-			Name: f.Name, FullName: f.FullName, Kind: KindFormula, Tap: f.Tap,
-			Desc: deref(f.Desc), Homepage: f.Homepage, License: deref(f.License), Latest: f.Versions.Stable,
-			Pinned: f.Pinned, Outdated: f.Outdated, Deprecated: f.Deprecated,
-			Caveats: strings.TrimSpace(deref(f.Caveats)),
-		}
-		if n := len(f.Installed); n > 0 {
-			inst := f.Installed[n-1] // newest keg
-			p.Version = inst.Version
-			p.OnRequest = inst.InstalledOnRequest
-			p.InstalledAt = time.Unix(inst.Time, 0)
-			for _, d := range inst.RuntimeDeps {
-				p.Deps = append(p.Deps, d.FullName)
-				if d.DeclaredDirectly {
-					p.DirectDeps = append(p.DirectDeps, d.FullName)
-				}
-			}
-		}
-		pkgs = append(pkgs, p)
+		pkgs = append(pkgs, f.toPackage())
 	}
 	for _, c := range in.Casks {
-		p := Package{
-			Name: c.Token, FullName: c.FullToken, Kind: KindCask, Tap: c.Tap,
-			Desc: deref(c.Desc), Homepage: c.Homepage, Version: deref(c.Installed),
-			Latest: c.Version, OnRequest: true, Pinned: c.Pinned, Outdated: c.Outdated,
-			Deprecated: c.Deprecated, Caveats: strings.TrimSpace(deref(c.Caveats)),
-		}
-		if p.Desc == "" && len(c.Names) > 0 {
-			p.Desc = c.Names[0]
-		}
-		if c.InstalledTime != nil {
-			p.InstalledAt = time.Unix(*c.InstalledTime, 0)
-		}
-		p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
-		for _, raw := range c.Artifacts {
-			var a struct {
-				Target string `json:"target"`
-			}
-			if json.Unmarshal(raw, &a) == nil && a.Target != "" {
-				p.Targets = append(p.Targets, a.Target) // where brew put an app, a font, a binary…
-			}
-		}
-		pkgs = append(pkgs, p)
+		pkgs = append(pkgs, c.toPackage())
 	}
 	caskDeps(pkgs)
 	return pkgs, nil
+}
+
+func (f formulaJSON) toPackage() Package {
+	p := Package{
+		Name: f.Name, FullName: f.FullName, Kind: KindFormula, Tap: f.Tap,
+		Desc: deref(f.Desc), Homepage: f.Homepage, License: deref(f.License), Latest: f.Versions.Stable,
+		Pinned: f.Pinned, Outdated: f.Outdated, Deprecated: f.Deprecated,
+		Caveats: strings.TrimSpace(deref(f.Caveats)),
+	}
+	if n := len(f.Installed); n > 0 {
+		inst := f.Installed[n-1] // newest keg
+		p.Version = inst.Version
+		p.OnRequest = inst.InstalledOnRequest
+		p.InstalledAt = time.Unix(inst.Time, 0)
+		for _, d := range inst.RuntimeDeps {
+			p.Deps = append(p.Deps, d.FullName)
+			if d.DeclaredDirectly {
+				p.DirectDeps = append(p.DirectDeps, d.FullName)
+			}
+		}
+	}
+	return p
+}
+
+func (c caskJSON) toPackage() Package {
+	p := Package{
+		Name: c.Token, FullName: c.FullToken, Kind: KindCask, Tap: c.Tap,
+		Desc: deref(c.Desc), Homepage: c.Homepage, Version: deref(c.Installed),
+		Latest: c.Version, OnRequest: true, Pinned: c.Pinned, Outdated: c.Outdated,
+		Deprecated: c.Deprecated, Caveats: strings.TrimSpace(deref(c.Caveats)),
+	}
+	if p.Desc == "" && len(c.Names) > 0 {
+		p.Desc = c.Names[0]
+	}
+	if c.InstalledTime != nil {
+		p.InstalledAt = time.Unix(*c.InstalledTime, 0)
+	}
+	p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
+	p.Targets = c.targets()
+	return p
+}
+
+// targets lists where brew put an app, a font, a binary…
+func (c caskJSON) targets() []string {
+	var out []string
+	for _, raw := range c.Artifacts {
+		var a struct {
+			Target string `json:"target"`
+		}
+		if json.Unmarshal(raw, &a) == nil && a.Target != "" {
+			out = append(out, a.Target)
+		}
+	}
+	return out
 }
 
 // caskDeps fills in each cask's Deps: brew lists only what a cask names
@@ -138,30 +157,38 @@ func caskDeps(pkgs []Package) {
 		byName[pkgs[i].FullName] = &pkgs[i]
 	}
 	for i := range pkgs {
-		p := &pkgs[i]
-		if p.Kind != KindCask {
-			continue
+		if p := &pkgs[i]; p.Kind == KindCask {
+			p.Deps = caskClosure(p, byName)
 		}
-		seen := map[string]bool{p.FullName: true}
-		var walk func(names []string)
-		walk = func(names []string) {
-			for _, d := range names {
-				if seen[d] {
-					continue
-				}
-				seen[d] = true
-				p.Deps = append(p.Deps, d)
-				if dp, ok := byName[d]; ok {
-					if dp.Kind == KindCask {
-						walk(dp.DirectDeps)
-					} else {
-						walk(dp.Deps)
-					}
-				}
+	}
+}
+
+// caskClosure walks a cask's direct deps and what each of them needs, in
+// the order first met, and returns the names it found.
+func caskClosure(p *Package, byName map[string]*Package) []string {
+	deps := p.Deps
+	seen := map[string]bool{p.FullName: true}
+	var walk func(names []string)
+	walk = func(names []string) {
+		for _, d := range names {
+			if seen[d] {
+				continue
+			}
+			seen[d] = true
+			deps = append(deps, d)
+			dp, ok := byName[d]
+			if !ok {
+				continue // not installed: nothing further to follow
+			}
+			if dp.Kind == KindCask {
+				walk(dp.DirectDeps)
+			} else {
+				walk(dp.Deps)
 			}
 		}
-		walk(p.DirectDeps)
 	}
+	walk(p.DirectDeps)
+	return deps
 }
 
 type outdatedJSON struct {

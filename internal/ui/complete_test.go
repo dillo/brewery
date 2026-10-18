@@ -228,3 +228,18 @@ func TestPopupSelectedRowKeepsTextColor(t *testing.T) {
 		t.Errorf("selected popup row %q lacks the Text foreground %q", sel, seq)
 	}
 }
+
+// Outdated packages complete by kind, with the version move as their text.
+func TestArgValuesOutdatedByKind(t *testing.T) {
+	a := newCompletingApp(t, &fakeStarter{})
+	a.snap.Outdated = []brew.Outdated{
+		{Name: "wget", Kind: brew.KindFormula, Installed: "1.0", Current: "1.1"},
+		{Name: "firefox", Kind: brew.KindCask, Installed: "2", Current: "3"},
+	}
+	if got := a.argValues("formulae_outdated"); len(got) != 1 || got[0] != (candidate{"wget", "1.0 → 1.1"}) {
+		t.Errorf("formulae_outdated: %v", got)
+	}
+	if got := a.argValues("casks_outdated"); len(got) != 1 || got[0] != (candidate{"firefox", "2 → 3"}) {
+		t.Errorf("casks_outdated: %v", got)
+	}
+}

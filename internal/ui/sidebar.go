@@ -114,7 +114,22 @@ func (a *App) badge(e entry) (b string, chip bool) {
 	if q, ok := tabQueries[e.tab]; ok && e.tab != tabHome && a.errs[q] != nil {
 		return st.ChipStale.Render("⚠"), true // stale data outranks any count
 	}
-	n := -1
+	n, alert := a.badgeCount(e)
+	if alert != "" {
+		return alert, true
+	}
+	if n < 0 {
+		return "", false
+	}
+	return st.Muted.Render(fmt.Sprint(n)), false
+}
+
+// badgeCount is the count an entry shows, -1 before its data is in, or
+// the chip that replaces the count when something needs attention. When
+// chip isn't empty, n means nothing.
+func (a *App) badgeCount(e entry) (n int, chip string) {
+	st := a.st
+	n = -1
 	switch e.tab {
 	case tabInstalled:
 		if a.loaded[qInstalled] {
@@ -122,7 +137,7 @@ func (a *App) badge(e entry) (b string, chip bool) {
 		}
 	case tabOutdated:
 		if k := len(a.snap.Outdated); k > 0 {
-			return st.ChipWarn.Render(fmt.Sprintf("↑%d", k)), true
+			return -1, st.ChipWarn.Render(fmt.Sprintf("↑%d", k))
 		}
 		if a.loaded[qOutdated] {
 			n = 0
@@ -135,7 +150,7 @@ func (a *App) badge(e entry) (b string, chip bool) {
 			}
 		}
 		if failing > 0 {
-			return st.ChipErr.Render(fmt.Sprintf("✗%d", failing)), true
+			return -1, st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
 		}
 		if a.loaded[qServices] {
 			n = len(a.snap.Services)
@@ -147,10 +162,7 @@ func (a *App) badge(e entry) (b string, chip bool) {
 	case tabHistory:
 		n = len(a.history)
 	}
-	if n < 0 {
-		return "", false
-	}
-	return st.Muted.Render(fmt.Sprint(n)), false
+	return n, ""
 }
 
 // sidebarW is the sidebar's width, border included: room for
