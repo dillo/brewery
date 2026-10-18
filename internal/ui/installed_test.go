@@ -241,6 +241,9 @@ func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	for i := 0; label(a) != "Outdated" && i < 10; i++ {
 		keys(t, a, "]") // Outdated has no details: the focus drops to its list
 	}
+	if a.focus != colList {
+		t.Errorf("on Outdated the focus is the list's, got %d", a.focus)
+	}
 	for i := 0; label(a) != "Top-level" && i < 10; i++ {
 		keys(t, a, "[")
 	}

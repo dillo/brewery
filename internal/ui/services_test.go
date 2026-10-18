@@ -441,3 +441,19 @@ func TestLogEndingInANewlineShowsItsNewestLine(t *testing.T) {
 	}
 	t.Fatal("log line 200 isn't shown")
 }
+
+func TestServicesDetailsFocusAtFullWidth(t *testing.T) {
+	for _, back := range []string{"h", "esc"} {
+		a := newJobApp(t, &fakeStarter{})
+		a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
+		show(t, a, "Services")
+		keys(t, a, "l")
+		if hint := a.actionHints(); a.focus != colDetails || !strings.Contains(hint, "j/k scroll the log · h back to the list") {
+			t.Fatalf("l focuses Services' details: focus %d, hint %q", a.focus, hint)
+		}
+		keys(t, a, back)
+		if hint := a.actionHints(); a.focus != colList || strings.Contains(hint, "scroll the log") {
+			t.Errorf("%s returns to the list: focus %d, hint %q", back, a.focus, hint)
+		}
+	}
+}

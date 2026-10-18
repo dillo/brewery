@@ -42,6 +42,8 @@ func TestColumnsFor(t *testing.T) {
 		{82, colSidebar, false, columns{22, 60, 0}},
 		{81, colSidebar, false, columns{81, 0, 0}},
 		{81, colList, false, columns{0, 81, 0}},
+		{81, colDetails, false, columns{0, 81, 0}}, // a details focus is the list's
+		{110, colList, false, columns{22, 88, 0}},
 	} {
 		if got := columnsFor(tt.w, tt.focus, tt.hasDetails); got != tt.want {
 			t.Errorf("columnsFor(%d, %d, %v) = %+v, want %+v", tt.w, tt.focus, tt.hasDetails, got, tt.want)
