@@ -114,6 +114,15 @@ func TestFilterOnHome(t *testing.T) {
 	}
 }
 
+func TestFilterOnMaintenance(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Maintenance")
+	keys(t, a, "/")
+	if a.mode != modeNormal || !strings.Contains(stripANSI(a.statusBar()), "/ filters a list · Maintenance has none") {
+		t.Errorf("Maintenance has no filter: mode %d, bar %q", a.mode, stripANSI(a.statusBar()))
+	}
+}
+
 func TestPromptWaitsForTheFilter(t *testing.T) {
 	p := newFakeProc(0, "==> Installing docker-desktop\r\n")
 	a := newJobApp(t, &fakeStarter{procs: []*fakeProc{p}})

@@ -44,7 +44,7 @@ func (a *App) helpGroups() []helpGroup {
 			{"l tab enter", "details, then j/k scroll"}, {"r", "fetch the analytics again"},
 		}}
 	case a.tab == tabHistory:
-		here = helpGroup{"History", [][2]string{{"l tab enter", "details: the command and its output"}}}
+		here = helpGroup{"History", [][2]string{{"l tab enter", "details, then j/k scroll"}}}
 	case a.tab == tabMaintenance:
 		here = helpGroup{"Maintenance", [][2]string{{"enter", "run doctor, clean up, or brew update"}, {"l tab", "details"}}}
 	}
@@ -55,6 +55,8 @@ func (a *App) helpGroups() []helpGroup {
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
 		}})
+	case a.tab == tabMaintenance && a.focus != colSidebar:
+		groups = append(groups, helpGroup{"Lists", [][2]string{{"j k", "move"}, {"gg G", "top, bottom"}}})
 	case a.tab != tabHome && a.focus != colSidebar:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},

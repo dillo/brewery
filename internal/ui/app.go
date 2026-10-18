@@ -158,7 +158,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		outdated:     newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
 		services:     newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
 		taps:         newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
-		jobs:         newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		jobs:         newListTab(st, "History", jobCols, jobKey, "no jobs yet"),
 		maint:        newListTab(st, "Maintenance", maintCols, firstCell, ""),
 		discover:     newDiscoverTab(st),
 	}
@@ -708,7 +708,7 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 		return cmd, true
 	case t == leaveHome:
 		a.focus = colSidebar
-	case t == showHistory:
+	case t == wantHistory:
 		return a.showHistory(), true
 	}
 	return nil, true

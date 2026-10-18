@@ -1,5 +1,5 @@
 ╭────────────────────╮╭──────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────────────╮
-│ brewery            ││ Jobs · 2                                                     ││ upgrade fd                                         │
+│ brewery            ││ History · 2                                                  ││ upgrade fd                                         │
 │  Home              ││  STATUS     COMMAND                    STARTED       TOOK    ││ command    brew upgrade fd                         │
 │                    ││ ──────────────────────────────────────────────────────────── ││ ended      ✗ exit 1                                │
 │ PACKAGES           ││  ✗ exit 1   brew upgrade fd            09:29         0:03    ││ started    2026-10-13 09:29                        │

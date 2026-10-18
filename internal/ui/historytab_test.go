@@ -65,7 +65,7 @@ func TestHistoryListsThePastJobs(t *testing.T) {
 	a := newJobsViewApp(t, &fakeStarter{})
 	show(t, a, "History")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Jobs · 2", "✗ exit 1", "brew upgrade fd", "1:15", "✓ done", "brew pin git", "Oct 12"} {
+	for _, want := range []string{"History · 2", "✗ exit 1", "brew upgrade fd", "1:15", "✓ done", "brew pin git", "Oct 12"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q:\n%s", want, out)
 		}
@@ -142,7 +142,7 @@ func TestFinishedJobJoinsHistory(t *testing.T) {
 	waiting := settle(t, a, a.run(action{title: "upgrade git", args: []string{"upgrade", "git"}}))
 	p.exit()
 	resume(t, a, waiting)
-	if out := stripANSI(a.render()); !strings.Contains(out, "Jobs · 3") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "History · 3") {
 		t.Errorf("the finished job should join the list on show:\n%s", out)
 	}
 }
@@ -163,9 +163,42 @@ func TestEmptyJobsView(t *testing.T) {
 	if out := stripANSI(a.render()); !strings.Contains(out, "no jobs yet") {
 		t.Errorf("empty History:\n%s", out)
 	}
-	keys(t, a, "enter") // nothing to show
-	if a.drawer.job != nil {
-		t.Error("enter on an empty list shows nothing")
+	keys(t, a, "enter") // no job, so empty details
+	if a.focus != colDetails {
+		t.Errorf("enter on an empty History focuses the details: %d", a.focus)
+	}
+	if title, body := a.recordPreview(60, 30); title != "Details" || body != "" {
+		t.Errorf("an empty History's details are empty: %q, %q", title, body)
+	}
+	if out := stripANSI(a.render()); !strings.Contains(out, "no jobs yet") { // and the render doesn't panic
+		t.Errorf("empty History after enter:\n%s", out)
+	}
+}
+
+func TestHistoryWrapsLongLines(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	long := strings.Repeat("word ", 60) + "LASTWORD\r\n"
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{{Title: "x", Args: []string{"x"}, State: jobs.Failed,
+		ExitCode: 1, Started: a.now(), Ended: a.now(), Output: long}})
+	show(t, a, "History")
+	if out := stripANSI(a.render()); !strings.Contains(out, "LASTWORD") {
+		t.Errorf("a line longer than the pane wraps, so its end shows:\n%s", out)
+	}
+}
+
+func TestHistoryDatesJobsAfterMidnight(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, []jobs.Record{{Title: "pin git", Args: []string{"pin", "git"}, State: jobs.Done,
+		Started: testNow.Add(-time.Hour), Ended: testNow.Add(-time.Hour)}})
+	show(t, a, "History")
+	if out := stripANSI(a.render()); strings.Contains(out, "Oct 13 08:30") || !strings.Contains(out, "08:30") {
+		t.Fatalf("today's job shows the clock alone:\n%s", out)
+	}
+	show(t, a, "Taps")
+	a.now = func() time.Time { return testNow.Add(24 * time.Hour) }
+	show(t, a, "History")
+	if out := stripANSI(a.render()); !strings.Contains(out, "Oct 13 08:30") {
+		t.Errorf("a day on, the job shows its date:\n%s", out)
 	}
 }
 

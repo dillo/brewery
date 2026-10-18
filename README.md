@@ -44,7 +44,7 @@ brew's own output, live — answer its questions right in the drawer.
 - **Manage**: Services, with each service's log; Taps, where `x` untaps one
 - **Discover**: Popular tools, Popular apps, Rising, New, Fonts, and Search all
   for the whole catalogue
-- **Tools**: History, every job brewery ran, with its command and output;
+- **Tools**: History, the jobs brewery has finished, with its command and output;
   Maintenance, where `enter` runs doctor, a cleanup or `brew update`
 
 From 122 columns the sidebar, list and details sit side by side. In a narrower

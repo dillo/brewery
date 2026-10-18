@@ -12,8 +12,8 @@ import (
 	"github.com/dillo/brewery/internal/theme"
 )
 
-// listTab is a table used by the Outdated, Services, Taps and History
-// tabs, full width or beside a preview.
+// listTab is a table used by the Outdated, Services, Taps, History and
+// Maintenance tabs, full width or beside a preview.
 type listTab struct {
 	st     theme.Styles
 	name   string

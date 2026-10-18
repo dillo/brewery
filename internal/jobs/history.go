@@ -41,11 +41,6 @@ func NewRecord(j *Job, output string) Record {
 	}
 }
 
-// Job rebuilds the job a record describes, for showing it again.
-func (r Record) Job() *Job {
-	return &Job{Title: r.Title, Args: r.Args, State: r.State, ExitCode: r.ExitCode, Started: r.Started, Ended: r.Ended}
-}
-
 // Tail is the end of s, at most n bytes, starting at a line when it can.
 func Tail(s string, n int) string {
 	if len(s) <= n {

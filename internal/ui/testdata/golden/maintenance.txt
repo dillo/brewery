@@ -9,9 +9,9 @@
 │  Casks          2  ││                                                              ││ ⚠ Some installed casks are deprecated or disabled. │
 │  Dependencies   2  ││                                                              ││   fontbase                                         │
 │  Outdated     ↑2   ││                                                              ││                                                    │
-│  Pinned         1  ││                                                              ││                                                    │
+│  Pinned         1  ││                                                              ││ enter runs brew doctor again                       │
 │                    ││                                                              ││                                                    │
-│ MANAGE             ││                                                              ││ enter runs brew doctor again                       │
+│ MANAGE             ││                                                              ││                                                    │
 │  Services     ✗1   ││                                                              ││                                                    │
 │  Taps           2  ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │

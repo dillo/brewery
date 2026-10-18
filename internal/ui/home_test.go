@@ -147,8 +147,8 @@ func TestHomePanesUnderTheTiles(t *testing.T) {
 	if h.area != areaJobs {
 		t.Fatalf("l from Doctor -> area %d, want Recent jobs", h.area)
 	}
-	if got := h.update(press("enter"), snap); got != showHistory {
-		t.Errorf("enter on Recent jobs -> %d, want showHistory", got)
+	if got := h.update(press("enter"), snap); got != wantHistory {
+		t.Errorf("enter on Recent jobs -> %d, want wantHistory", got)
 	}
 	h.update(press("up"), snap)
 	if h.area != areaTiles || h.sel != 2 {

@@ -146,6 +146,19 @@ func TestBrewsQuestionForgetsAPendingG(t *testing.T) {
 	resume(t, a, waiting)
 }
 
+func TestGGOnMaintenance(t *testing.T) {
+	a, _ := newLinksApp(t)
+	show(t, a, "Maintenance")
+	keys(t, a, "G")
+	if a.maint.cursor() != maintUpdate {
+		t.Fatalf("G goes to the bottom of Maintenance: cursor %d", a.maint.cursor())
+	}
+	keys(t, a, "g", "g")
+	if a.maint.cursor() != 0 {
+		t.Errorf("gg goes to the top of Maintenance: cursor %d", a.maint.cursor())
+	}
+}
+
 func TestGGOnOutdated(t *testing.T) {
 	a, _ := newLinksApp(t)
 	show(t, a, "Outdated")

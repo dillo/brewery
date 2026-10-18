@@ -78,7 +78,7 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 	st := a.st
 	switch a.maint.cursor() {
 	case maintDoctor:
-		return "Doctor", doctorBody(st, a.snap, a.errs[qDoctor]) + "\n\n" + st.Muted.Render("enter runs brew doctor again")
+		return "Doctor", strings.TrimRight(doctorBody(st, a.snap, a.errs[qDoctor]), "\n") + "\n\n" + st.Muted.Render("enter runs brew doctor again")
 	case maintCleanup:
 		cl := a.snap.Cleanup
 		switch {

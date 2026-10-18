@@ -37,6 +37,10 @@ func TestMaintenanceDetails(t *testing.T) {
 	if w := a.snap.Doctor; len(w) > 0 && !strings.Contains(stripANSI(a.render()), w[0].Title) {
 		t.Errorf("Doctor's details show the warnings:\n%s", stripANSI(a.render()))
 	}
+	if _, body := a.maintPreview(60, 30); !strings.HasSuffix(stripANSI(body), "\n\nenter runs brew doctor again") ||
+		strings.Contains(stripANSI(body), "\n\n\nenter runs") {
+		t.Errorf("one blank line goes before Doctor's hint:\n%q", stripANSI(body))
+	}
 	keys(t, a, "j")
 	if out := stripANSI(a.render()); !strings.Contains(out, "The standard cleanup frees") {
 		t.Errorf("Cleanup's details word the estimates as the prompt does:\n%s", out)

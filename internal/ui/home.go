@@ -30,8 +30,8 @@ type tile struct {
 // (a tile's index, 0 or more).
 const (
 	homeStay    = -1 // nothing: the key moved within Home, or did nothing
-	leaveHome   = -3 // h past the left edge: back to the sidebar
-	showHistory = -4 // Enter on Recent jobs: History, with them all
+	leaveHome   = -2 // h past the left edge: back to the sidebar
+	wantHistory = -3 // Enter on Recent jobs: History, with them all
 )
 
 // homeArea is the part of Home that has the focus.
@@ -149,7 +149,7 @@ func (h *homeTab) enter() {
 // update moves the focus around Home: h and l along the tiles and across
 // the panes under them, j down from the tiles to Doctor, k back up to the
 // tile you came from. It returns the index of a tile whose entry to open,
-// or one of homeStay, leaveHome and showHistory.
+// or one of homeStay, leaveHome and wantHistory.
 func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 	k := msg.String()
 	switch h.area {
@@ -177,7 +177,7 @@ func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 		case "k", "up":
 			h.area = areaTiles
 		case "enter":
-			return showHistory
+			return wantHistory
 		}
 	}
 	return homeStay

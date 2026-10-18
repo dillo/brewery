@@ -101,9 +101,6 @@ func TestNewRecordKeepsTheEndOfTheOutput(t *testing.T) {
 	if !strings.HasPrefix(r.Output, "progress line\n") {
 		t.Errorf("the kept output should start at a line: %q", r.Output[:20])
 	}
-	if back := r.Job(); back.Title != j.Title || back.State != Done || !back.Ended.Equal(j.Ended) {
-		t.Errorf("Job() lost fields: %+v", back)
-	}
 }
 
 func TestTail(t *testing.T) {

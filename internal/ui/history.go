@@ -57,7 +57,8 @@ func plainOutput(s string) string {
 }
 
 // recordPreview is History's details for the selected job: its command,
-// how it ended, when it ran, and what it printed.
+// how it ended, when it ran, and what it printed, wrapped to the pane so
+// a long line reads whole.
 func (a *App) recordPreview(w, h int) (title, body string) {
 	i := a.jobs.cursor()
 	if i < 0 {
@@ -76,7 +77,8 @@ func (a *App) recordPreview(w, h int) (title, body string) {
 		"started", started, "took", elapsed(r.Ended.Sub(r.Started))) +
 		"\n" + st.Accent.Render("Output") + "\n"
 	if out := plainOutput(r.Output); strings.TrimSpace(out) != "" {
-		body += out
+		iw, _ := paneInner(w, h)
+		body += ansi.Wrap(out, iw, "")
 	} else {
 		body += st.Muted.Render("nothing printed")
 	}

@@ -48,6 +48,8 @@ func (a *App) gKey(k string) (cmd tea.Cmd, ok bool) {
 			return a.discover.update(home), true
 		case tabHistory:
 			return a.jobs.update(home), true
+		case tabMaintenance:
+			return a.maint.update(home), true
 		}
 		return nil, true
 	case "x":

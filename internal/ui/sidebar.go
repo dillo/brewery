@@ -81,6 +81,8 @@ func (a *App) selectEntry(i int) tea.Cmd {
 			a.discover.showing = v
 			a.discover.apply()
 		}
+	case tabHistory:
+		a.jobs.setRows(jobRows(a.st, a.history, a.now())) // a day on, today's jobs show their date
 	}
 	return a.showTab(e.tab)
 }
