@@ -29,6 +29,7 @@ const (
 	tabDiscover
 	tabHistory
 	tabMaintenance
+	tabCount // how many tabs there are
 )
 
 // tabQueries is the query each tab's data comes from. Home shows doctor.
@@ -122,7 +123,7 @@ type App struct {
 	lastIn        map[section]int // each section's last-used entry, for 1-5
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
-	laidOut       [6]int // width, height, drawer state, focus, tab and whether Discover has loaded, at the last layout
+	laidOut       [6]int // width, height, drawer state, focus, tab and which tabs have details, at the last layout
 
 	// brew asked a question while the command line was open; answer it
 	// once the line closes.
@@ -358,6 +359,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.typeIntoJob()
 		}
 	}
+	if a.focus == colDetails && !a.hasDetails() {
+		a.focus = colList // nothing to show details for
+	}
 	a.syncMaint()
 	a.layout()
 	return a, cmd
@@ -457,11 +461,13 @@ func (a *App) layout() {
 	if a.drawerShown() {
 		shown = 1
 	}
-	loaded := 0
-	if a.discover.loaded {
-		loaded = 1
+	withDetails := 0 // which tabs have a details column, one bit each
+	for tab := range tabCount {
+		if a.tabHasDetails(tab) {
+			withDetails |= 1 << tab
+		}
 	}
-	key := [6]int{a.width, a.height, shown, int(a.focus), a.tab, loaded}
+	key := [6]int{a.width, a.height, shown, int(a.focus), a.tab, withDetails}
 	if a.laidOut == key {
 		return
 	}
@@ -773,10 +779,31 @@ func (a *App) View() tea.View {
 // hasDetails reports whether what's showing has a details column.
 func (a *App) hasDetails() bool { return a.tabHasDetails(a.tab) }
 
-// tabHasDetails is hasDetails for tab, but Discover has none until its
-// catalogue has loaded: there is no row to show them for.
+// tabHasDetails is hasDetails for tab, but a tab with no row shown has
+// none: Discover before its catalogue has loaded, or any list that is
+// empty (or filtered to nothing), as there is nothing to show them for.
 func (a *App) tabHasDetails(tab int) bool {
-	return hasDetails(tab) && (tab != tabDiscover || a.discover.loaded)
+	return hasDetails(tab) && a.rowCount(tab) > 0
+}
+
+// rowCount is how many rows tab's list shows, from what it already holds.
+func (a *App) rowCount(tab int) int {
+	switch tab {
+	case tabInstalled:
+		return len(a.installed.rows)
+	case tabDiscover:
+		if !a.discover.loaded {
+			return 0
+		}
+		return len(a.discover.rows)
+	case tabServices:
+		return a.services.n
+	case tabHistory:
+		return a.jobs.n
+	case tabMaintenance:
+		return a.maint.n
+	}
+	return 0
 }
 
 func (a *App) render() string {

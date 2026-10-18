@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 func TestColumnsFor(t *testing.T) {
@@ -123,5 +125,51 @@ func TestDetailsShowAloneAfterAResize(t *testing.T) {
 func TestHistoryHasDetails(t *testing.T) {
 	if !hasDetails(tabHistory) {
 		t.Error("History shows the selected job's details beside its list")
+	}
+}
+
+func TestEmptyListKeepsTheFocus(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, nil)
+	show(t, a, "History")
+	keys(t, a, "enter")
+	if a.focus != colList {
+		t.Errorf("enter on an empty History: focus %d, want the list", a.focus)
+	}
+	keys(t, a, "l", "tab")
+	if a.focus != colList {
+		t.Errorf("l and tab on an empty list: focus %d, want the list", a.focus)
+	}
+	if hint := stripANSI(a.statusBar()); strings.Contains(hint, "j/k scroll") {
+		t.Errorf("an empty list's hints don't offer scrolling: %s", hint)
+	}
+}
+
+func TestFilteringToNothingLeavesTheDetails(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Top-level")
+	keys(t, a, "l")
+	if a.focus != colDetails {
+		t.Fatalf("l: focus %d", a.focus)
+	}
+	keys(t, a, "/")
+	typeText(t, a, "zzzq") // matches nothing
+	keys(t, a, "enter")
+	if a.focus != colList {
+		t.Errorf("a filter that empties the list moves the focus to it: %d", a.focus)
+	}
+}
+
+func TestSwitchingToAnEmptyTabKeepsTheList(t *testing.T) {
+	a, _ := newDiscoverApp(t)
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, nil)
+	show(t, a, "Search all")
+	keys(t, a, "l")
+	if a.focus != colDetails {
+		t.Fatalf("l on Search all: focus %d (catalogue loaded: %v)", a.focus, a.discover.loaded)
+	}
+	show(t, a, "History")
+	if label(a) != "History" || a.focus != colList {
+		t.Errorf("onto an empty History: %s, focus %d", label(a), a.focus)
 	}
 }

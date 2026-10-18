@@ -163,9 +163,9 @@ func TestEmptyJobsView(t *testing.T) {
 	if out := stripANSI(a.render()); !strings.Contains(out, "no jobs yet") {
 		t.Errorf("empty History:\n%s", out)
 	}
-	keys(t, a, "enter") // no job, so empty details
-	if a.focus != colDetails {
-		t.Errorf("enter on an empty History focuses the details: %d", a.focus)
+	keys(t, a, "enter") // no job, so no details to focus
+	if a.focus != colList {
+		t.Errorf("enter on an empty History keeps the list: %d", a.focus)
 	}
 	if title, body := a.recordPreview(60, 30); title != "Details" || body != "" {
 		t.Errorf("an empty History's details are empty: %q, %q", title, body)

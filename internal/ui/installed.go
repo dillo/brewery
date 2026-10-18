@@ -223,6 +223,8 @@ func (t *installedTab) view(err error, focus column) string {
 	rows := t.table.View()
 	if !t.loaded && len(t.all) == 0 {
 		rows = skeleton(t.st, iw, ih) // nothing yet: show the shape of what's coming
+	} else if len(t.rows) == 0 {
+		rows = t.st.Muted.Render(t.emptyNote()) // no details column to say it
 	}
 	var list string
 	if t.listW > 0 {
@@ -233,10 +235,7 @@ func (t *installedTab) view(err error, focus column) string {
 	}
 
 	p, ok := t.selected()
-	previewTitle, body := "Preview", t.st.Muted.Render("nothing in this view")
-	if t.match != "" {
-		body = t.st.Muted.Render("nothing in this view matches /" + t.match)
-	}
+	previewTitle, body := "Preview", t.st.Muted.Render(t.emptyNote())
 	switch {
 	case ok:
 		_, ph := paneInner(t.pvW, t.h)
@@ -245,6 +244,14 @@ func (t *installedTab) view(err error, focus column) string {
 		body = t.st.Muted.Render("loading…")
 	}
 	return joinColumns(list, pane(t.st, previewTitle, body, t.pvW, t.h, focus == colDetails))
+}
+
+// emptyNote says why the view shows no rows.
+func (t *installedTab) emptyNote() string {
+	if t.match != "" {
+		return "nothing in this view matches /" + t.match
+	}
+	return "nothing in this view"
 }
 
 func (t *installedTab) preview(p brew.Package) string {
