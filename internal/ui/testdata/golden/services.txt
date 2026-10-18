@@ -37,4 +37,4 @@
 │                    ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │
 ╰────────────────────╯╰──────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────────────╯
- NORMAL  Services                                            s start · S stop · R restart · L log · l details · : command · ? help · q quit 
+ NORMAL  Services › postgresql@16                            s start · S stop · R restart · L log · l details · : command · ? help · q quit 

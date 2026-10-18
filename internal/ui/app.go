@@ -118,7 +118,7 @@ type App struct {
 	lastIn        map[section]int // each section's last-used entry, for 1-4
 	width, height int
 	tabH          int    // height left for the tab when the drawer is shown
-	laidOut       [6]int // width, height, drawer state, focus, tab and jobs view of the last layout
+	laidOut       [7]int // width, height, drawer state, focus, tab, jobs view and whether Discover has loaded, at the last layout
 
 	// brew asked a question while the command line was open; answer it
 	// once the line closes.
@@ -410,13 +410,31 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
+// selectedName is the name of the selected row on the tabs that name one
+// in the status bar.
+func (a *App) selectedName() (string, bool) {
+	switch a.tab {
+	case tabInstalled:
+		p, ok := a.installed.selected()
+		return p.Name, ok
+	case tabDiscover:
+		r, ok := a.discover.selected()
+		return r.Name, ok
+	case tabServices:
+		s, ok := a.selectedService()
+		return s.Name, ok
+	}
+	return "", false
+}
+
 // drawerShown reports whether the drawer takes space under the tab.
 func (a *App) drawerShown() bool {
 	return a.drawer.open && a.drawer.job != nil && drawerHeight(a.bodyHeight()) > 0
 }
 
-// layout sizes the tabs and the drawer's terminal for the current window
-// and drawer state. It does nothing if neither has changed.
+// layout sizes the tabs and the drawer's terminal for the current window,
+// the focus, the tab, the jobs view and the drawer. It does nothing if
+// none of them has changed.
 func (a *App) layout() {
 	shown := 0
 	if a.drawerShown() {
@@ -426,7 +444,11 @@ func (a *App) layout() {
 	if a.jobsOpen {
 		jobs = 1
 	}
-	key := [6]int{a.width, a.height, shown, int(a.focus), a.tab, jobs}
+	loaded := 0
+	if a.discover.loaded {
+		loaded = 1
+	}
+	key := [7]int{a.width, a.height, shown, int(a.focus), a.tab, jobs, loaded}
 	if a.laidOut == key {
 		return
 	}
@@ -457,7 +479,7 @@ func (a *App) layout() {
 // columnsFor is how the columns share the window for tab, as the focus
 // stands.
 func (a *App) columnsFor(tab int) columns {
-	return columnsFor(a.width, a.focus, hasDetails(tab) && !a.jobsOpen)
+	return columnsFor(a.width, a.focus, a.tabHasDetails(tab) && !a.jobsOpen)
 }
 
 // handleResult applies one query result and decides what runs next: a
@@ -725,7 +747,13 @@ func (a *App) View() tea.View {
 }
 
 // hasDetails reports whether what's showing has a details column.
-func (a *App) hasDetails() bool { return !a.jobsOpen && hasDetails(a.tab) }
+func (a *App) hasDetails() bool { return !a.jobsOpen && a.tabHasDetails(a.tab) }
+
+// tabHasDetails is hasDetails for tab, but Discover has none until its
+// catalogue has loaded: there is no row to show them for.
+func (a *App) tabHasDetails(tab int) bool {
+	return hasDetails(tab) && (tab != tabDiscover || a.discover.loaded)
+}
 
 func (a *App) render() string {
 	if a.width == 0 {
@@ -824,17 +852,10 @@ func (a *App) statusBar() string {
 		badge = "RUNNING"
 	}
 	left := st.Mode(badge).Render(badge) + " " + entries[a.sel].label
-	switch {
-	case a.jobsOpen:
+	if a.jobsOpen {
 		left = st.Mode(badge).Render(badge) + " Jobs"
-	case a.tab == tabInstalled:
-		if p, ok := a.installed.selected(); ok {
-			left += " › " + p.Name
-		}
-	case a.tab == tabDiscover:
-		if r, ok := a.discover.selected(); ok {
-			left += " › " + r.Name
-		}
+	} else if name, ok := a.selectedName(); ok {
+		left += " › " + name
 	}
 	if n := a.marks(); n > 0 && !a.jobsOpen {
 		left += fmt.Sprintf(" · %d marked", n)

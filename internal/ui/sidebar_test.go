@@ -291,14 +291,15 @@ func TestEntryKeysKeepTheFocusInItsColumn(t *testing.T) {
 	if label(a) != "Top-level" || a.focus != colDetails {
 		t.Errorf("] keeps the details focus: %s, focus %d", label(a), a.focus)
 	}
-	keys(t, a, "4") // Popular tools: Discover has details too
-	if a.tab != tabDiscover || a.focus != colDetails {
-		t.Errorf("4 keeps the details focus: tab %d, focus %d", a.tab, a.focus)
-	}
 	keys(t, a, "3") // Services
 	if a.focus != colDetails {
 		t.Errorf("3 keeps the details focus on Services: %d", a.focus)
 	}
+	keys(t, a, "4") // Popular tools: no catalogue here, so no details yet
+	if a.tab != tabDiscover || a.focus != colList {
+		t.Errorf("4 onto an unloaded Discover: tab %d, focus %d, want the list", a.tab, a.focus)
+	}
+	keys(t, a, "3", "l")
 	keys(t, a, "]") // Taps has no details: the focus is its list's
 	if label(a) != "Taps" || a.focus != colList {
 		t.Errorf("] onto Taps: %s, focus %d, want the list", label(a), a.focus)
@@ -310,5 +311,18 @@ func TestEntryKeysKeepTheFocusInItsColumn(t *testing.T) {
 	keys(t, a, "2")
 	if a.focus != colSidebar {
 		t.Errorf("2 from the sidebar keeps the sidebar focus: %d", a.focus)
+	}
+}
+
+func TestStatusTrailNamesTheSelectedService(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	drain(t, a, a.Init())
+	show(t, a, "Services")
+	s, ok := a.selectedService()
+	if !ok {
+		t.Fatal("no service selected")
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "Services › "+s.Name) {
+		t.Errorf("status bar lacks %q:\n%s", "Services › "+s.Name, bar)
 	}
 }

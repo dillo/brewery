@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/dillo/brewery/internal/brew"
 )
 
@@ -202,5 +203,44 @@ func TestRefreshBeforeDiscoverOpens(t *testing.T) {
 	show(t, a, "Popular tools")
 	if cat.calls != 1 || len(st.fetched) != 5 {
 		t.Errorf("opening Discover read the catalogue %d times and fetched %v", cat.calls, st.fetched)
+	}
+}
+
+func TestDiscoverHasNoDetailsFocusBeforeTheCatalogue(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	a.UseCatalog(newFakeCatalog(t))
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 30})
+	read := a.selectEntry(entryIndex("Popular tools")) // the read hasn't come back
+	keys(t, a, "l")
+	if a.focus != colList {
+		t.Fatalf("l on a loading Discover: focus %d, want the list", a.focus)
+	}
+	keys(t, a, "tab", "enter")
+	if a.focus != colList {
+		t.Fatalf("tab and enter on a loading Discover: focus %d, want the list", a.focus)
+	}
+	if c := a.columnsFor(tabDiscover); c.details != 0 {
+		t.Errorf("a loading Discover has a details column: %+v", c)
+	}
+	if bar := stripANSI(a.statusBar()); strings.Contains(bar, "h back to the list") {
+		t.Errorf("status bar speaks of details: %s", bar)
+	}
+	drain(t, a, read)
+	if !a.discover.loaded || a.focus != colList {
+		t.Errorf("after the catalogue: loaded %v, focus %d, want the list", a.discover.loaded, a.focus)
+	}
+}
+
+func TestMovingToLoadingDiscoverLandsOnItsList(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	a.UseCatalog(newFakeCatalog(t))
+	show(t, a, "All")
+	keys(t, a, "l")
+	if a.focus != colDetails {
+		t.Fatalf("focus %d, want details", a.focus)
+	}
+	a.selectEntry(entryIndex("Popular tools"))
+	if a.focus != colList {
+		t.Errorf("onto a loading Discover: focus %d, want the list", a.focus)
 	}
 }

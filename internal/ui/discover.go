@@ -52,7 +52,7 @@ func loadCatalogue(ctx context.Context, c Catalog) tea.Cmd {
 // it opens, and the analytics as wantStats says.
 func (a *App) showTab(t int) tea.Cmd {
 	if t != a.tab {
-		if a.focus == colDetails && !hasDetails(t) {
+		if a.focus == colDetails && !a.tabHasDetails(t) {
 			a.focus = colList // the new tab has no details: its list has the focus
 		}
 	}
@@ -427,7 +427,7 @@ func (t *discoverTab) scroll(k string) {
 	t.pv.scroll(k, ih/2)
 }
 
-// size fits the table to the list pane, under the bar of views. A hidden
+// size fits the table to the list pane, under the one-line description. A hidden
 // list is sized to the preview, so it still takes navigation.
 func (t *discoverTab) size() {
 	iw, ih := paneInner(cmp.Or(t.listW, t.pvW), t.h)
