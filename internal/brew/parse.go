@@ -177,11 +177,12 @@ func caskClosure(p *Package, byName map[string]*Package) []string {
 			seen[d] = true
 			deps = append(deps, d)
 			dp, ok := byName[d]
-			switch {
-			case !ok:
-			case dp.Kind == KindCask:
+			if !ok {
+				continue // not installed: nothing further to follow
+			}
+			if dp.Kind == KindCask {
 				walk(dp.DirectDeps)
-			default:
+			} else {
 				walk(dp.Deps)
 			}
 		}

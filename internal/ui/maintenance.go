@@ -70,9 +70,13 @@ func (a *App) servicesState() (state tidyState, remove, stop []string) {
 // syncMaint rebuilds Maintenance's rows from what doctor, the
 // dry-runs, the service files and History say now.
 func (a *App) syncMaint() {
-	a.maint.setRows([]table.Row{{"Doctor", a.doctorStatus()}, {"Cleanup", a.cleanupStatus()},
-		{"Autoremove", a.autoremoveStatus()}, {"Services cleanup", a.servicesStatus()},
-		{"Update Homebrew", a.updateStatus()}})
+	a.maint.setRows([]table.Row{
+		{"Doctor", a.doctorStatus()},
+		{"Cleanup", a.cleanupStatus()},
+		{"Autoremove", a.autoremoveStatus()},
+		{"Services cleanup", a.servicesStatus()},
+		{"Update Homebrew", a.updateStatus()},
+	})
 }
 
 // doctorStatus is the Doctor row's status.

@@ -841,27 +841,27 @@ func (a *App) rowCount(tab int) int {
 
 // tabBody draws the active tab, or nothing when only the sidebar shows.
 func (a *App) tabBody(c columns, bodyH int) string {
-	var body string
 	switch {
 	case c.list == 0 && c.details == 0: // the sidebar alone
+		return ""
 	case a.tab == tabHome:
-		body = a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
+		return a.home.view(a.snap, a.history, a.now(), c.list, bodyH, a.focus)
 	case a.tab == tabInstalled:
-		body = a.installed.view(a.errs[qInstalled], a.focus)
+		return a.installed.view(a.errs[qInstalled], a.focus)
 	case a.tab == tabOutdated:
-		body = a.outdated.view(a.errs[qOutdated], a.focus)
+		return a.outdated.view(a.errs[qOutdated], a.focus)
 	case a.tab == tabServices:
-		body = a.services.view(a.errs[qServices], a.focus)
+		return a.services.view(a.errs[qServices], a.focus)
 	case a.tab == tabTaps:
-		body = a.taps.view(a.errs[qTaps], a.focus)
+		return a.taps.view(a.errs[qTaps], a.focus)
 	case a.tab == tabDiscover:
-		body = a.discover.view(a.focus)
+		return a.discover.view(a.focus)
 	case a.tab == tabHistory:
-		body = a.jobs.view(nil, a.focus)
+		return a.jobs.view(nil, a.focus)
 	case a.tab == tabMaintenance:
-		body = a.maint.view(nil, a.focus)
+		return a.maint.view(nil, a.focus)
 	}
-	return body
+	return ""
 }
 
 func (a *App) render() string {
@@ -946,7 +946,6 @@ func (a *App) statusLeft() string {
 			left += fmt.Sprintf(" · %d hidden", h)
 		}
 	}
-
 	return left
 }
 

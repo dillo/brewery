@@ -53,7 +53,7 @@ func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 	case tabOutdated:
 		return a.outdatedKey(k)
 	case tabServices:
-		return a.servicesKey(k)
+		return a.servicesTabKey(k)
 	case tabHistory:
 		if k == "R" {
 			a.askRunAgain()
@@ -111,8 +111,8 @@ func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
 	return a.markKey(k)
 }
 
-// servicesKey handles the action keys on Services.
-func (a *App) servicesKey(k string) (cmd tea.Cmd, ok bool) {
+// servicesTabKey handles the action keys on Services.
+func (a *App) servicesTabKey(k string) (cmd tea.Cmd, ok bool) {
 	switch k {
 	case "s", "S", "R":
 		return a.serviceKey(k), true

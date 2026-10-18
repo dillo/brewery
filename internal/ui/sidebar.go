@@ -125,7 +125,8 @@ func (a *App) badge(e entry) (b string, chip bool) {
 }
 
 // badgeCount is the count an entry shows, -1 before its data is in, or
-// the chip that replaces the count when something needs attention.
+// the chip that replaces the count when something needs attention. When
+// chip isn't empty, n means nothing.
 func (a *App) badgeCount(e entry) (n int, chip string) {
 	st := a.st
 	n = -1
