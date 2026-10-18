@@ -2,12 +2,14 @@ package ui
 
 import (
 	"cmp"
+	"path/filepath"
 	"slices"
 	"strings"
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/jobs"
 	"github.com/dillo/brewery/internal/theme"
 )
@@ -116,4 +118,31 @@ func (a *App) maintRun() tea.Cmd {
 		return a.brewUpdate()
 	}
 	return nil
+}
+
+// unusedServices is what brew services cleanup would do, by Homebrew's own
+// rule: remove each service file whose service launchd hasn't loaded, and
+// stop each loaded service whose file is gone. Loaded is what brew calls
+// running, a service in error included.
+func unusedServices(files []string, svcs []brew.Service) (remove, stop []string) {
+	have := make(map[string]bool, len(files))
+	for _, f := range files {
+		have[f] = true
+	}
+	loaded := map[string]bool{}
+	for _, s := range svcs {
+		if !s.Loaded {
+			continue
+		}
+		loaded[s.Label] = true
+		if s.File != "" && !have[s.File] {
+			stop = append(stop, s.Name)
+		}
+	}
+	for _, f := range files {
+		if !loaded[strings.TrimSuffix(filepath.Base(f), ".plist")] {
+			remove = append(remove, f)
+		}
+	}
+	return remove, stop
 }

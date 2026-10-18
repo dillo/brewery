@@ -182,6 +182,8 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.loaded[qDoctor] = snap.DoctorRan
 	a.loaded[qCleanup] = snap.CleanupRan
 	a.loaded[qSizes] = snap.Sizes != nil
+	a.loaded[qAutoremove] = snap.AutoremoveRan
+	a.loaded[qServiceFiles] = snap.ServiceFilesRan
 	a.sync()
 	return a
 }
@@ -339,6 +341,10 @@ func (a *App) apply(m resultMsg) {
 		a.snap.Doctor, a.snap.DoctorRan = m.doctor, true
 	case qCleanup:
 		a.snap.Cleanup, a.snap.CleanupRan = m.cleanup, true
+	case qAutoremove:
+		a.snap.Autoremove, a.snap.AutoremoveRan = m.autoremove, true
+	case qServiceFiles:
+		a.snap.ServiceFiles, a.snap.ServiceFilesRan = m.serviceFiles, true
 	case qSizes:
 		a.snap.Sizes = m.sizes
 	}
@@ -525,7 +531,7 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	}
 	if a.doctorAfter && !a.jsonBusy() {
 		a.doctorAfter = false
-		doctor = a.request(qDoctor, qCleanup, qSizes)
+		doctor = a.request(qDoctor, qCleanup, qSizes, qAutoremove, qServiceFiles)
 	}
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.

@@ -181,7 +181,7 @@ func (a *App) askUninstallMarked() {
 		}
 		return
 	}
-	refresh := append(slices.Clone(diskQueries), qServices)
+	refresh := append(slices.Clone(diskQueries), qServices, qServiceFiles)
 	ts := make([]target, len(pkgs))
 	for i, p := range pkgs {
 		ts[i] = target{p.FullName, p.Kind}

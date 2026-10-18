@@ -30,10 +30,11 @@ func kindArgs(verb string, kind brew.Kind, names ...string) []string {
 }
 
 // packageQueries are re-run after anything that installs, removes or pins;
-// diskQueries after anything that also changes what's on disk.
+// diskQueries after anything that also changes what's on disk, and so what
+// autoremove would remove.
 var (
 	packageQueries = []query{qInstalled, qOutdated}
-	diskQueries    = []query{qInstalled, qOutdated, qSizes}
+	diskQueries    = []query{qInstalled, qOutdated, qSizes, qAutoremove}
 )
 
 // actionKey handles the keys that ask brew to do something. ok is false
@@ -134,7 +135,7 @@ func (a *App) askUninstall() {
 		}
 		return
 	}
-	refresh := append(slices.Clone(diskQueries), qServices) // its service goes too
+	refresh := append(slices.Clone(diskQueries), qServices, qServiceFiles) // its service goes too
 	one := action{title: "uninstall " + p.Name, args: kindArgs("uninstall", p.Kind, p.FullName), refresh: refresh}
 	box := &confirmBox{
 		title:   fmt.Sprintf("Uninstall %s %s?", p.Name, p.Version),
@@ -341,7 +342,7 @@ func (a *App) serviceKey(k string) tea.Cmd {
 	}
 	name := s.Name
 	verb := map[string]string{"s": "start", "S": "stop", "R": "restart"}[k]
-	act := action{title: verb + " " + name, args: []string{"services", verb, name}, refresh: []query{qServices}}
+	act := action{title: verb + " " + name, args: []string{"services", verb, name}, refresh: []query{qServices, qServiceFiles}}
 	if verb != "stop" {
 		return a.run(act)
 	}

@@ -76,6 +76,12 @@ func demoSnapshot(t *testing.T) state.Snapshot {
 		All:      brew.CleanupEstimate{Items: 38, Size: "2.7GB"},
 	}
 	s.CleanupRan = true
+	s.AutoremoveRan, s.ServiceFilesRan = true, true
+	for _, sv := range s.Services {
+		if sv.File != "" {
+			s.ServiceFiles = append(s.ServiceFiles, sv.File)
+		}
+	}
 	s.Sizes = map[string]int64{}
 	for _, p := range s.Packages {
 		s.Sizes[p.Key()] = demoSize(p.Key())
@@ -237,3 +243,6 @@ func TestScreenshots(t *testing.T) {
 	p.exit()
 	resume(t, a, waiting)
 }
+
+func (d demoSource) Autoremove(context.Context) ([]string, error)   { return d.snap.Autoremove, nil }
+func (d demoSource) ServiceFiles(context.Context) ([]string, error) { return d.snap.ServiceFiles, nil }

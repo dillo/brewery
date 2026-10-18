@@ -21,6 +21,8 @@ type Source interface {
 	Doctor(ctx context.Context) ([]brew.DoctorWarning, error)
 	Cleanup(ctx context.Context) (brew.Cleanup, error)
 	Sizes(ctx context.Context, pkgs []brew.Package) (map[string]int64, error)
+	Autoremove(ctx context.Context) ([]string, error)
+	ServiceFiles(ctx context.Context) ([]string, error)
 	DataUpdated(ctx context.Context) (time.Time, error)
 }
 
@@ -36,27 +38,32 @@ const (
 	qDoctor
 	qCleanup
 	qSizes
+	qAutoremove
+	qServiceFiles
 )
 
 // queryNames name each query in the status bar.
-var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup", "sizes"}
+var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup", "sizes", "autoremove", "service files"}
 
 // resultMsg carries one query's result back to the App.
 type resultMsg struct {
-	q        query
-	packages []brew.Package
-	outdated []brew.Outdated
-	services []brew.Service
-	taps     []brew.Tap
-	doctor   []brew.DoctorWarning
-	cleanup  brew.Cleanup
-	sizes    map[string]int64
-	dataAt   time.Time // with outdated: when brew last fetched package data, if known
-	err      error
+	q            query
+	packages     []brew.Package
+	outdated     []brew.Outdated
+	services     []brew.Service
+	taps         []brew.Tap
+	doctor       []brew.DoctorWarning
+	cleanup      brew.Cleanup
+	sizes        map[string]int64
+	autoremove   []string
+	serviceFiles []string
+	dataAt       time.Time // with outdated: when brew last fetched package data, if known
+	err          error
 }
 
 // jsonQueries are the queries a full refresh runs in parallel; doctor,
-// cleanup's dry-runs and the disk sizes follow once they have all returned.
+// cleanup's and autoremove's dry-runs, the service files and the disk sizes
+// follow once they have all returned.
 var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
 
 // fetch runs one query. ctx is the App's root context, so quitting stops
@@ -83,6 +90,10 @@ func fetch(ctx context.Context, src Source, q query, pkgs []brew.Package) tea.Cm
 			m.cleanup, m.err = src.Cleanup(ctx)
 		case qSizes:
 			m.sizes, m.err = src.Sizes(ctx, pkgs)
+		case qAutoremove:
+			m.autoremove, m.err = src.Autoremove(ctx)
+		case qServiceFiles:
+			m.serviceFiles, m.err = src.ServiceFiles(ctx)
 		}
 		return m
 	}
