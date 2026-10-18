@@ -37,12 +37,20 @@ Brewery copies that rule:
   on `Client` (`AgentsDir`), so tests can use a temporary directory.
   - A directory that doesn't exist means no files.
   - Any other read error is returned.
+- **What counts as running:** Homebrew treats every service in
+  `launchctl list` as running, including a loaded service that has
+  errored. `brew services info --json` reports this as `loaded`, and gives
+  the launchd label as `service_name`. `brew.Service` gains
+  `Label string \`json:"service_name"\`` and
+  `Loaded bool \`json:"loaded"\``.
 - The UI works out the preview from those files and the services list:
   - **Files to remove:** each file whose label (its base name without
-    `.plist`) isn't the label of a service with status `started` or
-    `scheduled`. A service's label is `homebrew.mxcl.<name>`.
-  - **Services to stop:** each service with status `started` or
-    `scheduled` whose `File` is set but doesn't appear among the files.
+    `.plist`) isn't the `Label` of a service with `Loaded` set.
+  - **Services to stop:** each service with `Loaded` set whose `File` is
+    set but isn't among the files.
+- **Known gap:** a service that is still loaded after its formula was
+  uninstalled isn't in brew's services list, so its file would show as
+  "to remove" although brew keeps it. This is rare and accepted.
 - Brewery only previews the user's services. Root services
   (`/Library/LaunchDaemons`) are out of scope, as they are for the rest of
   brewery's services handling.
@@ -130,10 +138,11 @@ confirm box:
 - **Title:** "Run again?"
 - **Body:** `brew <args>`.
 
-**Remembering takeovers:** `jobs.Record` gains
-`Takeover bool \`json:"takeover,omitempty"\``. `takeoverDone` sets it, so a
-line forced full screen with `!` is remembered too; its args alone don't
-say so. Older history files read it as false.
+**Remembering takeovers:** `jobs.Job` gains `Takeover bool`, and
+`jobs.Record` gains `Takeover bool \`json:"takeover,omitempty"\``, which
+`NewRecord` copies. `a.takeover` sets it on the job it starts, so a line
+forced full screen with `!` is remembered too; its args alone don't say so.
+Older history files read it as false.
 
 On yes:
 
@@ -180,9 +189,9 @@ On yes:
   - Enter on each new row: note or confirm box, and the action it runs
     (args and refresh).
 - **Service-file preview:**
-  - a stopped service's file is listed;
-  - a running service's file isn't;
-  - a running service with a missing file is "to stop".
+  - a file whose service isn't loaded is listed;
+  - a loaded service's file isn't, even one in error;
+  - a loaded service with a missing file is "to stop".
 - **Refreshes:** uninstall and service start request the new queries.
 - **History `R`:**
   - confirm then run: the args, `typed` false, and the refresh;
