@@ -33,12 +33,9 @@ func newFilterInput(st theme.Styles) textinput.Model {
 	return in
 }
 
-// filterTarget is the list "/" narrows now: the jobs view when it's open,
-// otherwise the tab's list. Home has none.
+// filterTarget is the list "/" narrows now: the tab's list. Home and
+// Maintenance have none.
 func (a *App) filterTarget() filterable {
-	if a.jobsOpen {
-		return &a.jobs
-	}
 	switch a.tab {
 	case tabInstalled:
 		return &a.installed
@@ -50,6 +47,8 @@ func (a *App) filterTarget() filterable {
 		return &a.taps
 	case tabDiscover:
 		return &a.discover
+	case tabHistory:
+		return &a.jobs
 	}
 	return nil
 }
@@ -58,7 +57,7 @@ func (a *App) filterTarget() filterable {
 func (a *App) openFilter() tea.Cmd {
 	t := a.filterTarget()
 	if t == nil {
-		return a.note("/ filters a list · Home has none")
+		return a.note("/ filters a list · " + entries[a.sel].label + " has none")
 	}
 	if a.focus == colDetails {
 		a.focus = colList // the filter is the list's, which the details may hide

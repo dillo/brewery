@@ -47,8 +47,8 @@ func TestHomeTilesHealthy(t *testing.T) {
 	if tiles[1].value != "✓ 0" || tiles[2].value != "1 running" || tiles[3].value != "✓ clean" {
 		t.Errorf("healthy tiles: %q %q %q", tiles[1].value, tiles[2].value, tiles[3].value)
 	}
-	if tiles[3].tab != -1 {
-		t.Error("doctor tile has no tab to open")
+	if tiles[3].entry != "Maintenance" || tiles[3].row != maintDoctor {
+		t.Errorf("doctor tile opens %q row %d, want Maintenance's Doctor row", tiles[3].entry, tiles[3].row)
 	}
 	if got := h.tiles(state.Snapshot{}); got[3].value != "…" {
 		t.Errorf("doctor tile before doctor runs = %q", got[3].value)
@@ -68,8 +68,8 @@ func TestHomeTilesFailed(t *testing.T) {
 	h := loadedHome()
 	h.errs[qOutdated] = errors.New("brew outdated: exit status 1")
 	tiles := h.tiles(fixtureSnapshot(t))
-	if got := tiles[1]; got.value != "✗ failed" || got.detail != "see tab" || got.tab != tabOutdated {
-		t.Errorf("outdated tile = %q (%s) -> %d", got.value, got.detail, got.tab)
+	if got := tiles[1]; got.value != "✗ failed" || got.detail != "see tab" || got.entry != "Outdated" {
+		t.Errorf("outdated tile = %q (%s) -> %s", got.value, got.detail, got.entry)
 	}
 	if tiles[0].value != "7" || tiles[2].value != "1 error" {
 		t.Errorf("other tiles should be unaffected: %q %q", tiles[0].value, tiles[2].value)
@@ -105,13 +105,13 @@ func TestHomeCleanupTile(t *testing.T) {
 func TestHomeNavigation(t *testing.T) {
 	h := homeTab{st: testStyles}
 	snap := fixtureSnapshot(t)
-	if tab := h.update(press("enter"), snap); tab != tabInstalled {
-		t.Errorf("enter on first tile -> %d", tab)
+	if tile := h.update(press("enter"), snap); tile != 0 {
+		t.Errorf("enter on first tile -> %d", tile)
 	}
 	h.update(press("l"), snap)
 	h.update(press("right"), snap)
-	if tab := h.update(press("enter"), snap); tab != tabServices {
-		t.Errorf("enter on third tile -> %d", tab)
+	if tile := h.update(press("enter"), snap); tile != 2 {
+		t.Errorf("enter on third tile -> %d", tile)
 	}
 	for range 5 {
 		h.update(press("l"), snap)
@@ -119,12 +119,12 @@ func TestHomeNavigation(t *testing.T) {
 	if h.sel != 4 {
 		t.Errorf("selection should stop at the last tile, got %d", h.sel)
 	}
-	if tab := h.update(press("enter"), snap); tab != openCleanup {
-		t.Errorf("enter on cleanup tile -> %d, want openCleanup", tab)
+	if tile := h.update(press("enter"), snap); tile != 4 {
+		t.Errorf("enter on cleanup tile -> %d, want 4", tile)
 	}
 	h.update(press("h"), snap)
-	if tab := h.update(press("enter"), snap); tab != homeStay {
-		t.Errorf("enter on doctor tile -> %d, want homeStay", tab)
+	if tile := h.update(press("enter"), snap); tile != 3 {
+		t.Errorf("enter on doctor tile -> %d, want 3", tile)
 	}
 	for range 3 {
 		h.update(press("left"), snap)
@@ -147,8 +147,8 @@ func TestHomePanesUnderTheTiles(t *testing.T) {
 	if h.area != areaJobs {
 		t.Fatalf("l from Doctor -> area %d, want Recent jobs", h.area)
 	}
-	if got := h.update(press("enter"), snap); got != showJobs {
-		t.Errorf("enter on Recent jobs -> %d, want showJobs", got)
+	if got := h.update(press("enter"), snap); got != wantHistory {
+		t.Errorf("enter on Recent jobs -> %d, want wantHistory", got)
 	}
 	h.update(press("up"), snap)
 	if h.area != areaTiles || h.sel != 2 {
@@ -209,7 +209,7 @@ func TestHomeView(t *testing.T) {
 
 func TestHomeDoctorFailed(t *testing.T) {
 	h := homeTab{st: testStyles, doctorErr: errors.New("brew doctor: timed out after 30s")}
-	if got := h.tiles(state.Snapshot{})[3]; got.value != "✗ failed" || got.detail != "see below" || got.tab != -1 {
+	if got := h.tiles(state.Snapshot{})[3]; got.value != "✗ failed" || got.detail != "see below" || got.entry != "Maintenance" {
 		t.Errorf("doctor tile = %+v", got)
 	}
 	out := stripANSI(h.view(state.Snapshot{}, nil, testNow, 140, 30, colList))
@@ -238,7 +238,7 @@ func TestHomeShowsRecentJobs(t *testing.T) {
 			t.Errorf("at %v the view is %dx%d", size, lipgloss.Width(view), lipgloss.Height(view))
 		}
 		out := stripANSI(view)
-		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", "enter shows them all"} {
+		for _, want := range []string{"Recent jobs", "✗ upgrade fd", "1h ago", "✓ pin git", "yesterday", "5 History has them all"} {
 			if !strings.Contains(out, want) {
 				t.Errorf("at %v missing %q:\n%s", size, want, out)
 			}
@@ -297,5 +297,17 @@ func TestHomeOutdatedTileCountsPinned(t *testing.T) {
 	snap.Outdated[1].Pinned = true // nothing left that U would upgrade
 	if got := h.tiles(snap)[1]; got.value != "2" || got.detail != "2 pinned · nothing to upgrade" || got.style.GetForeground() != testStyles.Muted.GetForeground() {
 		t.Errorf("tile %q (%q)", got.value, got.detail)
+	}
+}
+
+func TestRecentJobsOpensHistory(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "l", "j", "l") // the first tile, down to Doctor, across to Recent jobs
+	if !strings.Contains(stripANSI(a.render()), "5 History has them all") {
+		t.Errorf("Recent jobs' hint names History:\n%s", stripANSI(a.render()))
+	}
+	keys(t, a, "enter")
+	if label(a) != "History" || a.focus != colList {
+		t.Errorf("enter on Recent jobs: %s, focus %d", label(a), a.focus)
 	}
 }

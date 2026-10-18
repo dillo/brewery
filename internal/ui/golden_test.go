@@ -8,6 +8,8 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/dillo/brewery/internal/jobs"
 )
 
 // update rewrites the golden snapshots: go test ./internal/ui -run TestScreens -update
@@ -51,6 +53,8 @@ func TestScreens(t *testing.T) {
 	a.UseCatalog(newFakeCatalog(t))
 	a.UseAnalytics(newFakeStats(t))
 	a.detailsDelay = 0
+	a.UseHistory(jobs.History{Dir: t.TempDir()}, recentJobs(a.now())) // the clock is fixed, so the times are too
+	a.UseBrewVersion("4.6.3")
 	for _, s := range []struct {
 		name    string
 		entries []string // shown in turn: the last one is the screen
@@ -61,6 +65,8 @@ func TestScreens(t *testing.T) {
 		{"outdated", []string{"Outdated"}, nil},
 		{"services", []string{"Services"}, nil},
 		{"discover-all", []string{"Popular tools", "Search all"}, nil}, // the selection (gh) carries over from Tools
+		{"history", []string{"History"}, []string{"l"}},
+		{"maintenance", []string{"Maintenance"}, nil},
 		{"help", []string{"Top-level"}, []string{"?"}},
 	} {
 		for _, e := range s.entries {

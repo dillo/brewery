@@ -12,8 +12,8 @@ import (
 	"github.com/dillo/brewery/internal/theme"
 )
 
-// listTab is a table used by the Outdated, Services and Taps tabs, full
-// width or beside a preview.
+// listTab is a table used by the Outdated, Services, Taps, History and
+// Maintenance tabs, full width or beside a preview.
 type listTab struct {
 	st     theme.Styles
 	name   string
@@ -36,6 +36,7 @@ type listTab struct {
 	// preview, if set, fills a pane beside the table with what it returns
 	// for a w×h pane.
 	preview func(w, h int) (title, body string)
+	pv      scroller // where the preview is scrolled to
 
 	note func() string // if set and not "", added to the title
 }
@@ -93,11 +94,22 @@ func firstCell(r table.Row) string { return r[0] }
 // outdatedKey identifies an Outdated row by name and type.
 func outdatedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[4] }
 
-// update moves the table's selection.
+// update moves the table's selection. A new row's preview starts at the
+// top.
 func (t *listTab) update(msg tea.KeyPressMsg) tea.Cmd {
+	was := t.cursor()
 	var cmd tea.Cmd
 	t.table, cmd = t.table.Update(msg)
+	if t.cursor() != was {
+		t.pv.off = 0
+	}
 	return cmd
+}
+
+// scroll scrolls the preview by a key.
+func (t *listTab) scroll(k string) {
+	_, ih := paneInner(t.pvW, t.h)
+	t.pv.scroll(k, ih/2)
 }
 
 // title names the list, counts what it shows, and names its filter.
@@ -152,6 +164,8 @@ func (t *listTab) view(err error, focus column) string {
 		return list
 	}
 	title, preview := t.preview(t.pvW, h)
+	_, pvH := paneInner(t.pvW, h)
+	preview = t.pv.window(preview, pvH)
 	return joinColumns(list, pane(t.st, title, preview, t.pvW, h, focus == colDetails))
 }
 

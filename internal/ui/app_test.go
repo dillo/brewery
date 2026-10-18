@@ -276,7 +276,7 @@ func TestTabKeys(t *testing.T) {
 		want int
 	}{
 		{"3", tabServices}, {"]", tabTaps}, {"]", tabDiscover}, {"[", tabTaps},
-		{"4", tabDiscover}, {"2", tabInstalled}, {"1", tabHome}, {"[", tabDiscover}, // wraps from Home to the last entry
+		{"4", tabDiscover}, {"5", tabHistory}, {"2", tabInstalled}, {"1", tabHome}, {"[", tabMaintenance}, // wraps from Home to the last entry
 	}
 	for _, s := range steps {
 		a.Update(press(s.key))

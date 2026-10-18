@@ -14,12 +14,10 @@ type helpGroup struct {
 }
 
 // helpGroups are the keys that work where the user is now: the current
-// tab's (or the jobs view's) first, then lists', then everywhere's.
+// tab's first, then lists', then everywhere's.
 func (a *App) helpGroups() []helpGroup {
 	var here helpGroup
 	switch {
-	case a.jobsOpen:
-		here = helpGroup{"Jobs", [][2]string{{"enter", "replay the job's output"}, {"esc q", "close"}}}
 	case a.focus == colSidebar:
 		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"l enter", "go to the list"}}}
 	case a.tab == tabHome:
@@ -45,14 +43,20 @@ func (a *App) helpGroups() []helpGroup {
 			{"a", "install"}, {"/", "search names and descriptions"},
 			{"l tab enter", "details, then j/k scroll"}, {"r", "fetch the analytics again"},
 		}}
+	case a.tab == tabHistory:
+		here = helpGroup{"History", [][2]string{{"l tab enter", "details, then j/k scroll"}}}
+	case a.tab == tabMaintenance:
+		here = helpGroup{"Maintenance", [][2]string{{"enter", "run doctor, clean up, or brew update"}, {"l tab", "details"}}}
 	}
 	groups := []helpGroup{here}
 	switch {
-	case a.jobsOpen:
+	case a.tab == tabHistory && a.focus != colSidebar:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
 		}})
+	case a.tab == tabMaintenance && a.focus != colSidebar:
+		groups = append(groups, helpGroup{"Lists", [][2]string{{"j k", "move"}, {"gg G", "top, bottom"}}})
 	case a.tab != tabHome && a.focus != colSidebar:
 		groups = append(groups, helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
@@ -60,7 +64,7 @@ func (a *App) helpGroups() []helpGroup {
 		}})
 	}
 	return append(groups, helpGroup{"Everywhere", [][2]string{
-		{"h l", "sidebar, list, details"}, {"1-4", "Home, Packages, Manage, Discover"},
+		{"h l", "sidebar, list, details"}, {"1-5", "Home, Packages, Manage, Discover, Tools"},
 		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
 		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
 		{"ctrl+c", "stop the running job"}, {"q", "quit"},

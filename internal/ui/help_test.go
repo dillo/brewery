@@ -38,13 +38,13 @@ func TestServicesDetailsHints(t *testing.T) {
 	}
 }
 
-func TestHelpInTheJobsView(t *testing.T) {
+func TestHelpInHistory(t *testing.T) {
 	a := newJobsViewApp(t, &fakeStarter{})
 	keys(t, a, ":")
 	typeText(t, a, "jobs")
 	keys(t, a, "enter", "?")
-	if out := stripANSI(a.render()); !a.help || !strings.Contains(out, "replay the job's output") {
-		t.Errorf("? works in :jobs too:\n%s", out)
+	if out := stripANSI(a.render()); !a.help || !strings.Contains(out, "details, then j/k scroll") {
+		t.Errorf("? works in History too:\n%s", out)
 	}
 }
 
@@ -76,6 +76,23 @@ func TestHelpInJobsSaysWhatYCopies(t *testing.T) {
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "copy the command") || strings.Contains(out, "open the homepage") {
 		t.Errorf("in :jobs, y copies the command and gx has nothing to open:\n%s", out)
+	}
+}
+
+func TestHelpOnMaintenance(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Maintenance")
+	keys(t, a, "?")
+	out := stripANSI(a.render())
+	for _, want := range []string{"Maintenance", "run doctor, clean up, or brew update", "top, bottom"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("Maintenance help lacks %q:\n%s", want, out)
+		}
+	}
+	for _, not := range []string{"filter by name", "copy the name", "open the homepage"} {
+		if strings.Contains(out, not) {
+			t.Errorf("Maintenance help offers %q, which does nothing there:\n%s", not, out)
+		}
 	}
 }
 

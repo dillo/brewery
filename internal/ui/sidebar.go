@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// section is a group of sidebar entries; 1-4 jump to them.
+// section is a group of sidebar entries; 1-5 jump to them.
 type section int
 
 const (
@@ -16,10 +16,11 @@ const (
 	secPackages
 	secManage
 	secDiscover
+	secTools
 )
 
 // sectionNames head each section in the sidebar. Home has no heading.
-var sectionNames = [...]string{secPackages: "PACKAGES", secManage: "MANAGE", secDiscover: "DISCOVER"}
+var sectionNames = [...]string{secPackages: "PACKAGES", secManage: "MANAGE", secDiscover: "DISCOVER", secTools: "TOOLS"}
 
 // entry is one line of the sidebar: the tab it shows and, for Installed
 // and Discover, which of the tab's views (an installedFilter or a
@@ -48,6 +49,8 @@ var entries = []entry{
 	{"New", secDiscover, tabDiscover, int(discNew)},
 	{"Fonts", secDiscover, tabDiscover, int(discFonts)},
 	{"Search all", secDiscover, tabDiscover, int(discAll)},
+	{"History", secTools, tabHistory, 0},
+	{"Maintenance", secTools, tabMaintenance, 0},
 }
 
 // entryIndex is the index of the entry labelled label. The labels are
@@ -78,6 +81,8 @@ func (a *App) selectEntry(i int) tea.Cmd {
 			a.discover.showing = v
 			a.discover.apply()
 		}
+	case tabHistory:
+		a.jobs.setRows(jobRows(a.st, a.history, a.now())) // a day on, today's jobs show their date
 	}
 	return a.showTab(e.tab)
 }
@@ -138,6 +143,8 @@ func (a *App) badge(e entry) string {
 		if a.loaded[qTaps] {
 			n = len(a.snap.Taps)
 		}
+	case tabHistory:
+		n = len(a.history)
 	}
 	if n < 0 {
 		return ""
@@ -213,7 +220,7 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 			return nil, false
 		}
 		return nil, true
-	case "q", ":", "?", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4":
+	case "q", ":", "?", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4", "5":
 		return nil, false
 	}
 	return nil, true // the rest act on a row, and the sidebar has none
@@ -226,6 +233,3 @@ func (a *App) focusDetails() {
 		a.focus = colDetails
 	}
 }
-
-// tileEntries are the entries Home's tiles open, by the tab they name.
-var tileEntries = map[int]string{tabInstalled: "All", tabOutdated: "Outdated", tabServices: "Services"}

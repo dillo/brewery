@@ -22,15 +22,16 @@ type tile struct {
 	value  string
 	style  lipgloss.Style
 	detail string
-	tab    int // tab to open on Enter; -1 for none, openCleanup for the cleanup dialog
+	entry  string // the sidebar entry Enter opens; "" for none
+	row    int    // the Maintenance row Enter selects; -1 for none
 }
 
-// What a key on Home asks the app to do, besides opening a tile's tab.
+// What a key on Home asks the app to do, besides opening a tile's entry
+// (a tile's index, 0 or more).
 const (
 	homeStay    = -1 // nothing: the key moved within Home, or did nothing
-	openCleanup = -2 // the Cleanup tile's Enter: ask to clean up rather than open a tab
-	leaveHome   = -3 // h past the left edge: back to the sidebar
-	showJobs    = -4 // Enter on Recent jobs: the full list
+	leaveHome   = -2 // h past the left edge: back to the sidebar
+	wantHistory = -3 // Enter on Recent jobs: History, with them all
 )
 
 // homeArea is the part of Home that has the focus.
@@ -65,9 +66,9 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 		}
 	}
 	installed := tile{"Installed", fmt.Sprint(len(snap.Packages)), st.Title,
-		fmt.Sprintf("%d formulae · %d casks", formulae, casks), tabInstalled}
+		fmt.Sprintf("%d formulae · %d casks", formulae, casks), "All", -1}
 
-	outdated := tile{"Outdated", "✓ 0", st.OK, "everything is up to date", tabOutdated}
+	outdated := tile{"Outdated", "✓ 0", st.OK, "everything is up to date", "Outdated", -1}
 	if n := len(snap.Outdated); n > 0 {
 		// Pinned packages are outdated too, but U skips them: count them
 		// first, where a narrow tile still shows it, then name the rest.
@@ -98,7 +99,7 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 		}
 	}
 	services := tile{"Services", fmt.Sprintf("%d running", running), st.OK,
-		fmt.Sprintf("%d registered", len(snap.Services)), tabServices}
+		fmt.Sprintf("%d registered", len(snap.Services)), "Services", -1}
 	if len(failed) > 0 {
 		services.value, services.style, services.detail = plural(len(failed), "error"), st.Err, strings.Join(failed, ", ")
 	}
@@ -107,7 +108,7 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 	h.markUnknown(&outdated, qOutdated)
 	h.markUnknown(&services, qServices)
 
-	doctor := tile{"Doctor", "…", st.Muted, "checking", -1}
+	doctor := tile{"Doctor", "…", st.Muted, "checking", "Maintenance", maintDoctor}
 	switch {
 	case h.doctorErr != nil:
 		doctor.value, doctor.style, doctor.detail = "✗ failed", st.Err, "see below"
@@ -117,7 +118,7 @@ func (h *homeTab) tiles(snap state.Snapshot) []tile {
 			doctor.value, doctor.style, doctor.detail = plural(n, "warning"), st.Warn, "see below"
 		}
 	}
-	cleanup := tile{"Cleanup", "✓ tidy", st.OK, "all clean", openCleanup}
+	cleanup := tile{"Cleanup", "✓ tidy", st.OK, "all clean", "Maintenance", maintCleanup}
 	switch size := cmp.Or(snap.Cleanup.All.Size, snap.Cleanup.Standard.Size); {
 	case h.errs[qCleanup] != nil:
 		cleanup.value, cleanup.style, cleanup.detail = "✗ failed", st.Err, "r retries"
@@ -147,8 +148,8 @@ func (h *homeTab) enter() {
 
 // update moves the focus around Home: h and l along the tiles and across
 // the panes under them, j down from the tiles to Doctor, k back up to the
-// tile you came from. It returns a tile's tab to open, or one of homeStay,
-// openCleanup, leaveHome and showJobs.
+// tile you came from. It returns the index of a tile whose entry to open,
+// or one of homeStay, leaveHome and wantHistory.
 func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 	k := msg.String()
 	switch h.area {
@@ -176,7 +177,7 @@ func (h *homeTab) update(msg tea.KeyPressMsg, snap state.Snapshot) int {
 		case "k", "up":
 			h.area = areaTiles
 		case "enter":
-			return showJobs
+			return wantHistory
 		}
 	}
 	return homeStay
@@ -196,7 +197,9 @@ func (h *homeTab) tileKey(k string, snap state.Snapshot) int {
 	case "j", "down":
 		h.area = areaDoctor
 	case "enter":
-		return tiles[h.sel].tab
+		if tiles[h.sel].entry != "" {
+			return h.sel
+		}
 	}
 	return homeStay
 }
@@ -220,28 +223,11 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 	}
 	row := lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 
-	var b strings.Builder
-	switch {
-	case h.doctorErr != nil:
-		b.WriteString(st.Err.Render("✗ brew doctor failed") + "\n\n")
-		b.WriteString(st.Muted.Render(h.doctorErr.Error()) + "\n\n")
-		b.WriteString(st.Muted.Render("press r to retry") + "\n")
-		if snap.DoctorRan && len(snap.Doctor) > 0 {
-			b.WriteString("\n" + st.Muted.Render("Warnings from the last successful check:") + "\n\n")
-			h.writeWarnings(&b, snap.Doctor)
-		}
-	case !snap.DoctorRan:
-		b.WriteString(st.Muted.Render("brew doctor is running…"))
-	case len(snap.Doctor) == 0:
-		b.WriteString(st.OK.Render("✓ Your system is ready to brew."))
-	default:
-		h.writeWarnings(&b, snap.Doctor)
-	}
 	lowH := max(height-tileH, 3)
 	doctorW := w * 3 / 5
 	_, docH := paneInner(doctorW, lowH)
 	h.docPage = max(docH/2, 1)
-	doctor := pane(st, "Doctor", h.doc.window(b.String(), docH), doctorW, lowH, h.area == areaDoctor && focus != colSidebar)
+	doctor := pane(st, "Doctor", h.doc.window(doctorBody(st, snap, h.doctorErr), docH), doctorW, lowH, h.area == areaDoctor && focus != colSidebar)
 	jobsPane := pane(st, "Recent jobs", h.recentJobs(recent, now, w-doctorW, lowH), w-doctorW, lowH, h.area == areaJobs && focus != colSidebar)
 	return lipgloss.JoinVertical(lipgloss.Left, row, lipgloss.JoinHorizontal(lipgloss.Top, doctor, jobsPane))
 }
@@ -251,7 +237,7 @@ func (h *homeTab) view(snap state.Snapshot, recent []jobs.Record, now time.Time,
 func (h *homeTab) recentJobs(recent []jobs.Record, now time.Time, w, height int) string {
 	st := h.st
 	iw, ih := paneInner(w, height)
-	hint := st.Muted.Render("enter shows them all")
+	hint := st.Muted.Render("5 History has them all")
 	if len(recent) == 0 {
 		return st.Muted.Render("no jobs yet") + "\n" + hint
 	}
@@ -288,9 +274,32 @@ func ago(now, t time.Time) string {
 	return fmt.Sprintf("%dd ago", int(d.Hours()/24))
 }
 
+// doctorBody is what doctor found, as Home's Doctor pane and Maintenance's
+// details show it: its warnings, that it is running, or that it failed
+// (err), with the warnings from the last check that worked.
+func doctorBody(st theme.Styles, snap state.Snapshot, err error) string {
+	var b strings.Builder
+	switch {
+	case err != nil:
+		b.WriteString(st.Err.Render("✗ brew doctor failed") + "\n\n")
+		b.WriteString(st.Muted.Render(err.Error()) + "\n\n")
+		b.WriteString(st.Muted.Render("press r to retry") + "\n")
+		if snap.DoctorRan && len(snap.Doctor) > 0 {
+			b.WriteString("\n" + st.Muted.Render("Warnings from the last successful check:") + "\n\n")
+			writeWarnings(st, &b, snap.Doctor)
+		}
+	case !snap.DoctorRan:
+		b.WriteString(st.Muted.Render("brew doctor is running…"))
+	case len(snap.Doctor) == 0:
+		b.WriteString(st.OK.Render("✓ Your system is ready to brew."))
+	default:
+		writeWarnings(st, &b, snap.Doctor)
+	}
+	return b.String()
+}
+
 // writeWarnings renders each doctor warning as a title and indented body.
-func (h *homeTab) writeWarnings(b *strings.Builder, warnings []brew.DoctorWarning) {
-	st := h.st
+func writeWarnings(st theme.Styles, b *strings.Builder, warnings []brew.DoctorWarning) {
 	for _, d := range warnings {
 		b.WriteString(st.Warn.Render("⚠ "+d.Title) + "\n")
 		if d.Body != "" {

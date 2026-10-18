@@ -100,9 +100,9 @@ func TestFilterJobs(t *testing.T) {
 	typeText(t, a, "jobs")
 	keys(t, a, "enter", "/")
 	typeText(t, a, "pin")
-	keys(t, a, "enter", "enter") // replay the one shown
-	if a.drawer.job == nil || a.drawer.job.Title != "pin git" {
-		t.Errorf("replayed %+v, want pin git", a.drawer.job)
+	keys(t, a, "enter") // keep the filter: pin git is the one shown, and selected
+	if name, _ := a.selectedName(); name != "pin git" || a.jobs.n != 1 {
+		t.Errorf("selected %q of %d shown, want pin git alone", name, a.jobs.n)
 	}
 }
 
@@ -111,6 +111,15 @@ func TestFilterOnHome(t *testing.T) {
 	keys(t, a, "/")
 	if a.mode != modeNormal || !strings.Contains(stripANSI(a.statusBar()), "Home has none") {
 		t.Errorf("Home has no list: mode %d, bar %q", a.mode, stripANSI(a.statusBar()))
+	}
+}
+
+func TestFilterOnMaintenance(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Maintenance")
+	keys(t, a, "/")
+	if a.mode != modeNormal || !strings.Contains(stripANSI(a.statusBar()), "/ filters a list · Maintenance has none") {
+		t.Errorf("Maintenance has no filter: mode %d, bar %q", a.mode, stripANSI(a.statusBar()))
 	}
 }
 

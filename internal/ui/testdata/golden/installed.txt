@@ -23,9 +23,9 @@
 │  Fonts             ││                                                              ││ Bash completion has been installed.                │
 │  Search all        ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
-│                    ││                                                              ││                                                    │
+│ TOOLS              ││                                                              ││                                                    │
+│  History        2  ││                                                              ││                                                    │
+│  Maintenance       ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │
 │                    ││                                                              ││                                                    │

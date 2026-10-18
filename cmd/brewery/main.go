@@ -43,15 +43,18 @@ func readBrewVersion(bin string) (brew.Version, error) {
 	return brew.NewClient(brew.ExecRunner{Bin: bin, Env: brew.QueryEnv}).BrewVersion(ctx)
 }
 
-// versionProblem says why the brew at bin is too old for brewery, or
-// returns "". A version brewery can't read doesn't stop it: anything really
-// broken shows in the tabs.
-func versionProblem(bin string) string {
+// versionProblem reads the version of the brew at bin, and says why it is
+// too old for brewery, or returns "". A version brewery can't read doesn't
+// stop it, and comes back empty: anything really broken shows in the tabs.
+func versionProblem(bin string) (brew.Version, string) {
 	v, err := brewVersion(bin)
-	if err != nil || !v.TooOld() {
-		return ""
+	if err != nil {
+		return brew.Version{}, ""
 	}
-	return fmt.Sprintf("brewery needs Homebrew %d.%d or newer (you have %s). Update it with `brew update`.", brew.MinMajor, brew.MinMinor, v.Text)
+	if !v.TooOld() {
+		return v, ""
+	}
+	return v, fmt.Sprintf("brewery needs Homebrew %d.%d or newer (you have %s). Update it with `brew update`.", brew.MinMajor, brew.MinMinor, v.Text)
 }
 
 func main() {
@@ -77,7 +80,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "Install it from https://brew.sh, then run brewery again.")
 		return 1
 	}
-	if msg := versionProblem(bin); msg != "" {
+	v, msg := versionProblem(bin)
+	if msg != "" {
 		fmt.Fprintln(stderr, msg)
 		return 1
 	}
@@ -94,6 +98,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	hist := jobs.History{Dir: jobs.DefaultHistoryDir()}
 	recs, _ := hist.Load() // no history yet is fine
 	app.UseHistory(hist, recs)
+	app.UseBrewVersion(v.Text)
 	app.UseIcons(wantIcons(*noIcons, os.Getenv("BREWERY_NO_ICONS")))
 	app.UseCompletions(client.Completions)
 	app.UseCatalog(client)

@@ -68,7 +68,7 @@ func columnsFor(w int, focus column, hasDetails bool) columns {
 // hasDetails reports whether tab shows the selected row's details beside
 // its list.
 func hasDetails(tab int) bool {
-	return tab == tabInstalled || tab == tabDiscover || tab == tabServices
+	return tab == tabInstalled || tab == tabDiscover || tab == tabServices || tab == tabHistory || tab == tabMaintenance
 }
 
 // joinColumns puts the shown columns side by side.

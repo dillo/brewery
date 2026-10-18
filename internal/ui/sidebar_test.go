@@ -71,8 +71,8 @@ func TestSelectSectionReturnsToItsLastEntry(t *testing.T) {
 func TestStepEntryWraps(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	settle(t, a, a.stepEntry(-1))
-	if got := entries[a.sel].label; got != "Search all" {
-		t.Errorf("before Home: %s, want the last entry", got)
+	if got, last := entries[a.sel].label, entries[len(entries)-1].label; got != last {
+		t.Errorf("before Home: %s, want the last entry, %s", got, last)
 	}
 	settle(t, a, a.stepEntry(1))
 	if got := entries[a.sel].label; got != "Home" {
@@ -132,8 +132,8 @@ func TestSidebarKeysMoveThroughEntries(t *testing.T) {
 		t.Errorf("4×j: %s tab %d filter %d focus %v", label(a), a.tab, a.installed.filter, a.focus == colSidebar)
 	}
 	keys(t, a, "G")
-	if label(a) != "Search all" {
-		t.Errorf("G: %s", label(a))
+	if last := entries[len(entries)-1].label; label(a) != last {
+		t.Errorf("G: %s, want the last entry, %s", label(a), last)
 	}
 	keys(t, a, "g", "g")
 	if label(a) != "Home" {
@@ -269,14 +269,6 @@ func TestHomeKeysWalkTheTilesAndBackToTheSidebar(t *testing.T) {
 	keys(t, a, "j", "h")
 	if a.focus != colSidebar {
 		t.Errorf("h from Doctor should reach the sidebar")
-	}
-}
-
-func TestEnterOnRecentJobsOpensTheJobsList(t *testing.T) {
-	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "l", "j", "l", "enter")
-	if !a.jobsOpen {
-		t.Errorf("enter on Recent jobs should open the jobs list")
 	}
 }
 

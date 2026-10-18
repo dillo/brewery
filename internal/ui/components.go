@@ -231,14 +231,19 @@ func setRowsKeeping(t *table.Model, rows []table.Row, key func(table.Row) string
 	}
 }
 
-// kv renders aligned "label  value" lines for preview panes.
+// kv renders aligned "label  value" lines for preview panes. Labels get
+// 11 cells, or one more than the longest label when that needs more.
 func kv(st theme.Styles, pairs ...string) string {
+	w := 11
+	for i := 0; i < len(pairs); i += 2 {
+		w = max(w, lipgloss.Width(pairs[i])+1)
+	}
 	var b strings.Builder
 	for i := 0; i+1 < len(pairs); i += 2 {
 		if pairs[i+1] == "" {
 			continue
 		}
-		b.WriteString(st.Muted.Render(lipgloss.NewStyle().Width(11).Render(pairs[i])))
+		b.WriteString(st.Muted.Render(lipgloss.NewStyle().Width(w).Render(pairs[i])))
 		b.WriteString(pairs[i+1])
 		b.WriteString("\n")
 	}
