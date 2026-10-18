@@ -28,6 +28,7 @@ type Record struct {
 	Args     []string  `json:"args"`
 	State    State     `json:"state"`
 	ExitCode int       `json:"exit_code"`
+	Takeover bool      `json:"takeover,omitempty"` // ran full screen
 	Started  time.Time `json:"started"`
 	Ended    time.Time `json:"ended"`
 	Output   string    `json:"output"` // the last MaxOutput bytes it printed
@@ -36,7 +37,7 @@ type Record struct {
 // NewRecord records a finished job and the output it printed.
 func NewRecord(j *Job, output string) Record {
 	return Record{
-		Title: j.Title, Args: j.Args, State: j.State, ExitCode: j.ExitCode,
+		Title: j.Title, Args: j.Args, State: j.State, ExitCode: j.ExitCode, Takeover: j.Takeover,
 		Started: j.Started, Ended: j.Ended, Output: Tail(output, MaxOutput),
 	}
 }

@@ -198,7 +198,7 @@ func refreshAfter(args []string) (refresh []query, full bool) {
 		if len(args) == 1 || args[1] == "list" || args[1] == "info" {
 			return nil, false
 		}
-		return []query{qServices}, false
+		return []query{qServices, qServiceFiles}, false
 	}
 	return nil, true
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -192,5 +193,63 @@ func TestClientDataUpdatedAsksForDirsOnce(t *testing.T) {
 	}
 	if r.n["--cache"] != 2 || r.n["--repository"] != 2 {
 		t.Errorf("ran %v: a failure asks again, then the dirs are kept", r.n)
+	}
+}
+
+func TestClientAutoremove(t *testing.T) {
+	c := NewClient(fakeRunner{out: map[string][]byte{
+		"autoremove --dry-run": []byte("==> Would autoremove 2 unneeded formulae:\nlibyaml\nm4\n"),
+	}})
+	got, err := c.Autoremove(context.Background())
+	if err != nil || !slices.Equal(got, []string{"libyaml", "m4"}) {
+		t.Errorf("got %q, %v", got, err)
+	}
+	c = NewClient(fakeRunner{err: map[string]error{"autoremove --dry-run": errors.New("exit status 1")}})
+	if _, err := c.Autoremove(context.Background()); err == nil || !strings.Contains(err.Error(), "brew autoremove --dry-run") {
+		t.Errorf("a failed dry run is an error naming it: %v", err)
+	}
+}
+
+func TestClientServiceFiles(t *testing.T) {
+	dir := t.TempDir()
+	for _, f := range []string{"homebrew.mxcl.redis.plist", "sh.brew.thing.plist", "com.apple.other.plist", "homebrew.notes.txt"} {
+		if err := os.WriteFile(filepath.Join(dir, f), nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Mkdir(filepath.Join(dir, "homebrew.mxcl.dir.plist"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	c := NewClient(fakeRunner{})
+	c.AgentsDir = dir
+	got, err := c.ServiceFiles(context.Background())
+	want := []string{filepath.Join(dir, "homebrew.mxcl.redis.plist"), filepath.Join(dir, "sh.brew.thing.plist")}
+	if err != nil || !slices.Equal(got, want) {
+		t.Errorf("got %q, %v; want %q", got, err, want)
+	}
+
+	c.AgentsDir = filepath.Join(dir, "missing")
+	if got, err := c.ServiceFiles(context.Background()); err != nil || len(got) != 0 {
+		t.Errorf("a missing directory has no files: %q, %v", got, err)
+	}
+
+	if os.Geteuid() == 0 {
+		t.Skip("root reads any directory")
+	}
+	locked := filepath.Join(dir, "locked")
+	if err := os.Mkdir(locked, 0o000); err != nil {
+		t.Fatal(err)
+	}
+	c.AgentsDir = locked
+	if _, err := c.ServiceFiles(context.Background()); err == nil {
+		t.Error("an unreadable directory is an error")
+	}
+}
+
+func TestNewClientFindsLaunchAgents(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	if got, want := NewClient(fakeRunner{}).AgentsDir, filepath.Join(home, "Library", "LaunchAgents"); got != want {
+		t.Errorf("got %q, want %q", got, want)
 	}
 }

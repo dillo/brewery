@@ -18,13 +18,15 @@ import (
 	"github.com/dillo/brewery/internal/state"
 )
 
-// fakeSource serves the fixture snapshot. servicesErr, doctorErr and
-// cleanupErr make one query fail.
+// fakeSource serves the fixture snapshot. servicesErr, doctorErr, cleanupErr,
+// autoremoveErr and serviceFilesErr make one query fail.
 type fakeSource struct {
-	snap        state.Snapshot
-	servicesErr error
-	doctorErr   error
-	cleanupErr  error
+	snap            state.Snapshot
+	servicesErr     error
+	doctorErr       error
+	cleanupErr      error
+	autoremoveErr   error
+	serviceFilesErr error
 }
 
 func newFakeSource(t *testing.T) *fakeSource { return &fakeSource{snap: fixtureSnapshot(t)} }
@@ -573,12 +575,34 @@ func TestNothingShowsHealthyBeforeItLoads(t *testing.T) {
 
 func TestCachedSnapshotCountsAsLoaded(t *testing.T) {
 	a := New(newFakeSource(t), nil, fixtureSnapshot(t), "")
-	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor} {
+	for _, q := range []query{qInstalled, qOutdated, qServices, qTaps, qDoctor, qAutoremove, qServiceFiles} {
 		if !a.loaded[q] {
 			t.Errorf("%s not loaded from a non-empty cache", queryNames[q])
 		}
 	}
-	if a := New(newFakeSource(t), nil, state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor]) {
+	if a := New(newFakeSource(t), nil, state.Snapshot{}, ""); len(a.loaded) != 0 && (a.loaded[qOutdated] || a.loaded[qDoctor] || a.loaded[qAutoremove] || a.loaded[qServiceFiles]) {
 		t.Error("an empty cache should load nothing")
 	}
+}
+
+func (f *fakeSource) Autoremove(context.Context) ([]string, error) {
+	if f.autoremoveErr != nil {
+		return nil, f.autoremoveErr
+	}
+	return f.snap.Autoremove, nil
+}
+func (f *fakeSource) ServiceFiles(context.Context) ([]string, error) {
+	if f.serviceFilesErr != nil {
+		return nil, f.serviceFilesErr
+	}
+	return f.snap.ServiceFiles, nil
+}
+
+func (c *countingSource) Autoremove(ctx context.Context) ([]string, error) {
+	c.calls["autoremove"]++
+	return c.fakeSource.Autoremove(ctx)
+}
+func (c *countingSource) ServiceFiles(ctx context.Context) ([]string, error) {
+	c.calls["service files"]++
+	return c.fakeSource.ServiceFiles(ctx)
 }

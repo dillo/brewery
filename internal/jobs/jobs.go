@@ -33,7 +33,8 @@ type Job struct {
 	Args     []string // brew's arguments
 	State    State
 	ExitCode int
-	Attempts int // starts so far, counting retries after a lock
+	Attempts int  // starts so far, counting retries after a lock
+	Takeover bool // ran full screen, so running it again does too
 	Started  time.Time
 	Ended    time.Time
 }

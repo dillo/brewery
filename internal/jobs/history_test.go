@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -266,5 +267,16 @@ func TestDefaultStateDirIgnoresARelativeXDG(t *testing.T) {
 	t.Setenv("XDG_STATE_HOME", "relative/state")
 	if got := DefaultStateDir(); !filepath.IsAbs(got) {
 		t.Errorf("a relative XDG_STATE_HOME is ignored, got %s", got)
+	}
+}
+
+func TestNewRecordKeepsTakeover(t *testing.T) {
+	j := &Job{Title: "info fd", Args: []string{"info", "fd"}, State: Done, Takeover: true}
+	if r := NewRecord(j, ""); !r.Takeover {
+		t.Error("a full-screen job's record says so")
+	}
+	b, err := json.Marshal(NewRecord(&Job{Args: []string{"update"}}, ""))
+	if err != nil || strings.Contains(string(b), "takeover") {
+		t.Errorf("a drawer job leaves the field out: %s %v", b, err)
 	}
 }

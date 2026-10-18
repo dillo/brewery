@@ -49,6 +49,10 @@ func fixtureSnapshot(t *testing.T) state.Snapshot {
 		All:      brew.ParseCleanup(string(readFixture(t, "cleanup.txt"))),
 	}
 	s.CleanupRan = true
+	s.Autoremove, s.AutoremoveRan = []string{"libyaml", "m4"}, true
+	agents := "/Users/locutus/Library/LaunchAgents/"
+	s.ServiceFiles = []string{agents + "homebrew.mxcl.mysql.plist", agents + "homebrew.mxcl.postgresql@16.plist", agents + "homebrew.mxcl.redis.plist"}
+	s.ServiceFilesRan = true
 	s.Sizes = map[string]int64{"formula/git": 52_480_000, "cask/docker-desktop": 2_362_232_012, "formula/fd": 3_100_000}
 	return s
 }

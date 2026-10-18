@@ -252,6 +252,27 @@ func ParseCleanup(out string) CleanupEstimate {
 	return e
 }
 
+// ParseAutoremove reads `brew autoremove --dry-run`: a "==> Would
+// autoremove N unneeded formulae:" heading, then one name a line. With
+// nothing to remove brew prints nothing.
+func ParseAutoremove(out string) []string {
+	var names []string
+	listing := false
+	for line := range strings.SplitSeq(out, "\n") {
+		line = strings.TrimSpace(line)
+		switch {
+		case strings.HasPrefix(line, "==> Would autoremove"):
+			listing = true
+		case !listing: // before the heading: not a name
+		case line == "" || strings.HasPrefix(line, "==>"):
+			return names
+		default:
+			names = append(names, line)
+		}
+	}
+	return names
+}
+
 // ParseDoctor splits `brew doctor` output into one warning per "Warning:"
 // line. Text before the first warning (the standard disclaimer) is dropped.
 func ParseDoctor(out string) []DoctorWarning {

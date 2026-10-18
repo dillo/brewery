@@ -3,6 +3,7 @@ package brew
 import (
 	"os"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 )
@@ -180,5 +181,32 @@ func TestParseDoctor(t *testing.T) {
 func TestParseDoctorClean(t *testing.T) {
 	if got := ParseDoctor("Your system is ready to brew.\n"); len(got) != 0 {
 		t.Errorf("want no warnings, got %+v", got)
+	}
+}
+
+func TestParseAutoremove(t *testing.T) {
+	for _, tt := range []struct {
+		name, out string
+		want      []string
+	}{
+		{"several", "==> Would autoremove 2 unneeded formulae:\nlibyaml\nm4\n", []string{"libyaml", "m4"}},
+		{"one", "==> Would autoremove 1 unneeded formula:\nm4\n", []string{"m4"}},
+		{"none", "", nil},
+		{"stops at the next heading", "==> Would autoremove 1 unneeded formula:\nm4\n==> Something else\nnot-a-formula\n", []string{"m4"}},
+		{"stops at a blank line", "==> Would autoremove 1 unneeded formula:\nm4\n\nWarning: hi\n", []string{"m4"}},
+	} {
+		if got := ParseAutoremove(tt.out); !slices.Equal(got, tt.want) {
+			t.Errorf("%s: got %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}
+
+func TestParseServicesLabelAndLoaded(t *testing.T) {
+	svcs, err := ParseServices(fixture(t, "services.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s := svcs[0]; s.Label != "homebrew.mxcl.postgresql@16" || !s.Loaded {
+		t.Errorf("got label %q, loaded %v", s.Label, s.Loaded)
 	}
 }

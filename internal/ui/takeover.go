@@ -45,7 +45,7 @@ func (a *App) takeover(args []string) tea.Cmd {
 	if cur := a.queue.Current(); cur != nil {
 		return a.note("wait for " + cur.Title + " to finish: full-screen commands take over the terminal")
 	}
-	j := &jobs.Job{Title: strings.Join(args, " "), Args: args, State: jobs.Running, Started: a.now()}
+	j := &jobs.Job{Title: strings.Join(args, " "), Args: args, State: jobs.Running, Started: a.now(), Takeover: true}
 	a.takingOver = j
 	return tea.ExecProcess(a.takeoverCmd(args), func(err error) tea.Msg { return takeoverDoneMsg{j, err} })
 }

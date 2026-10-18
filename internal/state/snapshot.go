@@ -12,22 +12,26 @@ import (
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache
 // files are ignored rather than half-loaded.
-const snapshotVersion = 3
+const snapshotVersion = 4
 
 // Snapshot is everything brewery knows about the installation at one time.
 type Snapshot struct {
-	Version    int                  `json:"version"`
-	Packages   []brew.Package       `json:"packages"`
-	Outdated   []brew.Outdated      `json:"outdated"`
-	Services   []brew.Service       `json:"services"`
-	Taps       []brew.Tap           `json:"taps"`
-	Doctor     []brew.DoctorWarning `json:"doctor"`
-	DoctorRan  bool                 `json:"doctor_ran"`
-	Cleanup    brew.Cleanup         `json:"cleanup"`
-	CleanupRan bool                 `json:"cleanup_ran"`
-	Sizes      map[string]int64     `json:"sizes"`   // bytes on disk, by Package.Key
-	DataAt     time.Time            `json:"data_at"` // when brew last fetched package data
-	FetchedAt  time.Time            `json:"fetched_at"`
+	Version         int                  `json:"version"`
+	Packages        []brew.Package       `json:"packages"`
+	Outdated        []brew.Outdated      `json:"outdated"`
+	Services        []brew.Service       `json:"services"`
+	Taps            []brew.Tap           `json:"taps"`
+	Doctor          []brew.DoctorWarning `json:"doctor"`
+	DoctorRan       bool                 `json:"doctor_ran"`
+	Cleanup         brew.Cleanup         `json:"cleanup"`
+	CleanupRan      bool                 `json:"cleanup_ran"`
+	Autoremove      []string             `json:"autoremove"` // formulae brew autoremove would uninstall
+	AutoremoveRan   bool                 `json:"autoremove_ran"`
+	ServiceFiles    []string             `json:"service_files"` // brew's launchd files, by full path
+	ServiceFilesRan bool                 `json:"service_files_ran"`
+	Sizes           map[string]int64     `json:"sizes"`   // bytes on disk, by Package.Key
+	DataAt          time.Time            `json:"data_at"` // when brew last fetched package data
+	FetchedAt       time.Time            `json:"fetched_at"`
 }
 
 // DefaultCachePath is $XDG_CACHE_HOME/brewery/snapshot.json, falling back
