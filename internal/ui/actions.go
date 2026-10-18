@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -291,7 +292,7 @@ func (a *App) askAutoremove() tea.Cmd {
 func (a *App) askServicesCleanup() tea.Cmd {
 	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
 	switch {
-	case a.errs[qServiceFiles] != nil:
+	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
 		return a.note("couldn't check · r retries")
 	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
 		return a.note("still checking")
@@ -325,9 +326,9 @@ func autoremoveLines(names []string) []string {
 func servicesCleanupLines(remove, stop []string) []string {
 	var lines []string
 	if len(remove) > 0 {
-		lines = append(lines, "Unused service files:")
+		lines = append(lines, "Unused service files in "+tilde(filepath.Dir(remove[0]))+":")
 		for _, f := range remove {
-			lines = append(lines, "  "+tilde(f))
+			lines = append(lines, "  "+filepath.Base(f))
 		}
 	}
 	if len(stop) > 0 {

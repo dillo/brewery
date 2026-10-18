@@ -96,10 +96,13 @@ func TestHelpOnMaintenance(t *testing.T) {
 	show(t, a, "Maintenance")
 	keys(t, a, "?")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Maintenance", "run doctor, clean up, autoremove", "top, bottom"} {
+	for _, want := range []string{"Maintenance", "run the selected task", "top, bottom"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("Maintenance help lacks %q:\n%s", want, out)
 		}
+	}
+	if strings.Contains(out, "run the selected task…") || strings.Contains(out, "run the selected tas…") {
+		t.Errorf("Maintenance's enter line is cut off:\n%s", out)
 	}
 	for _, not := range []string{"filter by name", "copy the name", "open the homepage"} {
 		if strings.Contains(out, not) {

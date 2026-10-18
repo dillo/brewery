@@ -201,6 +201,11 @@ func TestMaintenanceTidyRows(t *testing.T) {
 	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "…") {
 		t.Errorf("not loaded: %q", got)
 	}
+	a.errs[qServices] = errors.New("boom")
+	a.syncMaint()
+	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "✗ failed") {
+		t.Errorf("services list failed: %q", got)
+	}
 }
 
 func TestMaintenanceAutoremove(t *testing.T) {
@@ -230,7 +235,7 @@ func TestMaintenanceServicesCleanup(t *testing.T) {
 	show(t, a, "Maintenance")
 	keys(t, a, "j", "j", "j")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Unused service files", "homebrew.mxcl.mysql", "enter cleans up"} {
+	for _, want := range []string{"Unused service files", "Unused service files in", "LaunchAgents", "homebrew.mxcl.mysql.plist", "enter cleans up"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("details lack %q:\n%s", want, out)
 		}
@@ -258,6 +263,7 @@ func TestMaintenanceTidyNotes(t *testing.T) {
 		{"services: nothing", []string{"j", "j", "j"}, func(a *App) { a.snap.ServiceFiles = a.snap.ServiceFiles[1:] }, "nothing to clean"},
 		{"services: checking", []string{"j", "j", "j"}, func(a *App) { a.loaded[qServiceFiles] = false }, "still checking"},
 		{"services: failed", []string{"j", "j", "j"}, func(a *App) { a.errs[qServiceFiles] = errors.New("boom") }, "couldn't check · r retries"},
+		{"services: list failed", []string{"j", "j", "j"}, func(a *App) { a.errs[qServices] = errors.New("boom") }, "couldn't check · r retries"},
 	} {
 		a := newJobApp(t, &fakeStarter{})
 		show(t, a, "Maintenance")

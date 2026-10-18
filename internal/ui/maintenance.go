@@ -67,7 +67,7 @@ func (a *App) syncMaint() {
 	services := theme.Tint(st.P.Overlay0, "…")
 	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
 	switch {
-	case a.errs[qServiceFiles] != nil:
+	case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
 		services = theme.Tint(st.P.Red, "✗ failed")
 	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
 	case len(remove)+len(stop) == 0:
@@ -141,7 +141,7 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 	case maintServices:
 		remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
 		switch {
-		case a.errs[qServiceFiles] != nil:
+		case a.errs[qServiceFiles] != nil || a.errs[qServices] != nil:
 			body = st.Err.Render("couldn't check · r retries")
 		case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
 			body = st.Muted.Render("still checking")
