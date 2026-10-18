@@ -262,6 +262,94 @@ func cleanupLines(cl brew.Cleanup) []string {
 	return lines
 }
 
+// askAutoremove confirms uninstalling the formulae autoremove's dry run
+// found, after naming them.
+func (a *App) askAutoremove() tea.Cmd {
+	names := a.snap.Autoremove
+	switch {
+	case a.errs[qAutoremove] != nil:
+		return a.note("couldn't check · r retries")
+	case !a.loaded[qAutoremove]:
+		return a.note("still checking")
+	case len(names) == 0:
+		return a.note("nothing to remove")
+	}
+	act := action{title: "autoremove", args: []string{"autoremove"}, refresh: diskQueries}
+	a.confirm = &confirmBox{
+		title: "Remove unneeded formulae?",
+		body:  autoremoveLines(names),
+		choices: []choice{
+			{"y", "remove", func() tea.Cmd { return a.run(act) }},
+			{"n", "cancel", nil},
+		},
+	}
+	return nil
+}
+
+// askServicesCleanup confirms brew services cleanup, after naming the
+// files it would remove and the services it would stop.
+func (a *App) askServicesCleanup() tea.Cmd {
+	remove, stop := unusedServices(a.snap.ServiceFiles, a.snap.Services)
+	switch {
+	case a.errs[qServiceFiles] != nil:
+		return a.note("couldn't check · r retries")
+	case !a.loaded[qServiceFiles] || !a.loaded[qServices]:
+		return a.note("still checking")
+	case len(remove)+len(stop) == 0:
+		return a.note("nothing to clean")
+	}
+	act := action{title: "services cleanup", args: []string{"services", "cleanup"}, refresh: []query{qServices, qServiceFiles}}
+	a.confirm = &confirmBox{
+		title: "Clean up services?",
+		body:  servicesCleanupLines(remove, stop),
+		choices: []choice{
+			{"y", "clean up", func() tea.Cmd { return a.run(act) }},
+			{"n", "cancel", nil},
+		},
+	}
+	return nil
+}
+
+// autoremoveLines names what autoremove would uninstall, as its prompt
+// and Maintenance's details show it.
+func autoremoveLines(names []string) []string {
+	lines := []string{"Unneeded formulae, which only other formulae needed:"}
+	for _, n := range names {
+		lines = append(lines, "  "+n)
+	}
+	return lines
+}
+
+// servicesCleanupLines names the files services cleanup would remove and
+// the services it would stop.
+func servicesCleanupLines(remove, stop []string) []string {
+	var lines []string
+	if len(remove) > 0 {
+		lines = append(lines, "Unused service files:")
+		for _, f := range remove {
+			lines = append(lines, "  "+tilde(f))
+		}
+	}
+	if len(stop) > 0 {
+		if len(lines) > 0 {
+			lines = append(lines, "")
+		}
+		lines = append(lines, "Running services whose file is gone:")
+		for _, s := range stop {
+			lines = append(lines, "  "+s)
+		}
+	}
+	return lines
+}
+
+// formulae counts formulae: "1 formula", "2 formulae".
+func formulae(n int) string {
+	if n == 1 {
+		return "1 formula"
+	}
+	return fmt.Sprintf("%d formulae", n)
+}
+
 // brewUpdate runs brew update, then refreshes everything: what U and
 // Maintenance's Update Homebrew row do.
 func (a *App) brewUpdate() tea.Cmd {

@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -46,7 +47,7 @@ func TestMaintenanceDetails(t *testing.T) {
 	if out := stripANSI(a.render()); !strings.Contains(out, "The standard cleanup frees") {
 		t.Errorf("Cleanup's details word the estimates as the prompt does:\n%s", out)
 	}
-	keys(t, a, "j")
+	keys(t, a, "j", "j", "j")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "4.6.3") || !strings.Contains(out, "hasn't run brew update") {
 		t.Errorf("Update's details: the version, and no update yet:\n%s", out)
@@ -114,7 +115,7 @@ func TestMaintenanceRowsWhenClean(t *testing.T) {
 func TestMaintenanceUpdateDetails(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Maintenance")
-	keys(t, a, "j", "j")
+	keys(t, a, "j", "j", "j", "j")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "unknown") {
 		t.Errorf("with no version the details say unknown:\n%s", out)
@@ -144,7 +145,7 @@ func TestMaintenanceEnter(t *testing.T) {
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("enter on Cleanup asks to clean up: %+v", a.confirm)
 	}
-	keys(t, a, "n", "j", "enter") // Update Homebrew
+	keys(t, a, "n", "j", "j", "j", "enter") // Update Homebrew
 	if c := lastCall(fs); strings.Join(c, " ") != "update" {
 		t.Errorf("enter on Update Homebrew runs brew update: %v", c)
 	}
@@ -159,5 +160,116 @@ func TestHomeTilesSelectMaintenanceRows(t *testing.T) {
 	keys(t, a, "1", "l", "l", "l", "l", "l", "enter") // the Cleanup tile
 	if label(a) != "Maintenance" || a.maint.cursor() != maintCleanup || a.confirm != nil {
 		t.Errorf("Cleanup tile: %s, row %d, confirm %v", label(a), a.maint.cursor(), a.confirm)
+	}
+}
+
+func TestMaintenanceTidyRows(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	show(t, a, "Maintenance")
+	if got := rowLine(t, a, "Autoremove"); !strings.Contains(got, "removes 2 formulae") {
+		t.Errorf("autoremove row: %q", got)
+	}
+	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "1 unused file") {
+		t.Errorf("services row: %q", got)
+	}
+
+	a.snap.Autoremove = []string{"m4"}
+	a.snap.ServiceFiles = a.snap.ServiceFiles[1:] // mysql's file is gone: nothing unused
+	a.syncMaint()
+	if got := rowLine(t, a, "Autoremove"); !strings.Contains(got, "removes 1 formula") {
+		t.Errorf("one formula: %q", got)
+	}
+	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "nothing to clean") {
+		t.Errorf("nothing unused: %q", got)
+	}
+
+	a.snap.Autoremove = nil
+	a.snap.ServiceFiles = a.snap.ServiceFiles[1:] // redis is loaded, but its file is gone
+	a.syncMaint()
+	if got := rowLine(t, a, "Autoremove"); !strings.Contains(got, "nothing to remove") {
+		t.Errorf("nothing to remove: %q", got)
+	}
+	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "stops 1 service") {
+		t.Errorf("a service to stop: %q", got)
+	}
+
+	a.errs[qAutoremove], a.loaded[qServiceFiles] = errors.New("boom"), false
+	a.syncMaint()
+	if got := rowLine(t, a, "Autoremove"); !strings.Contains(got, "✗ failed") {
+		t.Errorf("failed: %q", got)
+	}
+	if got := rowLine(t, a, "Services cleanup"); !strings.Contains(got, "…") {
+		t.Errorf("not loaded: %q", got)
+	}
+}
+
+func TestMaintenanceAutoremove(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	show(t, a, "Maintenance")
+	keys(t, a, "j", "j") // Doctor, Cleanup, Autoremove
+	out := stripANSI(a.render())
+	for _, want := range []string{"Unneeded formulae", "libyaml", "m4", "enter removes them"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("details lack %q:\n%s", want, out)
+		}
+	}
+	keys(t, a, "enter")
+	if a.confirm == nil || a.confirm.title != "Remove unneeded formulae?" {
+		t.Fatalf("enter asks first: %+v", a.confirm)
+	}
+	keys(t, a, "y")
+	if want := []string{"autoremove"}; !reflect.DeepEqual(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+}
+
+func TestMaintenanceServicesCleanup(t *testing.T) {
+	fs := &fakeStarter{}
+	a := newJobApp(t, fs)
+	show(t, a, "Maintenance")
+	keys(t, a, "j", "j", "j")
+	out := stripANSI(a.render())
+	for _, want := range []string{"Unused service files", "homebrew.mxcl.mysql", "enter cleans up"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("details lack %q:\n%s", want, out)
+		}
+	}
+	keys(t, a, "enter")
+	if a.confirm == nil || a.confirm.title != "Clean up services?" {
+		t.Fatalf("enter asks first: %+v", a.confirm)
+	}
+	keys(t, a, "y")
+	if want := []string{"services", "cleanup"}; !reflect.DeepEqual(lastCall(fs), want) {
+		t.Errorf("ran %v, want %v", lastCall(fs), want)
+	}
+}
+
+func TestMaintenanceTidyNotes(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		down []string
+		set  func(a *App)
+		want string
+	}{
+		{"autoremove: nothing", []string{"j", "j"}, func(a *App) { a.snap.Autoremove = nil }, "nothing to remove"},
+		{"autoremove: checking", []string{"j", "j"}, func(a *App) { a.loaded[qAutoremove] = false }, "still checking"},
+		{"autoremove: failed", []string{"j", "j"}, func(a *App) { a.errs[qAutoremove] = errors.New("boom") }, "couldn't check · r retries"},
+		{"services: nothing", []string{"j", "j", "j"}, func(a *App) { a.snap.ServiceFiles = a.snap.ServiceFiles[1:] }, "nothing to clean"},
+		{"services: checking", []string{"j", "j", "j"}, func(a *App) { a.loaded[qServiceFiles] = false }, "still checking"},
+		{"services: failed", []string{"j", "j", "j"}, func(a *App) { a.errs[qServiceFiles] = errors.New("boom") }, "couldn't check · r retries"},
+	} {
+		a := newJobApp(t, &fakeStarter{})
+		show(t, a, "Maintenance")
+		keys(t, a, tt.down...)
+		tt.set(a)
+		a.syncMaint()
+		keys(t, a, "enter")
+		if a.confirm != nil || !strings.Contains(stripANSI(a.statusBar()), tt.want) {
+			t.Errorf("%s: confirm %+v, status %q", tt.name, a.confirm, stripANSI(a.statusBar()))
+		}
+		if !strings.Contains(stripANSI(a.render()), tt.want) {
+			t.Errorf("%s: the details say %q too:\n%s", tt.name, tt.want, stripANSI(a.render()))
+		}
 	}
 }

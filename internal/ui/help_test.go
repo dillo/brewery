@@ -96,7 +96,7 @@ func TestHelpOnMaintenance(t *testing.T) {
 	show(t, a, "Maintenance")
 	keys(t, a, "?")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Maintenance", "run doctor, clean up, or brew update", "top, bottom"} {
+	for _, want := range []string{"Maintenance", "run doctor, clean up, autoremove", "top, bottom"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("Maintenance help lacks %q:\n%s", want, out)
 		}
