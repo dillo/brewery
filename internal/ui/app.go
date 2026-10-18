@@ -28,6 +28,7 @@ const (
 	tabTaps
 	tabDiscover
 	tabHistory
+	tabMaintenance
 )
 
 // tabQueries is the query each tab's data comes from. Home shows doctor.
@@ -87,6 +88,9 @@ type App struct {
 	history []jobs.Record // finished jobs, newest first
 	histErr error         // the last save failed
 	jobs    listTab       // History's list
+
+	maint       listTab // Maintenance's rows: doctor, cleanup and brew update
+	brewVersion string  // Homebrew's version, for Maintenance; "" when unknown
 
 	detailsDelay time.Duration // how long the Discover cursor rests before brew is asked
 
@@ -155,6 +159,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		services:     newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
 		taps:         newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
 		jobs:         newListTab(st, "Jobs", jobCols, jobKey, "no jobs yet"),
+		maint:        newListTab(st, "Maintenance", maintCols, firstCell, ""),
 		discover:     newDiscoverTab(st),
 	}
 	// The history is read before the app starts, so History is never
@@ -163,6 +168,8 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.jobs.matchCol = 1 // jobs are found by their command
 	a.services.preview = a.servicePreview
 	a.jobs.preview = a.recordPreview
+	a.maint.loaded = true // its rows are always there, each saying how it stands
+	a.maint.preview = a.maintPreview
 	a.outdated.note = a.dataAge
 	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
@@ -197,7 +204,7 @@ func (a *App) UseIcons(on bool) {
 		ic = theme.Nerd
 	}
 	// Every part keeps its own copy of the styles.
-	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.home.st, &a.drawer.st, &a.discover.st} {
+	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.maint.st, &a.home.st, &a.drawer.st, &a.discover.st} {
 		st.Icons = ic
 	}
 	a.sync()
@@ -351,6 +358,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.typeIntoJob()
 		}
 	}
+	a.syncMaint()
 	a.layout()
 	return a, cmd
 }
@@ -428,6 +436,10 @@ func (a *App) selectedName() (string, bool) {
 		if i := a.jobs.cursor(); i >= 0 {
 			return a.history[i].Title, true
 		}
+	case tabMaintenance:
+		if r := a.maint.table.SelectedRow(); a.maint.n > 0 && r != nil {
+			return r[0], true
+		}
 	}
 	return "", false
 }
@@ -469,7 +481,7 @@ func (a *App) layout() {
 	for tab, resize := range map[int]func(listW, pvW, h int){
 		tabInstalled: a.installed.resize, tabOutdated: a.outdated.resize,
 		tabServices: a.services.resize, tabTaps: a.taps.resize, tabDiscover: a.discover.resize,
-		tabHistory: a.jobs.resize,
+		tabHistory: a.jobs.resize, tabMaintenance: a.maint.resize,
 	} {
 		c := a.columnsFor(tab)
 		resize(c.list, c.details, a.tabH)
@@ -687,9 +699,13 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	}
 	switch t := a.home.update(msg, a.snap); {
 	case t >= 0:
-		return a.selectEntry(entryIndex(tileEntries[t])), true
-	case t == openCleanup:
-		return a.askCleanup(), true
+		tile := a.home.tiles(a.snap)[t]
+		cmd := a.selectEntry(entryIndex(tile.entry))
+		a.focus = colList
+		if tile.row >= 0 {
+			a.maint.table.SetCursor(tile.row)
+		}
+		return cmd, true
 	case t == leaveHome:
 		a.focus = colSidebar
 	case t == showHistory:
@@ -700,10 +716,13 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 
 // tabKey gives the key to the current tab: the list's keys move its
 // selection, and once the details have the focus, keys scroll them. tab
-// and enter go from the list to the details; tab goes back.
+// and enter go from the list to the details; tab goes back. On
+// Maintenance, enter runs the selected row instead, from either column.
 func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
 	switch {
+	case a.tab == tabMaintenance && k == "enter":
+		return a.maintRun()
 	case a.focus == colList && (k == "tab" || k == "enter") && a.hasDetails():
 		a.focus = colDetails
 		return nil
@@ -720,6 +739,8 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 			a.services.scroll(k)
 		case tabHistory:
 			a.jobs.scroll(k)
+		case tabMaintenance:
+			a.maint.scroll(k)
 		}
 		return nil
 	}
@@ -736,6 +757,8 @@ func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 		return a.discover.update(msg)
 	case tabHistory:
 		return a.jobs.update(msg)
+	case tabMaintenance:
+		return a.maint.update(msg)
 	}
 	return nil
 }
@@ -779,6 +802,8 @@ func (a *App) render() string {
 		body = a.discover.view(a.focus)
 	case a.tab == tabHistory:
 		body = a.jobs.view(nil, a.focus)
+	case a.tab == tabMaintenance:
+		body = a.maint.view(nil, a.focus)
 	}
 	if bodyH > 0 && c.side > 0 {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)

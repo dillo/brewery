@@ -87,7 +87,7 @@ func TestVersionProblem(t *testing.T) {
 		{brew.Version{Major: 6, Minor: 9, Text: "6.9.1"}, nil, "brewery needs Homebrew 7.0 or newer (you have 6.9.1). Update it with `brew update`."},
 	} {
 		brewVersion = func(string) (brew.Version, error) { return tt.v, tt.err }
-		if got := versionProblem("/opt/homebrew/bin/brew"); got != tt.want {
+		if _, got := versionProblem("/opt/homebrew/bin/brew"); got != tt.want {
 			t.Errorf("%+v, %v: got %q, want %q", tt.v, tt.err, got, tt.want)
 		}
 	}

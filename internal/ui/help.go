@@ -45,6 +45,8 @@ func (a *App) helpGroups() []helpGroup {
 		}}
 	case a.tab == tabHistory:
 		here = helpGroup{"History", [][2]string{{"l tab enter", "details: the command and its output"}}}
+	case a.tab == tabMaintenance:
+		here = helpGroup{"Maintenance", [][2]string{{"enter", "run doctor, clean up, or brew update"}, {"l tab", "details"}}}
 	}
 	groups := []helpGroup{here}
 	switch {

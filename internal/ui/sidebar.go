@@ -50,6 +50,7 @@ var entries = []entry{
 	{"Fonts", secDiscover, tabDiscover, int(discFonts)},
 	{"Search all", secDiscover, tabDiscover, int(discAll)},
 	{"History", secTools, tabHistory, 0},
+	{"Maintenance", secTools, tabMaintenance, 0},
 }
 
 // entryIndex is the index of the entry labelled label. The labels are
@@ -230,6 +231,3 @@ func (a *App) focusDetails() {
 		a.focus = colDetails
 	}
 }
-
-// tileEntries are the entries Home's tiles open, by the tab they name.
-var tileEntries = map[int]string{tabInstalled: "All", tabOutdated: "Outdated", tabServices: "Services"}

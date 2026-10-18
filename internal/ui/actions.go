@@ -41,7 +41,7 @@ var (
 func (a *App) actionKey(k string) (cmd tea.Cmd, ok bool) {
 	switch {
 	case k == "U":
-		return a.run(action{title: "update", args: []string{"update"}, full: true}), true
+		return a.brewUpdate(), true
 	case k == "c":
 		return a.askCleanup(), true
 	case k == "space" && (a.tab == tabInstalled || a.tab == tabOutdated):
@@ -232,22 +232,39 @@ func (a *App) askCleanup() tea.Cmd {
 	case cl.Standard.Size == "" && cl.All.Size == "":
 		return a.note("nothing to clean up")
 	}
-	box := &confirmBox{title: "Clean up Homebrew?"}
+	box := &confirmBox{title: "Clean up Homebrew?", body: cleanupLines(cl)}
 	if cl.Standard.Size != "" {
 		std := action{title: "cleanup", args: []string{"cleanup"}, refresh: []query{qCleanup, qSizes}}
-		box.body = append(box.body, "The standard cleanup frees "+cl.Standard.Size+":", "  old versions, and downloads over 120 days old")
 		box.choices = append(box.choices, choice{"y", "standard", func() tea.Cmd { return a.run(std) }})
-	} else {
-		box.body = append(box.body, "The standard cleanup has nothing to remove.")
 	}
 	if cl.All.Items > cl.Standard.Items {
 		all := action{title: "cleanup --prune=all", args: []string{"cleanup", "--prune=all"}, refresh: []query{qCleanup, qSizes}}
-		box.body = append(box.body, "Clearing the download cache frees "+cl.All.Size+":", "  every download brew has kept")
 		box.choices = append(box.choices, choice{"a", "whole cache", func() tea.Cmd { return a.run(all) }})
 	}
 	box.choices = append(box.choices, choice{"n", "cancel", nil})
 	a.confirm = box
 	return nil
+}
+
+// cleanupLines words what each cleanup would free, as the cleanup prompt
+// and Maintenance's details show it.
+func cleanupLines(cl brew.Cleanup) []string {
+	var lines []string
+	if cl.Standard.Size != "" {
+		lines = append(lines, "The standard cleanup frees "+cl.Standard.Size+":", "  old versions, and downloads over 120 days old")
+	} else {
+		lines = append(lines, "The standard cleanup has nothing to remove.")
+	}
+	if cl.All.Items > cl.Standard.Items {
+		lines = append(lines, "Clearing the download cache frees "+cl.All.Size+":", "  every download brew has kept")
+	}
+	return lines
+}
+
+// brewUpdate runs brew update, then refreshes everything: what U and
+// Maintenance's Update Homebrew row do.
+func (a *App) brewUpdate() tea.Cmd {
+	return a.run(action{title: "update", args: []string{"update"}, full: true})
 }
 
 // selectedTap is the tap under the cursor, found by name.
@@ -369,6 +386,11 @@ func (a *App) actionHints() string {
 			return "j/k scroll · h back to the list"
 		}
 		return "l details · / filter by command · y copy the command"
+	case tabMaintenance:
+		if a.focus == colDetails {
+			return "enter run · h back to the list"
+		}
+		return "enter run · l details · c clean up · U update"
 	}
 	return "h/l move · j/k down, up · enter open · r refresh · U update · c clean up"
 }

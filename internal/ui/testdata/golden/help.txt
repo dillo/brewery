@@ -25,7 +25,7 @@
 │                    ││                    │ :          run any brew command                    │                                          │
 │ TOOLS              ││                    │ r          refresh                                 │                                          │
 │  History        0  ││                    │ U          brew update                             │                                          │
-│                    ││                    │ c          clean up                                │                                          │
+│  Maintenance       ││                    │ c          clean up                                │                                          │
 │                    ││                    │ o          show or hide output                     │                                          │
 │                    ││                    │ i          type into the running job               │                                          │
 │                    ││                    │ ctrl+c     stop the running job                    │                                          │
