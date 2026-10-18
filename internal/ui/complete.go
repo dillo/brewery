@@ -60,45 +60,26 @@ func (a *App) loadCompletions() tea.Cmd {
 // command's subcommands, its flags (once the word starts with "-"), or
 // the installed packages, taps or services it takes.
 func (a *App) candidates(line string) (word string, cs []candidate) {
-	line = strings.TrimPrefix(line, "!") // a "!" line completes like the command after it
-	words := strings.Fields(line)
-	if !strings.HasSuffix(line, " ") && len(words) > 0 {
-		word, words = words[len(words)-1], words[:len(words)-1]
-	}
-	if len(words) > 0 && words[0] == "brew" {
-		words = words[1:]
-	}
+	word, words := splitLine(line)
 	if len(words) == 0 {
-		cs = append(cs, builtins...)
-		for _, c := range a.comp.Commands {
-			cs = append(cs, candidate{c.Name, c.Desc})
-		}
-		slices.SortStableFunc(cs, func(x, y candidate) int {
-			if everyday[x.text] != everyday[y.text] {
-				if everyday[x.text] {
-					return -1
-				}
-				return 1
-			}
-			return strings.Compare(x.text, y.text)
-		})
-		return word, matching(cs, word)
+		return word, matching(a.commandCandidates(), word)
 	}
 	cmd, ok := a.comp.Command(words[0])
 	if !ok {
 		return word, nil
 	}
+	flag := strings.HasPrefix(word, "-")
 	if len(words) > 1 {
 		if sub, ok := cmd.Sub(words[1]); ok {
 			cmd = sub
 		}
-	} else if len(cmd.Subs) > 0 && !strings.HasPrefix(word, "-") {
+	} else if len(cmd.Subs) > 0 && !flag {
 		for _, s := range cmd.Subs {
 			cs = append(cs, candidate{s.Name, s.Desc})
 		}
 		return word, matching(cs, word)
 	}
-	if strings.HasPrefix(word, "-") {
+	if flag {
 		for _, f := range cmd.Flags {
 			cs = append(cs, candidate{f.Name, f.Desc})
 		}
@@ -111,6 +92,40 @@ func (a *App) candidates(line string) (word string, cs []candidate) {
 	return word, matching(cs, word)
 }
 
+// splitLine splits line into the word being typed and the finished words
+// before it. A leading "!" and "brew" are dropped: they complete like the
+// command after them.
+func splitLine(line string) (word string, words []string) {
+	line = strings.TrimPrefix(line, "!")
+	words = strings.Fields(line)
+	if !strings.HasSuffix(line, " ") && len(words) > 0 {
+		word, words = words[len(words)-1], words[:len(words)-1]
+	}
+	if len(words) > 0 && words[0] == "brew" {
+		words = words[1:]
+	}
+	return word, words
+}
+
+// commandCandidates lists brewery's and brew's commands, the everyday ones
+// first.
+func (a *App) commandCandidates() []candidate {
+	cs := slices.Clone(builtins)
+	for _, c := range a.comp.Commands {
+		cs = append(cs, candidate{c.Name, c.Desc})
+	}
+	slices.SortStableFunc(cs, func(x, y candidate) int {
+		if everyday[x.text] != everyday[y.text] {
+			if everyday[x.text] {
+				return -1
+			}
+			return 1
+		}
+		return strings.Compare(x.text, y.text)
+	})
+	return cs
+}
+
 // argValues lists the values brewery knows for an argument kind from
 // brew's completions. Any formula or cask comes from Discover's catalogue,
 // once it has been read.
@@ -118,35 +133,11 @@ func (a *App) argValues(kind string) []candidate {
 	var cs []candidate
 	switch kind {
 	case "formulae_all", "casks_all":
-		want := brew.KindFormula
-		if kind == "casks_all" {
-			want = brew.KindCask
-		}
-		for _, e := range a.discover.cat {
-			if e.Kind == want {
-				cs = append(cs, candidate{e.Name, e.Desc})
-			}
-		}
+		cs = a.catalogValues(argKind(kind))
 	case "formulae_installed", "casks_installed":
-		want := brew.KindFormula
-		if kind == "casks_installed" {
-			want = brew.KindCask
-		}
-		for _, p := range a.snap.Packages {
-			if p.Kind == want {
-				cs = append(cs, candidate{p.Name, p.Desc})
-			}
-		}
+		cs = a.installedValues(argKind(kind))
 	case "formulae_outdated", "casks_outdated":
-		want := brew.KindFormula
-		if kind == "casks_outdated" {
-			want = brew.KindCask
-		}
-		for _, o := range a.snap.Outdated {
-			if o.Kind == want {
-				cs = append(cs, candidate{o.Name, o.Installed + " → " + o.Current})
-			}
-		}
+		cs = a.outdatedValues(argKind(kind))
 	case "taps_installed":
 		for _, t := range a.snap.Taps {
 			cs = append(cs, candidate{t.Name, t.Remote})
@@ -161,6 +152,49 @@ func (a *App) argValues(kind string) []candidate {
 		}
 	}
 	slices.SortStableFunc(cs, func(x, y candidate) int { return strings.Compare(x.text, y.text) })
+	return cs
+}
+
+// argKind is the package kind an argument kind such as "casks_all" asks
+// for: casks, or else formulae.
+func argKind(kind string) brew.Kind {
+	if strings.HasPrefix(kind, "casks_") {
+		return brew.KindCask
+	}
+	return brew.KindFormula
+}
+
+// catalogValues lists the catalogue's entries of one kind.
+func (a *App) catalogValues(want brew.Kind) []candidate {
+	var cs []candidate
+	for _, e := range a.discover.cat {
+		if e.Kind == want {
+			cs = append(cs, candidate{e.Name, e.Desc})
+		}
+	}
+	return cs
+}
+
+// installedValues lists the installed packages of one kind.
+func (a *App) installedValues(want brew.Kind) []candidate {
+	var cs []candidate
+	for _, p := range a.snap.Packages {
+		if p.Kind == want {
+			cs = append(cs, candidate{p.Name, p.Desc})
+		}
+	}
+	return cs
+}
+
+// outdatedValues lists the outdated packages of one kind, with the move
+// from the installed version to the current one.
+func (a *App) outdatedValues(want brew.Kind) []candidate {
+	var cs []candidate
+	for _, o := range a.snap.Outdated {
+		if o.Kind == want {
+			cs = append(cs, candidate{o.Name, o.Installed + " → " + o.Current})
+		}
+	}
 	return cs
 }
 
