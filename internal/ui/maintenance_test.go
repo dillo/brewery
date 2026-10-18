@@ -230,12 +230,13 @@ func TestMaintenanceAutoremove(t *testing.T) {
 }
 
 func TestMaintenanceServicesCleanup(t *testing.T) {
+	t.Setenv("HOME", "/Users/locutus") // the fixtures' home, so their paths shorten to ~
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)
 	show(t, a, "Maintenance")
 	keys(t, a, "j", "j", "j")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Unused service files", "Unused service files in", "LaunchAgents", "homebrew.mxcl.mysql.plist", "enter cleans up"} {
+	for _, want := range []string{"Unused service files in ~/Library/LaunchAgents:", "homebrew.mxcl.mysql.plist", "enter cleans up"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("details lack %q:\n%s", want, out)
 		}
