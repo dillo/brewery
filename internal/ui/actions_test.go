@@ -261,10 +261,10 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	a.Update(tea.WindowSizeMsg{Width: 160, Height: 40})
 	for _, tt := range []struct{ entry, want string }{
-		{"Top-level", "u upgrade · x uninstall · p pin · l details"},
-		{"Outdated", "u upgrade · A upgrade all"},
-		{"Services", "s start · S stop · R restart · L log"},
-		{"Taps", "x untap"},
+		{"Top-level", "enter actions · space mark · l details"},
+		{"Outdated", "enter actions · space mark · A upgrade all"},
+		{"Services", "enter actions · l details"},
+		{"Taps", "enter actions"},
 		{"Home", "U update · c clean up"},
 	} {
 		show(t, a, tt.entry)

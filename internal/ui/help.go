@@ -29,25 +29,25 @@ func (a *App) helpGroups() []helpGroup {
 		}}
 	case a.tab == tabInstalled:
 		here = helpGroup{"Installed", [][2]string{
-			{"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"},
+			{"enter", "actions"}, {"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"},
 			{"R", "reinstall"}, {"L", "link or unlink"}, {"f", "fetch the newer version"},
-			{"space", "mark for several"}, {"l tab enter", "details, then j/k scroll"},
+			{"space", "mark for several"}, {"l tab", "details, then j/k scroll"},
 		}}
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{
-			{"u", "upgrade"}, {"f", "fetch the newer version"}, {"A", "upgrade all"}, {"space", "mark for several"},
+			{"enter", "actions"}, {"u", "upgrade"}, {"f", "fetch the newer version"}, {"A", "upgrade all"}, {"space", "mark for several"},
 		}}
 	case a.tab == tabServices:
-		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab enter", "details"}, {"j k", "in the details, scroll the log"}, {"L", "follow the log full screen"}}}
+		here = helpGroup{"Services", [][2]string{{"enter", "actions"}, {"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab", "details"}, {"j k", "in the details, scroll the log"}, {"L", "follow the log full screen"}}}
 	case a.tab == tabTaps:
-		here = helpGroup{"Taps", [][2]string{{"x", "untap"}}}
+		here = helpGroup{"Taps", [][2]string{{"enter", "actions"}, {"x", "untap"}}}
 	case a.tab == tabDiscover:
 		here = helpGroup{"Discover", [][2]string{
-			{"a", "install"}, {"/", "search names and descriptions"},
-			{"l tab enter", "details, then j/k scroll"}, {"r", "fetch the analytics again"},
+			{"enter", "actions"}, {"a", "install"}, {"/", "search names and descriptions"},
+			{"l tab", "details, then j/k scroll"}, {"r", "fetch the analytics again"},
 		}}
 	case a.tab == tabHistory:
-		here = helpGroup{"History", [][2]string{{"l tab enter", "details, then j/k scroll"}, {"R", "run the job again"}}}
+		here = helpGroup{"History", [][2]string{{"enter", "actions"}, {"l tab", "details, then j/k scroll"}, {"R", "run the job again"}}}
 	case a.tab == tabMaintenance:
 		here = helpGroup{"Maintenance", [][2]string{{"enter", "run the selected task"}, {"l tab", "details"}}}
 	}

@@ -37,4 +37,4 @@
 │                        ││                                                                                                                │
 │                        ││                                                                                                                │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
- NORMAL  Outdated                                                                   u upgrade · A upgrade all · : command · ? help · q quit 
+ NORMAL  Outdated                                                  enter actions · space mark · A upgrade all · : command · ? help · q quit 

@@ -23,8 +23,8 @@ func TestUntapAsksFirst(t *testing.T) {
 	if want := []string{"untap", "anomalyco/tap"}; !reflect.DeepEqual(lastCall(fs), want) {
 		t.Errorf("ran %v, want %v", lastCall(fs), want)
 	}
-	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "x untap") {
-		t.Errorf("the hint should name x: %q", bar)
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "enter actions") {
+		t.Errorf("the hint should name enter: %q", bar)
 	}
 }
 

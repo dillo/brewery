@@ -24,7 +24,7 @@ func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 	}
 	show(t, a, "Services")
 	keys(t, a, "?")
-	if out := stripANSI(a.render()); !strings.Contains(out, "follow the log full screen") || !strings.Contains(out, "l tab enter") || !strings.Contains(out, "scroll the log") || strings.Contains(out, "uninstall") {
+	if out := stripANSI(a.render()); !strings.Contains(out, "follow the log full screen") || !strings.Contains(out, "l tab") || !strings.Contains(out, "scroll the log") || strings.Contains(out, "uninstall") {
 		t.Errorf("Services help:\n%s", out)
 	}
 }
@@ -34,7 +34,7 @@ func TestServicesDetailsHints(t *testing.T) {
 	a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
 	show(t, a, "Services")
 	keys(t, a, "l")
-	if h := a.actionHints(); !strings.HasPrefix(h, "j/k scroll the log · h back to the list") {
+	if h := a.actionHints(); !strings.HasPrefix(h, "j/k scroll the log · enter actions · h back to the list") {
 		t.Errorf("a long log scrolls, and the hint says so: %q", h)
 	}
 }
@@ -45,7 +45,7 @@ func TestServicesDetailsHintsForAShortLog(t *testing.T) {
 	show(t, a, "Services")
 	keys(t, a, "l")
 	h := a.actionHints()
-	if a.focus != colDetails || strings.Contains(h, "scroll") || !strings.HasPrefix(h, "h back to the list") {
+	if a.focus != colDetails || strings.Contains(h, "scroll") || !strings.HasPrefix(h, "enter actions · h back to the list") {
 		t.Errorf("a log that fits has nothing to scroll: focus %d, hint %q", a.focus, h)
 	}
 }

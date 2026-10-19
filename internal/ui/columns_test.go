@@ -172,7 +172,7 @@ func TestRefreshEmptyingAListLeavesTheDetails(t *testing.T) {
 			t.Fatalf("l: focus %d", a.focus)
 		}
 		a.Update(resultMsg{q: qServices, services: []brew.Service{}})
-		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "s start") {
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "enter actions") {
 			t.Errorf("focus %d, hints %q", a.focus, h)
 		}
 	})
@@ -189,7 +189,7 @@ func TestRefreshEmptyingAListLeavesTheDetails(t *testing.T) {
 			unpinned[i].Pinned = false
 		}
 		a.Update(resultMsg{q: qInstalled, packages: unpinned})
-		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "u upgrade") || !strings.Contains(h, "l details") {
+		if h := a.actionHints(); a.focus != colList || !strings.HasPrefix(h, "enter actions") || !strings.Contains(h, "l details") {
 			t.Errorf("focus %d, hints %q", a.focus, h)
 		}
 	})

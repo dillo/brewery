@@ -83,9 +83,9 @@ func TestHistoryListsThePastJobs(t *testing.T) {
 func TestHistoryDetails(t *testing.T) {
 	a := historyApp(t)
 	show(t, a, "History")
-	keys(t, a, "enter")
+	keys(t, a, "l")
 	if a.focus != colDetails {
-		t.Fatalf("enter on History's list focuses the details: %d", a.focus)
+		t.Fatalf("l on History's list focuses the details: %d", a.focus)
 	}
 	out := a.render()
 	plain := stripANSI(out)

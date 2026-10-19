@@ -37,4 +37,4 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  Top-level › git                                          u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 
+ NORMAL  Top-level › git                                               enter actions · space mark · l details · : command · ? help · q quit 

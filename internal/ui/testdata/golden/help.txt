@@ -1,7 +1,7 @@
 ╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
-│ brewery                ││ Top-level                                                  ││ git                                              │
-│  Home                  ││ Things you inst╭────────────────────────────────────────────────────╮1.0                                       │
-│                        ││  NAME          │ Installed                                          │uted revision control system              │
+│ brewery                ││ Top-level      ╭────────────────────────────────────────────────────╮                                          │
+│  Home                  ││ Things you inst│ Installed                                          │1.0                                       │
+│                        ││  NAME          │ enter      actions                                 │uted revision control system              │
 │ PACKAGES               ││ ───────────────│ u          upgrade                                 │                                          │
 │  All                7  ││  docker-desktop│ x          uninstall                               │    formula                               │
 │  Top-level          5  ││  fd            │ p          pin or unpin                            │    homebrew/core                         │
@@ -9,7 +9,7 @@
 │  Casks              2  ││  git           │ L          link or unlink                          │ed  on request · 2026-08-29               │
 │  Dependencies       2  ││  lua-language-s│ f          fetch the newer version                 │    2.51.0                                │
 │  Outdated          ↑2  ││                │ space      mark for several                        │    yes                                   │
-│  Pinned             1  ││                │ l tab enter details, then j/k scroll               │    yes                                   │
+│  Pinned             1  ││                │ l tab      details, then j/k scroll                │    yes                                   │
 │                        ││                │                                                    │e   https://git-scm.com                   │
 │ MANAGE                 ││                │ Lists                                              │                                          │
 │  Services          ✗1  ││                │ j k        move                                    │ncies                                     │
@@ -37,4 +37,4 @@
 │                        ││                ╰────────────────────────────────────────────────────╯                                          │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  Top-level › git                                          u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 
+ NORMAL  Top-level › git                                               enter actions · space mark · l details · : command · ? help · q quit 
