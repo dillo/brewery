@@ -77,12 +77,16 @@ func (a *App) checkTaps() tea.Cmd {
 }
 
 // runTapChecks checks each tap in turn. Once GitHub's rate limit is
-// reached, the rest aren't asked about and say so.
+// reached or ctx is done, the rest aren't asked about and say why.
 func runTapChecks(ctx context.Context, c TapChecker, taps []brew.Tap) []github.TapCheck {
 	checks := make([]github.TapCheck, len(taps))
 	limited := false
 	for i, t := range taps {
 		checks[i] = github.TapCheck{Tap: t.Name, State: github.Unknown, Reason: github.ErrRateLimited.Error()}
+		if err := ctx.Err(); err != nil {
+			checks[i].Reason = err.Error()
+			continue
+		}
 		if limited {
 			continue
 		}
@@ -145,10 +149,16 @@ func (a *App) tapsStatus() string {
 		return theme.Tint(st.P.Overlay0, "not checked yet")
 	}
 	n := map[github.State]int{}
+	unchecked := 0
 	for _, t := range taps {
 		if c, ok := a.tapCheck(t.Name); ok {
 			n[c.State]++
+		} else {
+			unchecked++
 		}
+	}
+	if unchecked == len(taps) {
+		return theme.Tint(st.P.Overlay0, "not checked yet")
 	}
 	var parts []string
 	for _, s := range []github.State{github.Archived, github.Moved, github.Gone} {
@@ -162,6 +172,9 @@ func (a *App) tapsStatus() string {
 	}
 	if n[github.Unknown] > 0 {
 		parts = append(parts, fmt.Sprintf("%d couldn't check", n[github.Unknown]))
+	}
+	if unchecked > 0 {
+		parts = append(parts, fmt.Sprintf("%d not checked yet", unchecked))
 	}
 	return theme.Tint(color, strings.Join(parts, " · "))
 }
@@ -206,10 +219,11 @@ func (a *App) tapLine(t brew.Tap) string {
 	return st.OK.Render(text)
 }
 
-// tapColumn is a tap's GITHUB cell: empty unless it has been checked.
+// tapColumn is a tap's GITHUB cell: empty unless it's on GitHub and has
+// been checked.
 func (a *App) tapColumn(t brew.Tap) string {
 	c, ok := a.tapCheck(t.Name)
-	if t.Official || !ok {
+	if _, _, onGitHub := github.RepoOf(t.Remote); t.Official || !onGitHub || !ok {
 		return ""
 	}
 	text, problem := checkText(c)

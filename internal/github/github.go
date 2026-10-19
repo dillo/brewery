@@ -62,7 +62,14 @@ func (c *Client) Repo(ctx context.Context, owner, repo string) (TapCheck, error)
 	req.Header.Set("User-Agent", "brewery")
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return TapCheck{}, err
+		var ue *url.Error
+		switch {
+		case !errors.As(err, &ue):
+			return TapCheck{}, err
+		case ue.Timeout():
+			return TapCheck{}, errors.New("timed out")
+		}
+		return TapCheck{}, ue.Err // the cause, without the request it wraps
 	}
 	defer resp.Body.Close()
 	switch {
@@ -83,6 +90,8 @@ func (c *Client) Repo(ctx context.Context, owner, repo string) (TapCheck, error)
 	switch {
 	case body.Archived:
 		return TapCheck{State: Archived}, nil
+	case body.FullName == "":
+		return TapCheck{State: Fine}, nil // no name to compare
 	case !strings.EqualFold(body.FullName, owner+"/"+repo):
 		return TapCheck{State: Moved, MovedTo: body.FullName}, nil
 	}

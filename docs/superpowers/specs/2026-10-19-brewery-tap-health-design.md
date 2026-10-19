@@ -65,6 +65,11 @@ It sits between Services cleanup and Update Homebrew.
 | problems found | the counts of archived, moved and gone that aren't zero, in that order, joined with ` · `, e.g. `1 archived · 1 gone` (warning colour) |
 | no problems | `N fine` (OK colour) |
 
+Third-party GitHub taps with no result, such as one added after the
+check, count as not checked: when none has a result the status is `not
+checked yet` (muted), otherwise ` · K not checked yet` closes it, e.g.
+`2 fine · 1 not checked yet`.
+
 When some taps couldn't be checked, ` · M couldn't check` is added to
 either of the last two, e.g. `3 fine · 1 couldn't check`. When none was
 fine and none had a problem, the status is just `M couldn't check`, in

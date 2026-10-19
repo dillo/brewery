@@ -173,9 +173,9 @@ func (a *App) lastUpdate() (jobs.Record, bool) {
 func (a *App) UseBrewVersion(v string) { a.brewVersion = v }
 
 // maintPreview is Maintenance's details for the selected row: what doctor
-// found, what each cleanup would free, what autoremove and services cleanup
-// would do, what the tap check found, or Homebrew's version and its last update, each above what enter
-// does.
+// found, what each cleanup would free, what autoremove and services
+// cleanup would do, what the tap check found, or Homebrew's version and its
+// last update, each above what enter does.
 func (a *App) maintPreview(w, h int) (title, body string) {
 	st := a.st
 	switch a.maint.cursor() {

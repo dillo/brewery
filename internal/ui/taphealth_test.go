@@ -199,3 +199,102 @@ func TestTapsColumnShowsTheCheck(t *testing.T) {
 		t.Errorf("old/tap's row should say gone:\n%s", out)
 	}
 }
+
+func TestTapsKeepNamesBeforeTheGitHubColumn(t *testing.T) {
+	fc := &fakeChecker{answers: map[string]github.TapCheck{
+		"anomalyco/homebrew-tap": {State: github.Fine},
+		"old/homebrew-tap":       {State: github.Gone},
+	}}
+	a := tapsApp(t, fc, extraTaps...)
+	keys(t, a, "enter")
+	show(t, a, "Taps")
+	hidden := false
+	for w := 100; w >= 60; w-- {
+		a.Update(tea.WindowSizeMsg{Width: w, Height: 40})
+		out := stripANSI(a.render())
+		shown := strings.Contains(out, "GITHUB")
+		if !shown {
+			hidden = true
+		}
+		if !shown && (!strings.Contains(out, "anomalyco/tap") || !strings.Contains(out, "homebrew/core")) {
+			t.Fatalf("width %d: GITHUB is hidden but names are cut:\n%s", w, out)
+		}
+		if shown && !strings.Contains(out, "anomalyco/tap") {
+			t.Fatalf("width %d: GITHUB shows but names are cut:\n%s", w, out)
+		}
+		if w == 100 && !strings.Contains(out, "homebrew/core") {
+			t.Fatalf("width 100 cuts names:\n%s", out)
+		}
+	}
+	if !hidden {
+		t.Error("GITHUB should be hidden somewhere between 100 and 60 columns")
+	}
+}
+
+func TestTapsStatusCountsTapsNotChecked(t *testing.T) {
+	fc := &fakeChecker{answers: map[string]github.TapCheck{
+		"anomalyco/homebrew-tap": {State: github.Fine},
+	}}
+	a := tapsApp(t, fc)
+	keys(t, a, "enter")
+
+	// The only checked tap is replaced by one never checked.
+	a.snap.Taps = append(slices.DeleteFunc(a.snap.Taps, func(t brew.Tap) bool { return t.Name == "anomalyco/tap" }), extraTaps[0])
+	a.sync()
+	a.syncMaint()
+	if row := tapsRow(t, a); !regexp.MustCompile(`Check taps\s+not checked yet`).MatchString(row) {
+		t.Errorf("no current tap has a result: %q", row)
+	}
+
+	// A tap is added after a check.
+	a = tapsApp(t, &fakeChecker{answers: map[string]github.TapCheck{
+		"anomalyco/homebrew-tap": {State: github.Fine},
+		"old/homebrew-tap":       {State: github.Fine},
+	}}, extraTaps[0])
+	keys(t, a, "enter")
+	a.snap.Taps = append(a.snap.Taps, brew.Tap{Name: "new/tap", Remote: "https://github.com/new/homebrew-tap"})
+	a.sync()
+	a.syncMaint()
+	if row := tapsRow(t, a); !strings.Contains(row, "2 fine · 1 not checked yet") {
+		t.Errorf("a tap added after the check: %q", row)
+	}
+}
+
+func TestTapsColumnOnlyForCheckedGitHubTaps(t *testing.T) {
+	a := tapsApp(t, &fakeChecker{}, extraTaps...)
+	a.snap.TapChecks = []github.TapCheck{
+		{Tap: "homebrew/core", State: github.Gone},
+		{Tap: "self/hosted", State: github.Gone},
+		{Tap: "anomalyco/tap", State: github.Fine},
+	}
+	for _, tt := range []struct{ name, want string }{
+		{"homebrew/core", ""}, // official
+		{"old/tap", ""},       // never checked
+		{"self/hosted", ""},   // not on GitHub any more
+		{"anomalyco/tap", "fine"},
+	} {
+		for _, tap := range a.snap.Taps {
+			if tap.Name == tt.name {
+				if got := a.tapColumn(tap); got != tt.want {
+					t.Errorf("%s: %q, want %q", tt.name, got, tt.want)
+				}
+			}
+		}
+	}
+}
+
+func TestRunTapChecksStopsWhenCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	fc := &fakeChecker{}
+	cancel()
+	taps := []brew.Tap{extraTaps[0], {Name: "new/tap", Remote: "https://github.com/new/homebrew-tap"}}
+	checks := runTapChecks(ctx, fc, taps)
+	if len(fc.asked) != 0 {
+		t.Errorf("nothing should be asked: %v", fc.asked)
+	}
+	for _, c := range checks {
+		if c.State != github.Unknown || c.Reason != context.Canceled.Error() {
+			t.Errorf("%+v", c)
+		}
+	}
+}
