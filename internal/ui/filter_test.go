@@ -108,7 +108,7 @@ func TestFilterJobs(t *testing.T) {
 
 func TestFilterOnHome(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "/")
+	keys(t, a, "l", "/") // from the sidebar, / jumps: go to Home's tiles first
 	if a.mode != modeNormal || !strings.Contains(stripANSI(a.statusBar()), "Home has none") {
 		t.Errorf("Home has no list: mode %d, bar %q", a.mode, stripANSI(a.statusBar()))
 	}

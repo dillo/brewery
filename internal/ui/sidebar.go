@@ -225,16 +225,11 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 	case "home":
 		return a.selectEntry(0), true
 	case "l", "right", "enter", "tab":
-		a.focus = colList
-		if a.tab == tabHome {
-			a.home.enter() // Home starts on its first tile, whichever had the focus before
-		}
+		a.openEntry()
 		return nil, true
 	case "/":
-		if a.filterTarget() != nil {
-			a.focus = colList // the filter is the list's: go there to type it
-		}
-		return nil, false // Home has none: the note says so, and the focus stays
+		a.openJump()
+		return nil, true
 	case "A":
 		// Upgrade all needs no row, so on Outdated it works from the
 		// sidebar; anywhere else A does nothing, and the sidebar eats it.
@@ -246,6 +241,15 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 		return nil, false
 	}
 	return nil, true // the rest act on a row, and the sidebar has none
+}
+
+// openEntry moves the focus from the sidebar into the selected entry's
+// list. Home starts on its first tile, whichever had the focus before.
+func (a *App) openEntry() {
+	a.focus = colList
+	if a.tab == tabHome {
+		a.home.enter()
+	}
 }
 
 // focusDetails moves the focus from the list to the details, on tabs

@@ -70,8 +70,12 @@ func (a *App) openFilter() tea.Cmd {
 }
 
 // filterKey handles a key in filter mode: the list follows as you type,
-// enter keeps the filter, and esc clears it.
+// enter keeps the filter, and esc clears it. While jumping, the keys are
+// the sidebar's jump's.
 func (a *App) filterKey(msg tea.Msg) tea.Cmd {
+	if a.jumping {
+		return a.jumpKey(msg)
+	}
 	t := a.filterTarget()
 	if k, ok := msg.(tea.KeyPressMsg); ok {
 		switch k.String() {

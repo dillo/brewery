@@ -539,7 +539,7 @@ func (a *App) actionHints() string {
 		return menuFooter
 	}
 	if a.focus == colSidebar {
-		return "j/k choose · l open · 1-5 sections"
+		return "j/k choose · / jump · l open · 1-5 sections"
 	}
 	switch a.tab {
 	case tabInstalled:

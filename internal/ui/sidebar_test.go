@@ -232,11 +232,78 @@ func TestRowKeysDoNothingInTheSidebar(t *testing.T) {
 	}
 }
 
-func TestSlashFromTheSidebarOnHomeKeepsTheFocus(t *testing.T) {
+func TestSlashInTheSidebarJumps(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{}) // the focus starts on the sidebar, on Home
+	keys(t, a, "/")
+	if a.mode != modeFilter || !a.jumping || a.focus != colSidebar {
+		t.Fatalf("/ in the sidebar should open the jump: mode %d, jumping %v, focus %v", a.mode, a.jumping, a.focus)
+	}
+	typeText(t, a, "maint")
+	if label(a) != "Maintenance" {
+		t.Errorf("/maint selects %q, want Maintenance", label(a))
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "JUMP") || !strings.Contains(bar, "enter open · esc back") {
+		t.Errorf("status bar while jumping: %q", bar)
+	}
+	keys(t, a, "enter")
+	if a.mode != modeNormal || a.jumping || a.focus != colList || label(a) != "Maintenance" {
+		t.Errorf("enter opens the entry: mode %d, jumping %v, focus %v, entry %q", a.mode, a.jumping, a.focus, label(a))
+	}
+}
+
+func TestJumpMatchesTheFirstEntryIgnoringCase(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	keys(t, a, "/")
-	if a.mode == modeFilter || a.focus != colSidebar {
-		t.Errorf("Home has no filter: mode %d, focus %v", a.mode, a.focus == colSidebar)
+	typeText(t, a, "S")
+	if label(a) != "Casks" {
+		t.Errorf("/S selects %q, want Casks, the first label with an s", label(a))
+	}
+	typeText(t, a, "zz")
+	if label(a) != "Casks" || !strings.Contains(stripANSI(a.statusBar()), "no match · esc back") {
+		t.Errorf("no match keeps the last match and says so: %q, %q", label(a), stripANSI(a.statusBar()))
+	}
+	keys(t, a, "enter")
+	if a.mode != modeNormal || a.focus != colSidebar {
+		t.Errorf("enter with no match only closes the prompt: mode %d, focus %v", a.mode, a.focus)
+	}
+}
+
+func TestJumpGoesBack(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "j", "j") // Top-level
+	keys(t, a, "/")
+	typeText(t, a, "hist")
+	keys(t, a, "esc")
+	if label(a) != "Top-level" || a.mode != modeNormal || a.jumping || a.focus != colSidebar {
+		t.Errorf("esc goes back to where the jump started: %q, mode %d, focus %v", label(a), a.mode, a.focus)
+	}
+	keys(t, a, "/")
+	typeText(t, a, "taps")
+	keys(t, a, "backspace", "backspace", "backspace", "backspace")
+	if label(a) != "Top-level" {
+		t.Errorf("clearing the text goes back: %q", label(a))
+	}
+	keys(t, a, "esc")
+}
+
+func TestJumpTakesAPaste(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	keys(t, a, "/")
+	_, cmd := a.Update(tea.PasteMsg{Content: "history"})
+	settle(t, a, cmd)
+	if label(a) != "History" {
+		t.Errorf("a pasted jump selects %q, want History", label(a))
+	}
+}
+
+func TestSidebarHelpAndHintMentionTheJump(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "j/k choose · / jump · l open · 1-5 sections") {
+		t.Errorf("sidebar hint: %q", bar)
+	}
+	keys(t, a, "?")
+	if out := stripANSI(a.render()); !strings.Contains(out, "jump to an entry") {
+		t.Errorf("help lacks the jump:\n%s", out)
 	}
 }
 
@@ -258,14 +325,6 @@ func TestSidebarKeepsItsSelectedEntryInView(t *testing.T) {
 		if full := stripANSI(a.render()); !strings.Contains(squash(full), l) {
 			t.Errorf("%s is out of view in the 120×20 screen:\n%s", l, full)
 		}
-	}
-}
-
-func TestSlashFromTheSidebarFiltersTheList(t *testing.T) {
-	a := newJobApp(t, &fakeStarter{})
-	keys(t, a, "j", "/")
-	if a.mode != modeFilter || a.focus == colSidebar {
-		t.Errorf("/ should filter the list: mode %d, focus %v", a.mode, a.focus == colSidebar)
 	}
 }
 

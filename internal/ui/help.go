@@ -19,7 +19,7 @@ func (a *App) helpGroups() []helpGroup {
 	var here helpGroup
 	switch {
 	case a.focus == colSidebar:
-		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"l enter", "go to the list"}}}
+		here = helpGroup{"Sidebar", [][2]string{{"j k", "choose"}, {"gg G", "first, last"}, {"/", "jump to an entry"}, {"l enter", "go to the list"}}}
 	case a.tab == tabHome:
 		here = helpGroup{"Home", [][2]string{
 			{"h l", "move along the tiles; past the first, sidebar"},
