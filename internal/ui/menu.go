@@ -24,19 +24,23 @@ type menuBox struct {
 	title    string
 	items    []menuItem
 	cursor   int
-	gPending bool // g was pressed: x next picks gx
+	gPending bool // g was pressed: x next picks gx, esc or q still closes
 }
 
 // menuFooter says how to use the menu.
 const menuFooter = "j/k move · enter run · esc close"
 
 // key handles a key press while the menu is open. done is true when the
-// menu should close; run is what was picked, or nil.
+// menu should close; run is what was picked, or nil. After g, x picks gx,
+// esc and q close the menu, and any other key does nothing.
 func (m *menuBox) key(k string) (run func() tea.Cmd, done bool) {
 	if m.gPending {
 		m.gPending = false
-		if k == "x" {
+		switch k {
+		case "x":
 			return m.pick("gx")
+		case "esc", "q":
+			return nil, true
 		}
 		return nil, false
 	}

@@ -53,6 +53,8 @@ func TestMenuKeys(t *testing.T) {
 		{[]string{"x"}, "x", true},
 		{[]string{"g", "x"}, "gx", true},
 		{[]string{"g", "u"}, "", false}, // g then anything but x does nothing
+		{[]string{"g", "esc"}, "", true},
+		{[]string{"g", "q"}, "", true},
 		{[]string{"esc"}, "", true},
 		{[]string{"q"}, "", true},
 		{[]string{"z"}, "", false},
