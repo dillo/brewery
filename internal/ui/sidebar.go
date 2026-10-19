@@ -41,6 +41,7 @@ var entries = []entry{
 	{"Dependencies", secPackages, tabInstalled, int(filterDeps)},
 	{"Outdated", secPackages, tabOutdated, 0},
 	{"Pinned", secPackages, tabInstalled, int(filterPinned)},
+	{"Deprecated", secPackages, tabInstalled, int(filterDeprecated)},
 	{"Services", secManage, tabServices, 0},
 	{"Taps", secManage, tabTaps, 0},
 	{"Popular tools", secDiscover, tabDiscover, int(discTools)},

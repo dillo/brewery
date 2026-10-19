@@ -10,23 +10,23 @@
 │  Dependencies       2  ││  lua-language-s│ f          fetch the newer version                 │    2.51.0                                │
 │  Outdated          ↑2  ││                │ space      mark for several                        │    yes                                   │
 │  Pinned             1  ││                │ l tab      details, then j/k scroll                │    yes                                   │
-│                        ││                │                                                    │e   https://git-scm.com                   │
-│ MANAGE                 ││                │ Lists                                              │                                          │
-│  Services          ✗1  ││                │ j k        move                                    │ncies                                     │
-│  Taps               2  ││                │ gg G       top, bottom                             │                                          │
-│                        ││                │ ctrl+d/u   half a page                             │2                                         │
-│ DISCOVER               ││                │ /          filter by name                          │son-c                                     │
-│  Popular tools         ││                │ / esc      clear the filter                        │                                          │
-│  Popular apps          ││                │ y          copy the name                           │                                          │
-│  Rising                ││                │ gx         open the homepage                       │ installed depends on this                │
-│  New                   ││                │                                                    │                                          │
-│  Fonts                 ││                │ Everywhere                                         │                                          │
-│  Search all            ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │
-│                        ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
-│ TOOLS                  ││                │ [ ]        previous or next entry                  │                                          │
-│  History            2  ││                │ :          run any brew command                    │                                          │
-│  Maintenance           ││                │ r          refresh                                 │                                          │
-│                        ││                │ U          brew update                             │                                          │
+│  Deprecated         2  ││                │                                                    │e   https://git-scm.com                   │
+│                        ││                │ Lists                                              │                                          │
+│ MANAGE                 ││                │ j k        move                                    │ncies                                     │
+│  Services          ✗1  ││                │ gg G       top, bottom                             │                                          │
+│  Taps               2  ││                │ ctrl+d/u   half a page                             │2                                         │
+│                        ││                │ /          filter by name                          │son-c                                     │
+│ DISCOVER               ││                │ / esc      clear the filter                        │                                          │
+│  Popular tools         ││                │ y          copy the name                           │                                          │
+│  Popular apps          ││                │ gx         open the homepage                       │ installed depends on this                │
+│  Rising                ││                │                                                    │                                          │
+│  New                   ││                │ Everywhere                                         │                                          │
+│  Fonts                 ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │
+│  Search all            ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
+│                        ││                │ [ ]        previous or next entry                  │                                          │
+│ TOOLS                  ││                │ :          run any brew command                    │                                          │
+│  History            2  ││                │ r          refresh                                 │                                          │
+│  Maintenance           ││                │ U          brew update                             │                                          │
 │                        ││                │ c          clean up                                │                                          │
 │                        ││                │ o          show or hide output                     │                                          │
 │                        ││                │ i          type into the running job               │                                          │

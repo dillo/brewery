@@ -13,7 +13,7 @@ import (
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache
 // files are ignored rather than half-loaded.
-const snapshotVersion = 6
+const snapshotVersion = 7
 
 // Snapshot is everything brewery knows about the installation at one time.
 type Snapshot struct {

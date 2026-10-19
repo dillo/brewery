@@ -10,23 +10,23 @@
 │  Dependencies       2  ││  ✓ git                 formula    Distributed revision c…  ││ nothing else                                     │
 │  Outdated          ↑2  ││  ✓ pcre2               formula    Perl compatible regula…  ││                                                  │
 │  Pinned             1  ││  python@3.15           formula    Interpreted, interacti…  ││ Installs                                         │
-│                        ││  ripgrep               formula    Search tool like grep …  ││ 30 days    217,104                               │
-│ MANAGE                 ││  wget                  formula    Internet file retriever  ││ 90 days    710,524                               │
-│  Services          ✗1  ││  0-ad                  cask       Real-time strategy game  ││ 365 days   2,994,048                             │
-│  Taps               2  ││  ape                   cask       Software for DNA seque…  ││                                                  │
-│                        ││  codex                 cask       OpenAI's coding agent …  ││                                                  │
-│ DISCOVER               ││  ✓ docker-desktop      cask       App to build and share…  ││                                                  │
-│  Popular tools         ││  firefox               cask       Web browser              ││                                                  │
-│  Popular apps          ││  font-fira-code        cask       Fira Code                ││                                                  │
-│  Rising                ││  font-jetbrains-mono   cask       JetBrains Mono           ││                                                  │
-│  New                   ││  ✓ fontbase            cask       Font manager             ││                                                  │
+│  Deprecated         2  ││  ripgrep               formula    Search tool like grep …  ││ 30 days    217,104                               │
+│                        ││  wget                  formula    Internet file retriever  ││ 90 days    710,524                               │
+│ MANAGE                 ││  0-ad                  cask       Real-time strategy game  ││ 365 days   2,994,048                             │
+│  Services          ✗1  ││  ape                   cask       Software for DNA seque…  ││                                                  │
+│  Taps               2  ││  codex                 cask       OpenAI's coding agent …  ││                                                  │
+│                        ││  ✓ docker-desktop      cask       App to build and share…  ││                                                  │
+│ DISCOVER               ││  firefox               cask       Web browser              ││                                                  │
+│  Popular tools         ││  font-fira-code        cask       Fira Code                ││                                                  │
+│  Popular apps          ││  font-jetbrains-mono   cask       JetBrains Mono           ││                                                  │
+│  Rising                ││  ✓ fontbase            cask       Font manager             ││                                                  │
+│  New                   ││                                                            ││                                                  │
 │  Fonts                 ││                                                            ││                                                  │
 │  Search all            ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │

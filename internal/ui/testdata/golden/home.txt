@@ -10,9 +10,10 @@
 │  Dependencies       2  ││                                                                  ││ 5 History has them all                     │
 │  Outdated          ↑2  ││   Untap them with:                                               ││                                            │
 │  Pinned             1  ││     brew untap oven-sh/bun                                       ││                                            │
-│                        ││                                                                  ││                                            │
-│ MANAGE                 ││ ⚠ Some installed casks are deprecated or disabled.               ││                                            │
-│  Services          ✗1  ││   fontbase                                                       ││                                            │
+│  Deprecated         2  ││                                                                  ││                                            │
+│                        ││ ⚠ Some installed casks are deprecated or disabled.               ││                                            │
+│ MANAGE                 ││   fontbase                                                       ││                                            │
+│  Services          ✗1  ││                                                                  ││                                            │
 │  Taps               2  ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
 │ DISCOVER               ││                                                                  ││                                            │
@@ -26,7 +27,6 @@
 │ TOOLS                  ││                                                                  ││                                            │
 │  History            2  ││                                                                  ││                                            │
 │  Maintenance           ││                                                                  ││                                            │
-│                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │

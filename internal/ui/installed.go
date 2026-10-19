@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"sort"
 	"strings"
+	"time"
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
@@ -22,17 +23,19 @@ const (
 	filterDeps
 	filterFormulae
 	filterPinned
+	filterDeprecated
 )
 
 // views are the Installed tab's views, in the sidebar's order,
 // with a line saying what each shows.
 var views = [...]struct{ name, about string }{
-	filterTop:      {"Top-level", "Things you installed that nothing else needs."},
-	filterAll:      {"All", "Everything installed."},
-	filterCasks:    {"Casks", "macOS apps and fonts (casks)."},
-	filterDeps:     {"Dependencies", "Installed because something else needed them."},
-	filterFormulae: {"Formulae", "Command-line tools and libraries (formulae)."},
-	filterPinned:   {"Pinned", "Held at their version: brew upgrade skips them."},
+	filterTop:        {"Top-level", "Things you installed that nothing else needs."},
+	filterAll:        {"All", "Everything installed."},
+	filterCasks:      {"Casks", "macOS apps and fonts (casks)."},
+	filterDeps:       {"Dependencies", "Installed because something else needed them."},
+	filterFormulae:   {"Formulae", "Command-line tools and libraries (formulae)."},
+	filterPinned:     {"Pinned", "Held at their version: brew upgrade skips them."},
+	filterDeprecated: {"Deprecated", "On their way out: deprecated, or disabled and no longer installable."},
 }
 
 var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
@@ -48,6 +51,7 @@ type installedTab struct {
 	pv     scroller         // where the preview is scrolled to
 	marked map[string]bool  // packages picked with space, by pkgKey
 	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
+	now    func() time.Time // today, for the disable date
 	loaded bool
 	table  table.Model
 	listW  int // the list pane's width; 0 hides it
@@ -56,7 +60,7 @@ type installedTab struct {
 }
 
 func newInstalledTab(st theme.Styles) installedTab {
-	return installedTab{st: st, table: newTable(st, installedCols), ix: state.NewIndex(nil)}
+	return installedTab{st: st, table: newTable(st, installedCols), now: time.Now, ix: state.NewIndex(nil)}
 }
 
 func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
@@ -86,6 +90,8 @@ func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
 		return p.Kind == brew.KindFormula
 	case filterPinned:
 		return p.Pinned
+	case filterDeprecated:
+		return retireState(p) != ""
 	}
 	return true
 }
@@ -159,6 +165,12 @@ func status(st theme.Styles, p brew.Package) string {
 	}
 	if p.Outdated {
 		s = append(s, theme.Tint(st.P.Yellow, "↑"))
+	}
+	switch retireState(p) {
+	case "deprecated":
+		s = append(s, theme.Tint(st.P.Yellow, "⚠"))
+	case "disabled":
+		s = append(s, theme.Tint(st.P.Red, "✗"))
 	}
 	return strings.Join(s, " ")
 }
@@ -247,6 +259,9 @@ func (t *installedTab) emptyNote() string {
 	if t.match != "" {
 		return "nothing in this view matches /" + t.match
 	}
+	if t.filter == filterDeprecated {
+		return "nothing installed is deprecated or disabled"
+	}
 	return "nothing in this view"
 }
 
@@ -274,12 +289,11 @@ func (t *installedTab) preview(p brew.Package) string {
 	if p.Pinned {
 		pinned = "yes"
 	}
-	deprecated := ""
-	if p.Deprecated {
-		deprecated = st.Warn.Render("yes")
-	}
-	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "size", t.size(p), "installed", how,
-		"latest", latest, "pinned", pinned, "linked", linkedText(p), "deprecated", deprecated, "homepage", p.Homepage))
+	pairs := []string{"type", p.Kind.String(), "tap", p.Tap, "size", t.size(p), "installed", how,
+		"latest", latest, "pinned", pinned, "linked", linkedText(p)}
+	pairs = append(pairs, retireRows(st, p, t.now())...)
+	pairs = append(pairs, "homepage", p.Homepage)
+	b.WriteString(kv(st, pairs...))
 
 	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {
 		t.writeDeps(&b, p)

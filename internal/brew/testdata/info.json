@@ -34,7 +34,7 @@
       "desc": null, "homepage": "https://github.com/json-c/json-c/wiki",
       "versions": {"stable": "0.19"},
       "installed": [{"version": "0.19", "time": 1787000000, "installed_on_request": false, "runtime_dependencies": []}],
-      "linked_keg": null, "keg_only": true, "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+      "linked_keg": null, "keg_only": true, "pinned": false, "outdated": false, "deprecated": true, "deprecation_date": "2026-03-01", "deprecation_reason": "unmaintained", "deprecation_replacement_formula": "json-c-ng", "deprecation_replacement_cask": null, "disabled": false, "disable_date": null, "disable_reason": null, "caveats": null
     },
     {
       "name": "lua-language-server", "full_name": "lua-language-server", "tap": "homebrew/core",
@@ -61,7 +61,7 @@
       "token": "fontbase", "full_token": "fontbase", "tap": "homebrew/cask",
       "name": ["FontBase"], "desc": null, "homepage": "https://fontba.se/",
       "version": "2.22.0", "installed": "2.22.0", "installed_time": null,
-      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+      "pinned": false, "outdated": false, "deprecated": false, "disabled": true, "disable_date": "2026-09-01", "disable_reason": "discontinued", "caveats": null
     }
   ]
 }

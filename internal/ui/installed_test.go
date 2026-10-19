@@ -282,3 +282,10 @@ func TestInstalledDetailsSayWhetherLinked(t *testing.T) {
 		t.Errorf("a cask has no linked row:\n%s", out)
 	}
 }
+
+func TestInstalledTabFollowsTheAppsClock(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	if got := a.installed.now(); !got.Equal(testNow) {
+		t.Errorf("installed clock = %v, want %v", got, testNow)
+	}
+}

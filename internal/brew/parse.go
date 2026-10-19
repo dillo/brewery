@@ -50,12 +50,12 @@ type formulaJSON struct {
 			DeclaredDirectly bool   `json:"declared_directly"`
 		} `json:"runtime_dependencies"`
 	} `json:"installed"`
-	Pinned     bool    `json:"pinned"`
-	LinkedKeg  *string `json:"linked_keg"` // the linked version, or null
-	KegOnly    bool    `json:"keg_only"`
-	Outdated   bool    `json:"outdated"`
-	Deprecated bool    `json:"deprecated"`
-	Caveats    *string `json:"caveats"`
+	Pinned    bool    `json:"pinned"`
+	LinkedKeg *string `json:"linked_keg"` // the linked version, or null
+	KegOnly   bool    `json:"keg_only"`
+	Outdated  bool    `json:"outdated"`
+	retireJSON
+	Caveats *string `json:"caveats"`
 }
 
 type caskJSON struct {
@@ -70,9 +70,9 @@ type caskJSON struct {
 	InstalledTime *int64   `json:"installed_time"`
 	Pinned        bool     `json:"pinned"`
 	Outdated      bool     `json:"outdated"`
-	Deprecated    bool     `json:"deprecated"`
-	Caveats       *string  `json:"caveats"`
-	DependsOn     struct {
+	retireJSON
+	Caveats   *string `json:"caveats"`
+	DependsOn struct {
 		Formula []string `json:"formula"`
 		Cask    []string `json:"cask"`
 	} `json:"depends_on"`
@@ -100,10 +100,11 @@ func (f formulaJSON) toPackage() Package {
 	p := Package{
 		Name: f.Name, FullName: f.FullName, Kind: KindFormula, Tap: f.Tap,
 		Desc: deref(f.Desc), Homepage: f.Homepage, License: deref(f.License), Latest: f.Versions.Stable,
-		Pinned: f.Pinned, Outdated: f.Outdated, Deprecated: f.Deprecated,
+		Pinned: f.Pinned, Outdated: f.Outdated,
 		Linked: deref(f.LinkedKeg) != "", KegOnly: f.KegOnly,
 		Caveats: strings.TrimSpace(deref(f.Caveats)),
 	}
+	f.apply(&p)
 	if n := len(f.Installed); n > 0 {
 		inst := f.Installed[n-1] // newest keg
 		p.Version = inst.Version
@@ -124,8 +125,9 @@ func (c caskJSON) toPackage() Package {
 		Name: c.Token, FullName: c.FullToken, Kind: KindCask, Tap: c.Tap,
 		Desc: deref(c.Desc), Homepage: c.Homepage, Version: deref(c.Installed),
 		Latest: c.Version, OnRequest: true, Pinned: c.Pinned, Outdated: c.Outdated,
-		Deprecated: c.Deprecated, Caveats: strings.TrimSpace(deref(c.Caveats)),
+		Caveats: strings.TrimSpace(deref(c.Caveats)),
 	}
+	c.apply(&p)
 	if p.Desc == "" && len(c.Names) > 0 {
 		p.Desc = c.Names[0]
 	}
@@ -135,6 +137,54 @@ func (c caskJSON) toPackage() Package {
 	p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
 	p.Targets = c.targets()
 	return p
+}
+
+// retireJSON is the deprecation and disable fields that formulae and
+// casks share.
+type retireJSON struct {
+	Deprecated         bool    `json:"deprecated"`
+	DeprecationDate    *string `json:"deprecation_date"`
+	DeprecationReason  *string `json:"deprecation_reason"`
+	DeprecationFormula *string `json:"deprecation_replacement_formula"`
+	DeprecationCask    *string `json:"deprecation_replacement_cask"`
+	Disabled           bool    `json:"disabled"`
+	DisableDate        *string `json:"disable_date"`
+	DisableReason      *string `json:"disable_reason"`
+	DisableFormula     *string `json:"disable_replacement_formula"`
+	DisableCask        *string `json:"disable_replacement_cask"`
+}
+
+// apply copies the fields into p. The reason comes from the deprecation
+// first, but the replacement from the disable first, as brew does.
+func (r retireJSON) apply(p *Package) {
+	p.Deprecated, p.Disabled = r.Deprecated, r.Disabled
+	p.DeprecationDate, p.DisableDate = deref(r.DeprecationDate), deref(r.DisableDate)
+	switch {
+	case r.Deprecated:
+		p.Reason = deref(r.DeprecationReason)
+	case r.Disabled:
+		p.Reason = deref(r.DisableReason)
+	}
+	switch {
+	case r.Disabled:
+		p.Replacement = replacement(deref(r.DisableFormula), deref(r.DisableCask))
+	case r.Deprecated:
+		p.Replacement = replacement(deref(r.DeprecationFormula), deref(r.DeprecationCask))
+	}
+}
+
+// replacement writes what to install instead as brew does: the bare name
+// when the formula and cask are the same, else --formula or --cask first.
+func replacement(formula, cask string) string {
+	switch {
+	case formula != "" && formula == cask:
+		return formula
+	case formula != "":
+		return "--formula " + formula
+	case cask != "":
+		return "--cask " + cask
+	}
+	return ""
 }
 
 // targets lists where brew put an app, a font, a binary…

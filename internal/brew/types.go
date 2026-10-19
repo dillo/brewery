@@ -21,26 +21,31 @@ func (k Kind) String() string {
 
 // Package is one installed formula or cask.
 type Package struct {
-	Name        string    `json:"name"`
-	FullName    string    `json:"full_name"` // "fd", or "user/tap/name" for tap formulae
-	Kind        Kind      `json:"kind"`
-	Tap         string    `json:"tap"`
-	Desc        string    `json:"desc"`
-	Homepage    string    `json:"homepage"`
-	License     string    `json:"license"` // a formula's SPDX licence
-	Version     string    `json:"version"` // installed version
-	Latest      string    `json:"latest"`  // newest version known to brew
-	OnRequest   bool      `json:"on_request"`
-	Pinned      bool      `json:"pinned"`
-	Linked      bool      `json:"linked"`   // a formula's keg is linked into brew's prefix
-	KegOnly     bool      `json:"keg_only"` // brew doesn't link the formula unless forced
-	Outdated    bool      `json:"outdated"`
-	Deprecated  bool      `json:"deprecated"`
-	Caveats     string    `json:"caveats"`
-	InstalledAt time.Time `json:"installed_at"`
-	Deps        []string  `json:"deps"`        // all runtime deps (transitive), full names
-	DirectDeps  []string  `json:"direct_deps"` // runtime deps declared directly
-	Targets     []string  `json:"targets"`     // a cask's installed files: apps, fonts…
+	Name            string    `json:"name"`
+	FullName        string    `json:"full_name"` // "fd", or "user/tap/name" for tap formulae
+	Kind            Kind      `json:"kind"`
+	Tap             string    `json:"tap"`
+	Desc            string    `json:"desc"`
+	Homepage        string    `json:"homepage"`
+	License         string    `json:"license"` // a formula's SPDX licence
+	Version         string    `json:"version"` // installed version
+	Latest          string    `json:"latest"`  // newest version known to brew
+	OnRequest       bool      `json:"on_request"`
+	Pinned          bool      `json:"pinned"`
+	Linked          bool      `json:"linked"`   // a formula's keg is linked into brew's prefix
+	KegOnly         bool      `json:"keg_only"` // brew doesn't link the formula unless forced
+	Outdated        bool      `json:"outdated"`
+	Deprecated      bool      `json:"deprecated"`
+	Disabled        bool      `json:"disabled"`         // brew won't install it any more
+	DeprecationDate string    `json:"deprecation_date"` // YYYY-MM-DD, or ""
+	DisableDate     string    `json:"disable_date"`     // YYYY-MM-DD, or ""
+	Reason          string    `json:"reason"`           // brew's keyword or text for why it's deprecated or disabled
+	Replacement     string    `json:"replacement"`      // what to brew install instead, as brew writes it
+	Caveats         string    `json:"caveats"`
+	InstalledAt     time.Time `json:"installed_at"`
+	Deps            []string  `json:"deps"`        // all runtime deps (transitive), full names
+	DirectDeps      []string  `json:"direct_deps"` // runtime deps declared directly
+	Targets         []string  `json:"targets"`     // a cask's installed files: apps, fonts…
 }
 
 // Key identifies a package: a formula and a cask can share a name.

@@ -230,3 +230,70 @@ func TestParseInfoLinks(t *testing.T) {
 		}
 	}
 }
+
+func TestParseInfoRetirement(t *testing.T) {
+	pkgs, err := ParseInfo(fixture(t, "info.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	jsonc := byName(pkgs, "json-c")
+	if !jsonc.Deprecated || jsonc.Disabled || jsonc.Reason != "unmaintained" ||
+		jsonc.DeprecationDate != "2026-03-01" || jsonc.DisableDate != "" || jsonc.Replacement != "--formula json-c-ng" {
+		t.Errorf("json-c: %+v", jsonc)
+	}
+	fontbase := byName(pkgs, "fontbase")
+	if fontbase.Deprecated || !fontbase.Disabled || fontbase.Reason != "discontinued" ||
+		fontbase.DisableDate != "2026-09-01" || fontbase.Replacement != "" {
+		t.Errorf("fontbase: %+v", fontbase)
+	}
+	fd := byName(pkgs, "fd")
+	if fd.Deprecated || fd.Disabled || fd.Reason != "" || fd.Replacement != "" {
+		t.Errorf("fd is neither: %+v", fd)
+	}
+}
+
+func TestReplacementIsWrittenAsBrewWritesIt(t *testing.T) {
+	for _, tt := range []struct{ formula, cask, want string }{
+		{"foo", "foo", "foo"},
+		{"foo", "", "--formula foo"},
+		{"", "bar", "--cask bar"},
+		{"foo", "bar", "--formula foo"},
+		{"", "", ""},
+	} {
+		if got := replacement(tt.formula, tt.cask); got != tt.want {
+			t.Errorf("replacement(%q, %q) = %q, want %q", tt.formula, tt.cask, got, tt.want)
+		}
+	}
+}
+
+func TestReasonComesFromTheStateBrewReports(t *testing.T) {
+	r := retireJSON{
+		Deprecated: true, DeprecationReason: new("unmaintained"),
+		Disabled: true, DisableReason: new("does_not_build"), DisableFormula: new("other"),
+	}
+	var p Package
+	r.apply(&p)
+	if p.Reason != "unmaintained" || p.Replacement != "--formula other" {
+		t.Errorf("reason deprecated-first, replacement disabled-first, as in brew: %+v", p)
+	}
+	r.Deprecated = false
+	p = Package{}
+	r.apply(&p)
+	if p.Reason != "does_not_build" || p.Replacement != "--formula other" {
+		t.Errorf("disabled: %+v", p)
+	}
+}
+
+func TestReplacementTagsDecode(t *testing.T) {
+	pkgs, err := ParseInfo([]byte(`{"formulae":[{"name":"f","deprecated":true,"deprecation_replacement_formula":"fnew","disabled":true,"disable_replacement_formula":"fdis"}],
+"casks":[{"token":"c1","disabled":true,"disable_replacement_cask":"cdis"},{"token":"c2","deprecated":true,"deprecation_replacement_cask":"cnew"}]}`))
+	if err != nil || len(pkgs) != 3 {
+		t.Fatalf("%v %d", err, len(pkgs))
+	}
+	want := []string{"--formula fdis", "--cask cdis", "--cask cnew"}
+	for i, w := range want {
+		if pkgs[i].Replacement != w {
+			t.Errorf("%s: Replacement = %q, want %q", pkgs[i].Name, pkgs[i].Replacement, w)
+		}
+	}
+}

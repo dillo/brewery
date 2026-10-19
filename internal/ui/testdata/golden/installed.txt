@@ -5,28 +5,28 @@
 │ PACKAGES               ││ ────────────────────────────────────────────────────────── ││                                                  │
 │  All                7  ││  docker-desktop        4.39.0,…  cask   ↑        2.2GB     ││ type       formula                               │
 │  Top-level          5  ││  fd                    10.5.0    form…           3.0MB     ││ tap        homebrew/core                         │
-│  Formulae           5  ││  fontbase              2.22.0    cask                      ││ size       50.0MB                                │
+│  Formulae           5  ││  fontbase              2.22.0    cask   ✗                  ││ size       50.0MB                                │
 │  Casks              2  ││  git                   2.51.0    form…  pinned   50.0MB    ││ installed  on request · 2026-08-29               │
 │  Dependencies       2  ││  lua-language-server   3.19.1    form…  ↑                  ││ latest     2.51.0                                │
 │  Outdated          ↑2  ││                                                            ││ pinned     yes                                   │
 │  Pinned             1  ││                                                            ││ linked     yes                                   │
-│                        ││                                                            ││ homepage   https://git-scm.com                   │
-│ MANAGE                 ││                                                            ││                                                  │
-│  Services          ✗1  ││                                                            ││ Dependencies                                     │
-│  Taps               2  ││                                                            ││ git                                              │
-│                        ││                                                            ││ └─ pcre2                                         │
-│ DISCOVER               ││                                                            ││    └─ json-c                                     │
-│  Popular tools         ││                                                            ││                                                  │
-│  Popular apps          ││                                                            ││ Used by                                          │
-│  Rising                ││                                                            ││ nothing installed depends on this                │
-│  New                   ││                                                            ││                                                  │
-│  Fonts                 ││                                                            ││ Caveats                                          │
-│  Search all            ││                                                            ││ Bash completion has been installed.              │
+│  Deprecated         2  ││                                                            ││ homepage   https://git-scm.com                   │
+│                        ││                                                            ││                                                  │
+│ MANAGE                 ││                                                            ││ Dependencies                                     │
+│  Services          ✗1  ││                                                            ││ git                                              │
+│  Taps               2  ││                                                            ││ └─ pcre2                                         │
+│                        ││                                                            ││    └─ json-c                                     │
+│ DISCOVER               ││                                                            ││                                                  │
+│  Popular tools         ││                                                            ││ Used by                                          │
+│  Popular apps          ││                                                            ││ nothing installed depends on this                │
+│  Rising                ││                                                            ││                                                  │
+│  New                   ││                                                            ││ Caveats                                          │
+│  Fonts                 ││                                                            ││ Bash completion has been installed.              │
+│  Search all            ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │

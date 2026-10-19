@@ -10,6 +10,7 @@
 │  Dependencies       2  ││  Update Homebrew     1h ago                                ││   fontbase                                       │
 │  Outdated          ↑2  ││                                                            ││                                                  │
 │  Pinned             1  ││                                                            ││ enter runs brew doctor again                     │
+│  Deprecated         2  ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │ MANAGE                 ││                                                            ││                                                  │
 │  Services          ✗1  ││                                                            ││                                                  │
@@ -26,7 +27,6 @@
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
