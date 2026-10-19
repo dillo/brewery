@@ -197,14 +197,15 @@ func serviceRows(st theme.Styles, items []brew.Service) []table.Row {
 	return rows
 }
 
-func tapRows(items []brew.Tap) []table.Row {
-	rows := make([]table.Row, len(items))
-	for i, t := range items {
+// tapRows are Taps' rows, with what the last tap check found.
+func (a *App) tapRows() []table.Row {
+	rows := make([]table.Row, len(a.snap.Taps))
+	for i, t := range a.snap.Taps {
 		official := ""
 		if t.Official {
 			official = "yes"
 		}
-		rows[i] = table.Row{t.Name, strconv.Itoa(t.Formulae), strconv.Itoa(t.Casks), official, t.Remote}
+		rows[i] = table.Row{t.Name, strconv.Itoa(t.Formulae), strconv.Itoa(t.Casks), official, a.tapColumn(t), t.Remote}
 	}
 	return rows
 }
@@ -214,5 +215,5 @@ var (
 	// decides what U upgrades.
 	outdatedCols = []col{{"NAME", 0, 16}, {"INSTALLED", 18, 8}, {"LATEST", 18, 8}, {"PINNED", 8, 0}, {"TYPE", 9, 4}}
 	serviceCols  = []col{{"NAME", 0, 16}, {"STATUS", 18, 10}} // fits "error (exit 127)" after an icon
-	tapCols      = []col{{"NAME", 24, 12}, {"FORMULAE", 8, 0}, {"CASKS", 6, 0}, {"OFFICIAL", 8, 0}, {"REMOTE", 0, 0}}
+	tapCols      = []col{{"NAME", 24, 24}, {"FORMULAE", 8, 0}, {"CASKS", 6, 0}, {"OFFICIAL", 8, 0}, {"GITHUB", 16, -1}, {"REMOTE", 0, 0}}
 )
