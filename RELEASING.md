@@ -1,8 +1,8 @@
 # Releasing brewery
 
 Releases are built by GoReleaser in GitHub Actions when a `v*` tag is pushed
-(`.github/workflows/release.yml`). It publishes darwin arm64 and amd64
-binaries as a GitHub release, and writes the cask to `dillo/homebrew-tap`.
+(`.github/workflows/release.yml`). It publishes a darwin arm64
+binary as a GitHub release, and writes the cask to `dillo/homebrew-tap`.
 
 Before tagging, `make snapshot` builds the same release into `dist/` without
 publishing anything.
