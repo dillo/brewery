@@ -14,7 +14,7 @@ builds:
     env:
       - CGO_ENABLED=0
     goos: [darwin]
-    goarch: [arm64, amd64]
+    goarch: [arm64]
     flags: [-trimpath]
     ldflags:
       - -s -w -X main.version={{ .Version }}
@@ -54,7 +54,11 @@ homebrew_casks:
     # downloads, or Gatekeeper blocks the binary. postflight_steps is
     # Homebrew's current form; GoReleaser's hooks still write the deprecated
     # postflight block (until v2.19), so it's written here directly.
+    # Only an arm64 binary is built: brew on Intel Macs is Tier 3 and ends in
+    # or after September 2027, so the cask refuses Intel outright.
     custom_block: |
+      depends_on arch: :arm64
+
       postflight_steps do
         run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "brewery"], chdir: "."
       end

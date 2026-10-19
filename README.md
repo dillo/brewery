@@ -39,7 +39,7 @@ A few notes:
 
 ### Requirements
 
-- macOS (Apple Silicon or Intel)
+- macOS on Apple Silicon. Intel Macs aren't supported.
 - Homebrew 7.0 or newer. brewery checks when it starts, and asks you to
   run `brew update` if yours is older.
 - A [Nerd Font](https://www.nerdfonts.com) for icons, which is optional.
