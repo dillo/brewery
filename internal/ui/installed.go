@@ -279,7 +279,7 @@ func (t *installedTab) preview(p brew.Package) string {
 		deprecated = st.Warn.Render("yes")
 	}
 	b.WriteString(kv(st, "type", p.Kind.String(), "tap", p.Tap, "size", t.size(p), "installed", how,
-		"latest", latest, "pinned", pinned, "deprecated", deprecated, "homepage", p.Homepage))
+		"latest", latest, "pinned", pinned, "linked", linkedText(p), "deprecated", deprecated, "homepage", p.Homepage))
 
 	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {
 		t.writeDeps(&b, p)
@@ -288,6 +288,20 @@ func (t *installedTab) preview(p brew.Package) string {
 		b.WriteString("\n" + st.Accent.Render("Caveats") + "\n" + p.Caveats + "\n")
 	}
 	return b.String()
+}
+
+// linkedText is the details' linked row for p: empty for a cask, which
+// brew doesn't link.
+func linkedText(p brew.Package) string {
+	switch {
+	case p.Kind == brew.KindCask:
+		return ""
+	case p.Linked:
+		return "yes"
+	case p.KegOnly:
+		return "no · keg-only"
+	}
+	return "no"
 }
 
 // writeDeps writes p's dependency tree, any pinned dependency that will

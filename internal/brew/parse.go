@@ -51,6 +51,8 @@ type formulaJSON struct {
 		} `json:"runtime_dependencies"`
 	} `json:"installed"`
 	Pinned     bool    `json:"pinned"`
+	LinkedKeg  *string `json:"linked_keg"` // the linked version, or null
+	KegOnly    bool    `json:"keg_only"`
 	Outdated   bool    `json:"outdated"`
 	Deprecated bool    `json:"deprecated"`
 	Caveats    *string `json:"caveats"`
@@ -99,6 +101,7 @@ func (f formulaJSON) toPackage() Package {
 		Name: f.Name, FullName: f.FullName, Kind: KindFormula, Tap: f.Tap,
 		Desc: deref(f.Desc), Homepage: f.Homepage, License: deref(f.License), Latest: f.Versions.Stable,
 		Pinned: f.Pinned, Outdated: f.Outdated, Deprecated: f.Deprecated,
+		Linked: deref(f.LinkedKeg) != "", KegOnly: f.KegOnly,
 		Caveats: strings.TrimSpace(deref(f.Caveats)),
 	}
 	if n := len(f.Installed); n > 0 {

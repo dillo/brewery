@@ -181,8 +181,8 @@ func TestLogKeyOpensTheLogs(t *testing.T) {
 	if want := [][]string{{out, errs}, {out}}; !reflect.DeepEqual(pg.calls, want) {
 		t.Errorf("opened %v, want %v", pg.calls, want)
 	}
-	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "L log") {
-		t.Errorf("the hint should name L: %q", bar)
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "enter actions") {
+		t.Errorf("the hint should name enter: %q", bar)
 	}
 }
 
@@ -448,7 +448,7 @@ func TestServicesDetailsFocusAtFullWidth(t *testing.T) {
 		a.readLog = (&fakeLogs{text: map[string]string{pgLog: longLog(200)}}).read
 		show(t, a, "Services")
 		keys(t, a, "l")
-		if hint := a.actionHints(); a.focus != colDetails || !strings.Contains(hint, "j/k scroll the log · h back to the list") {
+		if hint := a.actionHints(); a.focus != colDetails || !strings.Contains(hint, "j/k scroll the log · enter actions · h back to the list") {
 			t.Fatalf("l focuses Services' details: focus %d, hint %q", a.focus, hint)
 		}
 		keys(t, a, back)

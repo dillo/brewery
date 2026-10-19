@@ -9,6 +9,7 @@
 │ installed  on request · 2026-08-29                                                     │
 │ latest     2.51.0                                                                      │
 │ pinned     yes                                                                         │
+│ linked     yes                                                                         │
 │ homepage   https://git-scm.com                                                         │
 │                                                                                        │
 │ Dependencies                                                                           │
@@ -21,7 +22,6 @@
 │                                                                                        │
 │ Caveats                                                                                │
 │ Bash completion has been installed.                                                    │
-│                                                                                        │
 │                                                                                        │
 │                                                                                        │
 │                                                                                        │

@@ -58,9 +58,9 @@ func TestInstalledPreviewTakesTheFocus(t *testing.T) {
 	if p, _ := a.installed.selected(); p.Name == "git" {
 		t.Error("with the list focused, j moves the selection")
 	}
-	keys(t, a, "k", "enter")
+	keys(t, a, "k", "l")
 	if a.focus != colDetails {
-		t.Error("enter focuses the preview too")
+		t.Error("l focuses the preview too")
 	}
 	if out := stripANSI(a.render()); !strings.Contains(out, "git 2.51.0") {
 		t.Errorf("coming back to git starts its preview at the top:\n%s", out)

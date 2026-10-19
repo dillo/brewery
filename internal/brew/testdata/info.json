@@ -6,7 +6,7 @@
       "homepage": "https://github.com/sharkdp/fd",
       "versions": {"stable": "10.5.0", "head": "HEAD", "bottle": true},
       "installed": [{"version": "10.5.0", "time": 1788714516, "installed_on_request": true, "runtime_dependencies": []}],
-      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+      "linked_keg": "10.5.0", "keg_only": false, "pinned": false, "outdated": false, "deprecated": false, "caveats": null
     },
     {
       "name": "git", "full_name": "git", "tap": "homebrew/core",
@@ -17,7 +17,7 @@
         {"full_name": "pcre2", "version": "10.49", "declared_directly": true},
         {"full_name": "json-c", "version": "0.19", "declared_directly": false}
       ]}],
-      "pinned": true, "outdated": false, "deprecated": false, "caveats": "  Bash completion has been installed.\n"
+      "linked_keg": "2.51.0", "keg_only": false, "pinned": true, "outdated": false, "deprecated": false, "caveats": "  Bash completion has been installed.\n"
     },
     {
       "name": "pcre2", "full_name": "pcre2", "tap": "homebrew/core",
@@ -27,14 +27,14 @@
       "installed": [{"version": "10.49", "time": 1787000000, "installed_on_request": false, "runtime_dependencies": [
         {"full_name": "json-c", "version": "0.19", "declared_directly": true}
       ]}],
-      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+      "linked_keg": "10.49", "keg_only": false, "pinned": false, "outdated": false, "deprecated": false, "caveats": null
     },
     {
       "name": "json-c", "full_name": "json-c", "tap": "homebrew/core",
       "desc": null, "homepage": "https://github.com/json-c/json-c/wiki",
       "versions": {"stable": "0.19"},
       "installed": [{"version": "0.19", "time": 1787000000, "installed_on_request": false, "runtime_dependencies": []}],
-      "pinned": false, "outdated": false, "deprecated": false, "caveats": null
+      "linked_keg": null, "keg_only": true, "pinned": false, "outdated": false, "deprecated": false, "caveats": null
     },
     {
       "name": "lua-language-server", "full_name": "lua-language-server", "tap": "homebrew/core",
@@ -45,7 +45,7 @@
         {"version": "3.19.0", "time": 1780000000, "installed_on_request": true, "runtime_dependencies": []},
         {"version": "3.19.1", "time": 1785000000, "installed_on_request": true, "runtime_dependencies": []}
       ],
-      "pinned": false, "outdated": true, "deprecated": false, "caveats": null
+      "linked_keg": "3.19.1", "keg_only": false, "pinned": false, "outdated": true, "deprecated": false, "caveats": null
     }
   ],
   "casks": [

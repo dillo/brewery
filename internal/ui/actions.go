@@ -99,14 +99,24 @@ func (a *App) installedKey(k string) (cmd tea.Cmd, ok bool) {
 		return nil, true
 	case "p":
 		return a.togglePin(), true
+	case "R":
+		a.askReinstall()
+		return nil, true
+	case "L":
+		return a.linkKey(), true
+	case "f":
+		return a.fetchKey(), true
 	}
 	return a.markKey(k)
 }
 
 // outdatedKey handles the action keys on Outdated.
 func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
-	if k == "A" {
+	switch k {
+	case "A":
 		return a.askUpgradeAll(), true
+	case "f":
+		return a.fetchKey(), true
 	}
 	return a.markKey(k)
 }
@@ -525,38 +535,41 @@ func (a *App) runAgain(args []string, fullScreen bool) tea.Cmd {
 
 // actionHints are the status-bar hints for where the focus is.
 func (a *App) actionHints() string {
+	if a.menu != nil {
+		return menuFooter
+	}
 	if a.focus == colSidebar {
 		return "j/k choose · l open · 1-5 sections"
 	}
 	switch a.tab {
 	case tabInstalled:
 		if a.focus == colDetails {
-			return "j/k scroll · h back to the list · u upgrade · x uninstall"
+			return "enter actions · j/k scroll · h back to the list"
 		}
-		return "u upgrade · x uninstall · p pin · l details"
+		return "enter actions · space mark · l details"
 	case tabOutdated:
-		return "u upgrade · A upgrade all"
+		return "enter actions · space mark · A upgrade all"
 	case tabServices:
 		if a.focus == colDetails {
-			hint := "h back to the list · s start · S stop · R restart · L log"
+			hint := "enter actions · h back to the list"
 			if _, _, lines, room, ok := a.logWindow(a.services.pvW, a.services.h); ok && len(lines) > room {
 				hint = "j/k scroll the log · " + hint // only a log longer than the pane scrolls
 			}
 			return hint
 		}
-		return "s start · S stop · R restart · L log · l details"
+		return "enter actions · l details"
 	case tabTaps:
-		return "x untap"
+		return "enter actions"
 	case tabDiscover:
 		if a.focus == colDetails {
-			return "j/k scroll · h back to the list"
+			return "enter actions · j/k scroll · h back to the list"
 		}
-		return "a install · / search · l details · r refetch"
+		return "enter actions · / search · l details · r refetch"
 	case tabHistory:
 		if a.focus == colDetails {
-			return "j/k scroll · h back to the list · R run again"
+			return "enter actions · j/k scroll · h back to the list"
 		}
-		return "l details · R run again · / filter by command · y copy the command"
+		return "enter actions · l details · / filter by command"
 	case tabMaintenance:
 		if a.focus == colDetails {
 			return "enter run · h back to the list"

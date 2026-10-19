@@ -210,3 +210,23 @@ func TestParseServicesLabelAndLoaded(t *testing.T) {
 		t.Errorf("got label %q, loaded %v", s.Label, s.Loaded)
 	}
 }
+
+func TestParseInfoLinks(t *testing.T) {
+	pkgs, err := ParseInfo(fixture(t, "info.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		name            string
+		linked, kegOnly bool
+	}{
+		{"fd", true, false},
+		{"json-c", false, true},
+		{"docker-desktop", false, false}, // casks are never linked
+	} {
+		p := byName(pkgs, tt.name)
+		if p.Linked != tt.linked || p.KegOnly != tt.kegOnly {
+			t.Errorf("%s: linked %v, keg-only %v; want %v, %v", tt.name, p.Linked, p.KegOnly, tt.linked, tt.kegOnly)
+		}
+	}
+}

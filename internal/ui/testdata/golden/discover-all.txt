@@ -37,4 +37,4 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  Search all › gh                                         a install · / search · l details · r refetch · : command · ? help · q quit 
+ NORMAL  Search all › gh                                     enter actions · / search · l details · r refetch · : command · ? help · q quit 

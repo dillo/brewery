@@ -99,6 +99,7 @@ type App struct {
 	cmd        cmdline         // the ":" prompt
 	filterIn   textinput.Model // the "/" prompt
 	confirm    *confirmBox     // open confirmation, or nil
+	menu       *menuBox        // open action menu, or nil
 	installing discRow         // the row the open install dialog is for
 	help       bool            // the ? overlay is open
 	flash      string          // one-off status message, cleared by the next key
@@ -557,15 +558,15 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 
 // typeIntoJob switches to INSERT with the drawer open, so keys go to the
 // running job. A g pressed just before is forgotten: after INSERT, the next
-// key mustn't complete a gg or gx. Help closes, so it can't eat the first
-// key of the answer.
+// key mustn't complete a gg or gx. Help and the action menu close, so they
+// can't eat the first key of the answer.
 func (a *App) typeIntoJob() {
-	a.mode, a.drawer.open, a.gPending, a.help = modeInsert, true, false, false
+	a.mode, a.drawer.open, a.gPending, a.help, a.menu = modeInsert, true, false, false, nil
 }
 
-// handleKey routes a key press by mode first: an open confirmation gets
-// every key, and in insert mode keys go to brew, so typing an answer can
-// never trigger a brewery shortcut such as q.
+// handleKey routes a key press by mode first: an open confirmation or
+// action menu gets every key, and in insert mode keys go to brew, so
+// typing an answer can never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
 	if a.quitting {
@@ -602,8 +603,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 }
 
 // modalKey gives the key to whatever has taken over the keyboard: help,
-// an open confirmation, insert mode (brew), or a prompt being typed. ok is
-// false when nothing has.
+// an open confirmation, the action menu, insert mode (brew), or a prompt
+// being typed. ok is false when nothing has.
 func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	k := msg.String()
 	switch {
@@ -620,6 +621,15 @@ func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 			return nil, true
 		}
 		return ch.run(), true
+	case a.menu != nil:
+		run, done := a.menu.key(k)
+		if done {
+			a.menu = nil // closed before run, which may open a confirmation
+		}
+		if run == nil {
+			return nil, true
+		}
+		return run(), true
 	case a.mode == modeInsert:
 		if k == "esc" {
 			a.mode = modeNormal
@@ -745,14 +755,17 @@ func (a *App) homeKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 
 // tabKey gives the key to the current tab: the list's keys move its
 // selection, and once the details have the focus, keys scroll them. tab
-// and enter go from the list to the details; tab goes back. On
-// Maintenance, enter runs the selected row instead, from either column.
+// goes from the list to the details and back. enter opens the action
+// menu, from either column; on Maintenance it runs the selected row.
 func (a *App) tabKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
 	switch {
 	case a.tab == tabMaintenance && k == "enter":
 		return a.maintRun()
-	case a.focus == colList && (k == "tab" || k == "enter") && a.hasDetails():
+	case k == "enter" && hasMenu(a.tab):
+		a.openMenu()
+		return nil
+	case a.focus == colList && k == "tab" && a.hasDetails():
 		a.focus = colDetails
 		return nil
 	case a.focus == colDetails && k == "tab":
@@ -875,13 +888,16 @@ func (a *App) render() string {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
 	drawer := a.drawerShown()
-	if bodyH == 0 && (a.confirm != nil || a.help) {
+	if bodyH == 0 && (a.confirm != nil || a.menu != nil || a.help) {
 		// The drawer fills a tiny window, but a question or help must show.
 		bodyH, drawer = a.bodyHeight(), false
 	}
 	body = clipLines(body, bodyH) // a tab too tall for a small window mustn't push the rest off it
 	if a.confirm != nil {
 		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
+	}
+	if a.menu != nil {
+		body = overlay(body, a.menu.view(a.st, a.width), a.width, bodyH)
 	}
 	if a.help {
 		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
@@ -1006,9 +1022,12 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := a.actionHints() + " · : command · ? help · q quit"
-	if a.drawer.job != nil && !a.drawer.open {
-		hints = "o output · " + hints
+	hints := a.actionHints()
+	if a.menu == nil { // the menu's footer stands alone
+		hints += " · : command · ? help · q quit"
+		if a.drawer.job != nil && !a.drawer.open {
+			hints = "o output · " + hints
+		}
 	}
 	hints = st.Muted.Render(hints)
 	if r != "" {
