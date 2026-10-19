@@ -24,7 +24,7 @@ or free text, or null.
 | `DeprecationDate string` | `deprecation_date` | `deprecation_date`, or "" |
 | `DisableDate string` | `disable_date` | `disable_date`, or "" |
 | `Reason string` | `reason` | `deprecation_reason` when deprecated, else `disable_reason` when disabled, else "" |
-| `Replacement string` | `replacement` | the replacement for that same state, written as brew writes it: the name when the formula and cask replacements are the same name, `--formula <name>` or `--cask <name>` otherwise, "" when none |
+| `Replacement string` | `replacement` | the replacement from the `disable_replacement_*` fields when disabled, else the `deprecation_replacement_*` fields when deprecated (as brew does), written as brew writes it: the name when the formula and cask replacements are the same name, `--formula <name>` or `--cask <name>` otherwise, "" when none |
 
 `snapshotVersion` goes from 6 to 7.
 

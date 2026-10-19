@@ -70,6 +70,7 @@ func disableLine(p brew.Package, now time.Time) string {
 		if err != nil {
 			return ""
 		}
+		// From 29 February this lands on 1 March; brew's Ruby `>> 12` gives 28 February.
 		day = deprecated.AddDate(0, 12, 0)
 	}
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)

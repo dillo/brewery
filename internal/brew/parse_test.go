@@ -273,13 +273,27 @@ func TestReasonComesFromTheStateBrewReports(t *testing.T) {
 	}
 	var p Package
 	r.apply(&p)
-	if p.Reason != "unmaintained" || p.Replacement != "" {
-		t.Errorf("deprecated wins, as in brew: %+v", p)
+	if p.Reason != "unmaintained" || p.Replacement != "--formula other" {
+		t.Errorf("reason deprecated-first, replacement disabled-first, as in brew: %+v", p)
 	}
 	r.Deprecated = false
 	p = Package{}
 	r.apply(&p)
 	if p.Reason != "does_not_build" || p.Replacement != "--formula other" {
 		t.Errorf("disabled: %+v", p)
+	}
+}
+
+func TestReplacementTagsDecode(t *testing.T) {
+	pkgs, err := ParseInfo([]byte(`{"formulae":[{"name":"f","deprecated":true,"deprecation_replacement_formula":"fnew","disabled":true,"disable_replacement_formula":"fdis"}],
+"casks":[{"token":"c1","disabled":true,"disable_replacement_cask":"cdis"},{"token":"c2","deprecated":true,"deprecation_replacement_cask":"cnew"}]}`))
+	if err != nil || len(pkgs) != 3 {
+		t.Fatalf("%v %d", err, len(pkgs))
+	}
+	want := []string{"--formula fdis", "--cask cdis", "--cask cnew"}
+	for i, w := range want {
+		if pkgs[i].Replacement != w {
+			t.Errorf("%s: Replacement = %q, want %q", pkgs[i].Name, pkgs[i].Replacement, w)
+		}
 	}
 }

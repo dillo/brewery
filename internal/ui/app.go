@@ -177,6 +177,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.jobs.preview = a.recordPreview
 	a.maint.loaded = true // its rows are always there, each saying how it stands
 	a.maint.preview = a.maintPreview
+	a.installed.now = func() time.Time { return a.now() } // follows a.now, which tests replace
 	a.outdated.note = a.dataAge
 	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
@@ -311,7 +312,6 @@ func (a *App) sync() {
 	a.taps.loaded = a.loaded[qTaps]
 	a.ix = state.NewIndex(a.snap.Packages)
 	a.installed.sizes = a.snap.Sizes
-	a.installed.now = a.now
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))

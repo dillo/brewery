@@ -154,16 +154,22 @@ type retireJSON struct {
 	DisableCask        *string `json:"disable_replacement_cask"`
 }
 
-// apply copies the fields into p. The reason and replacement come from
-// the state brew reports: deprecated before disabled, as brew does.
+// apply copies the fields into p. The reason comes from the deprecation
+// first, but the replacement from the disable first, as brew does.
 func (r retireJSON) apply(p *Package) {
 	p.Deprecated, p.Disabled = r.Deprecated, r.Disabled
 	p.DeprecationDate, p.DisableDate = deref(r.DeprecationDate), deref(r.DisableDate)
 	switch {
 	case r.Deprecated:
-		p.Reason, p.Replacement = deref(r.DeprecationReason), replacement(deref(r.DeprecationFormula), deref(r.DeprecationCask))
+		p.Reason = deref(r.DeprecationReason)
 	case r.Disabled:
-		p.Reason, p.Replacement = deref(r.DisableReason), replacement(deref(r.DisableFormula), deref(r.DisableCask))
+		p.Reason = deref(r.DisableReason)
+	}
+	switch {
+	case r.Disabled:
+		p.Replacement = replacement(deref(r.DisableFormula), deref(r.DisableCask))
+	case r.Deprecated:
+		p.Replacement = replacement(deref(r.DeprecationFormula), deref(r.DeprecationCask))
 	}
 }
 
