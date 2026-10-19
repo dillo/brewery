@@ -1,31 +1,33 @@
 ╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
 │ brewery                ││ Top-level                                                  ││ git                                              │
-│  Home                  ││ Things you installed that nothing else needs.              ││ git 2.51.0                                       │
-│                        ││  NAME          ╭────────────────────────────────────────────────────╮uted revision control system              │
-│ PACKAGES               ││ ───────────────│ Installed                                          │                                          │
-│  All                7  ││  docker-desktop│ u          upgrade                                 │    formula                               │
-│  Top-level          5  ││  fd            │ x          uninstall                               │    homebrew/core                         │
-│  Formulae           5  ││  fontbase      │ p          pin or unpin                            │    50.0MB                                │
-│  Casks              2  ││  git           │ space      mark for u/x on several                 │ed  on request · 2026-08-29               │
-│  Dependencies       2  ││  lua-language-s│ l tab enter details, then j/k scroll               │    2.51.0                                │
-│  Outdated          ↑2  ││                │                                                    │    yes                                   │
-│  Pinned             1  ││                │ Lists                                              │    yes                                   │
-│                        ││                │ j k        move                                    │e   https://git-scm.com                   │
-│ MANAGE                 ││                │ gg G       top, bottom                             │                                          │
-│  Services          ✗1  ││                │ ctrl+d/u   half a page                             │ncies                                     │
-│  Taps               2  ││                │ /          filter by name                          │                                          │
-│                        ││                │ / esc      clear the filter                        │2                                         │
-│ DISCOVER               ││                │ y          copy the name                           │son-c                                     │
-│  Popular tools         ││                │ gx         open the homepage                       │                                          │
-│  Popular apps          ││                │                                                    │                                          │
-│  Rising                ││                │ Everywhere                                         │ installed depends on this                │
-│  New                   ││                │ h l        sidebar, list, details                  │                                          │
-│  Fonts                 ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
-│  Search all            ││                │ [ ]        previous or next entry                  │mpletion has been installed.              │
-│                        ││                │ :          run any brew command                    │                                          │
-│ TOOLS                  ││                │ r          refresh                                 │                                          │
-│  History            2  ││                │ U          brew update                             │                                          │
-│  Maintenance           ││                │ c          clean up                                │                                          │
+│  Home                  ││ Things you inst╭────────────────────────────────────────────────────╮1.0                                       │
+│                        ││  NAME          │ Installed                                          │uted revision control system              │
+│ PACKAGES               ││ ───────────────│ u          upgrade                                 │                                          │
+│  All                7  ││  docker-desktop│ x          uninstall                               │    formula                               │
+│  Top-level          5  ││  fd            │ p          pin or unpin                            │    homebrew/core                         │
+│  Formulae           5  ││  fontbase      │ R          reinstall                               │    50.0MB                                │
+│  Casks              2  ││  git           │ L          link or unlink                          │ed  on request · 2026-08-29               │
+│  Dependencies       2  ││  lua-language-s│ f          fetch the newer version                 │    2.51.0                                │
+│  Outdated          ↑2  ││                │ space      mark for several                        │    yes                                   │
+│  Pinned             1  ││                │ l tab enter details, then j/k scroll               │    yes                                   │
+│                        ││                │                                                    │e   https://git-scm.com                   │
+│ MANAGE                 ││                │ Lists                                              │                                          │
+│  Services          ✗1  ││                │ j k        move                                    │ncies                                     │
+│  Taps               2  ││                │ gg G       top, bottom                             │                                          │
+│                        ││                │ ctrl+d/u   half a page                             │2                                         │
+│ DISCOVER               ││                │ /          filter by name                          │son-c                                     │
+│  Popular tools         ││                │ / esc      clear the filter                        │                                          │
+│  Popular apps          ││                │ y          copy the name                           │                                          │
+│  Rising                ││                │ gx         open the homepage                       │ installed depends on this                │
+│  New                   ││                │                                                    │                                          │
+│  Fonts                 ││                │ Everywhere                                         │                                          │
+│  Search all            ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │
+│                        ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
+│ TOOLS                  ││                │ [ ]        previous or next entry                  │                                          │
+│  History            2  ││                │ :          run any brew command                    │                                          │
+│  Maintenance           ││                │ r          refresh                                 │                                          │
+│                        ││                │ U          brew update                             │                                          │
+│                        ││                │ c          clean up                                │                                          │
 │                        ││                │ o          show or hide output                     │                                          │
 │                        ││                │ i          type into the running job               │                                          │
 │                        ││                │ ctrl+c     stop the running job                    │                                          │
@@ -33,8 +35,6 @@
 │                        ││                │                                                    │                                          │
 │                        ││                │ any key closes this                                │                                          │
 │                        ││                ╰────────────────────────────────────────────────────╯                                          │
-│                        ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
  NORMAL  Top-level › git                                          u upgrade · x uninstall · p pin · l details · : command · ? help · q quit 

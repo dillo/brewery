@@ -13,7 +13,7 @@ func TestHelpListsTheKeysForWhereYouAre(t *testing.T) {
 	show(t, a, "Top-level")
 	keys(t, a, "?")
 	out := stripANSI(a.render())
-	for _, want := range []string{"Installed", "space", "mark for u/x on several", "gx", "open the homepage", "Everywhere", "any key closes this"} {
+	for _, want := range []string{"Installed", "space", "mark for several", "gx", "open the homepage", "Everywhere", "any key closes this"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("Installed help is missing %q:\n%s", want, out)
 		}

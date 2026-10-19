@@ -99,14 +99,24 @@ func (a *App) installedKey(k string) (cmd tea.Cmd, ok bool) {
 		return nil, true
 	case "p":
 		return a.togglePin(), true
+	case "R":
+		a.askReinstall()
+		return nil, true
+	case "L":
+		return a.linkKey(), true
+	case "f":
+		return a.fetchKey(), true
 	}
 	return a.markKey(k)
 }
 
 // outdatedKey handles the action keys on Outdated.
 func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
-	if k == "A" {
+	switch k {
+	case "A":
 		return a.askUpgradeAll(), true
+	case "f":
+		return a.fetchKey(), true
 	}
 	return a.markKey(k)
 }

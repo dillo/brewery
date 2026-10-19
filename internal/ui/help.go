@@ -29,11 +29,14 @@ func (a *App) helpGroups() []helpGroup {
 		}}
 	case a.tab == tabInstalled:
 		here = helpGroup{"Installed", [][2]string{
-			{"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"}, {"space", "mark for u/x on several"},
-			{"l tab enter", "details, then j/k scroll"},
+			{"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"},
+			{"R", "reinstall"}, {"L", "link or unlink"}, {"f", "fetch the newer version"},
+			{"space", "mark for several"}, {"l tab enter", "details, then j/k scroll"},
 		}}
 	case a.tab == tabOutdated:
-		here = helpGroup{"Outdated", [][2]string{{"u", "upgrade"}, {"A", "upgrade all"}, {"space", "mark for u on several"}}}
+		here = helpGroup{"Outdated", [][2]string{
+			{"u", "upgrade"}, {"f", "fetch the newer version"}, {"A", "upgrade all"}, {"space", "mark for several"},
+		}}
 	case a.tab == tabServices:
 		here = helpGroup{"Services", [][2]string{{"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab enter", "details"}, {"j k", "in the details, scroll the log"}, {"L", "follow the log full screen"}}}
 	case a.tab == tabTaps:
