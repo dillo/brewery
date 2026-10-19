@@ -111,15 +111,15 @@ func TestSizeTableShrinksTheRoomiestColumnsFirst(t *testing.T) {
 		}
 		return fmt.Sprint(got)
 	}
-	// NAME wants 20; VERSION 16, TYPE 9, STATUS 10 and SIZE 8 (optional).
+	// NAME wants 20; VERSION 16, TYPE 9, STATUS 12 and SIZE 8 (optional).
 	for _, tt := range []struct {
 		w    int
 		want string
 		why  string
 	}{
-		{62, "[20 10 6 8 8]", "VERSION gives way first, then STATUS and TYPE"},
-		{50, "[24 8 4 6 0]", "fixed columns at their floors, then SIZE goes before NAME gives way"},
-		{40, "[14 8 4 6 0]", "and only then does NAME shrink"},
+		{62, "[20 7 5 12 8]", "VERSION gives way first, then TYPE"},
+		{50, "[22 6 4 10 0]", "fixed columns at their floors, then SIZE goes before NAME gives way"},
+		{40, "[12 6 4 10 0]", "and only then does NAME shrink"},
 	} {
 		if got := widths(tt.w); got != tt.want {
 			t.Errorf("at %d: widths %s, want %s: %s", tt.w, got, tt.want, tt.why)

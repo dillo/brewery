@@ -311,6 +311,7 @@ func (a *App) sync() {
 	a.taps.loaded = a.loaded[qTaps]
 	a.ix = state.NewIndex(a.snap.Packages)
 	a.installed.sizes = a.snap.Sizes
+	a.installed.now = a.now
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))

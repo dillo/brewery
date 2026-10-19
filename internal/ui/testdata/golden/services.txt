@@ -10,6 +10,7 @@
 │  Dependencies       2  ││                                                            ││ nothing logged yet                               │
 │  Outdated          ↑2  ││                                                            ││                                                  │
 │  Pinned             1  ││                                                            ││                                                  │
+│  Deprecated         2  ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │ MANAGE                 ││                                                            ││                                                  │
 │  Services          ✗1  ││                                                            ││                                                  │
@@ -26,7 +27,6 @@
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
