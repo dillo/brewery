@@ -565,8 +565,8 @@ func (a *App) typeIntoJob() {
 }
 
 // handleKey routes a key press by mode first: an open confirmation or
-// action menu gets every key, and in insert mode keys go to brew, so typing an answer can
-// never trigger a brewery shortcut such as q.
+// action menu gets every key, and in insert mode keys go to brew, so
+// typing an answer can never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
 	if a.quitting {
