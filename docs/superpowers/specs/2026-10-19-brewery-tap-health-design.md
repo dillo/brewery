@@ -66,7 +66,9 @@ It sits between Services cleanup and Update Homebrew.
 | no problems | `N fine` (OK colour) |
 
 When some taps couldn't be checked, ` · M couldn't check` is added to
-either of the last two, e.g. `3 fine · 1 couldn't check`.
+either of the last two, e.g. `3 fine · 1 couldn't check`. When none was
+fine and none had a problem, the status is just `M couldn't check`, in
+the warning colour.
 
 **Details column:**
 - Title `Check taps`.
