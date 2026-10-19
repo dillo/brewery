@@ -37,4 +37,4 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  All › lua-language-server                                           j/k move · enter run · esc close · : command · ? help · q quit 
+ NORMAL  All › lua-language-server                                                                         j/k move · enter run · esc close 

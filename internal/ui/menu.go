@@ -157,14 +157,14 @@ func (a *App) copyItems(copyLabel string) []menuItem {
 }
 
 // markedMenu is the menu for n marked rows: only what works on several.
-func (a *App) markedMenu(n int, items ...menuItem) *menuBox {
+func markedMenu(n int, items ...menuItem) *menuBox {
 	return &menuBox{title: fmt.Sprintf("%d marked", n), items: items}
 }
 
 // installedMenu is the menu for the selected installed package.
 func (a *App) installedMenu() *menuBox {
 	if n := a.marks(); n > 0 {
-		return a.markedMenu(n, a.keyItem("u", "Upgrade"), a.keyItem("f", "Fetch"),
+		return markedMenu(n, a.keyItem("u", "Upgrade"), a.keyItem("f", "Fetch"),
 			a.keyItem("R", "Reinstall…"), a.keyItem("x", "Uninstall…"))
 	}
 	p, ok := a.installed.selected()
@@ -204,7 +204,7 @@ func linkLabel(p brew.Package) string {
 // outdatedMenu is the menu for the selected outdated package.
 func (a *App) outdatedMenu() *menuBox {
 	if n := a.marks(); n > 0 {
-		return a.markedMenu(n, a.keyItem("u", "Upgrade"), a.keyItem("f", "Fetch"))
+		return markedMenu(n, a.keyItem("u", "Upgrade"), a.keyItem("f", "Fetch"))
 	}
 	i := a.outdated.cursor()
 	if i < 0 {
@@ -266,5 +266,5 @@ func (a *App) historyMenu() *menuBox {
 	if len(r.Args) > 0 {
 		items = append(items, a.keyItem("R", "Run again…"))
 	}
-	return &menuBox{title: "brew " + strings.Join(r.Args, " "), items: append(items, a.copyItems("Copy the command")...)}
+	return &menuBox{title: strings.TrimSpace("brew " + strings.Join(r.Args, " ")), items: append(items, a.copyItems("Copy the command")...)}
 }

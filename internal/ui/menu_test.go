@@ -2,6 +2,7 @@ package ui
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -221,5 +222,83 @@ func TestMenuNeedsARow(t *testing.T) {
 	keys(t, a, "enter")
 	if a.menu != nil {
 		t.Errorf("an empty list has no menu: %+v", a.menu)
+	}
+}
+
+func TestMenuClosesWhenBrewAsks(t *testing.T) {
+	fs := &fakeStarter{procs: []*fakeProc{newFakeProc(0)}}
+	p := fs.procs[0]
+	a := newJobApp(t, fs)
+	waiting := settle(t, a, a.run(action{title: "install x", args: []string{"install", "x"}}))
+	fs.calls = nil
+	selectInstalled(t, a, "fd")
+	keys(t, a, "enter")
+	if a.menu == nil {
+		t.Fatal("enter should open the menu")
+	}
+	p.out <- []byte("Password:")
+	waiting = resume(t, a, waiting)
+	if a.menu != nil || a.mode != modeInsert {
+		t.Fatalf("menu %v, mode %v: brew's question closes the menu", a.menu, a.mode)
+	}
+	keys(t, a, "p", "a", "x", "enter")
+	if got := p.input(); got != "pax\r" {
+		t.Errorf("brew got %q, want every key of the answer", got)
+	}
+	if len(fs.calls) != 0 || a.confirm != nil {
+		t.Errorf("typing the answer ran something: calls %v, confirm %+v", fs.calls, a.confirm)
+	}
+	p.exit()
+	resume(t, a, waiting)
+}
+
+func TestMenuRunsTheHighlightedItem(t *testing.T) {
+	a, l := newLinksApp(t)
+	selectInstalled(t, a, "fd")
+	keys(t, a, "enter", "j", "enter") // Reinstall…, then Unlink…
+	if a.menu != nil || a.confirm == nil || !strings.HasPrefix(a.confirm.title, "Unlink fd") {
+		t.Fatalf("enter should run Unlink…: menu %v, confirm %+v", a.menu, a.confirm)
+	}
+	keys(t, a, "n")
+	keys(t, a, "enter", "g", "x")
+	fd, _ := a.installed.selected()
+	if a.menu != nil || !reflect.DeepEqual(l.opened, []string{fd.Homepage}) {
+		t.Errorf("g x should open the homepage: menu %v, opened %q", a.menu, l.opened)
+	}
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "opening "+fd.Homepage) {
+		t.Errorf("status bar %q", bar)
+	}
+}
+
+func TestMenuBarShowsOnlyItsFooter(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	selectInstalled(t, a, "fd")
+	keys(t, a, "enter")
+	bar := stripANSI(a.statusBar())
+	if !strings.Contains(bar, menuFooter) || strings.Contains(bar, "? help") || strings.Contains(bar, "q quit") {
+		t.Errorf("with the menu open the bar has only its footer: %q", bar)
+	}
+}
+
+func TestMenuItemsForPinnedAndPlainLink(t *testing.T) {
+	a, _ := pinnedApp(t)
+	selectInstalled(t, a, "pcre2")
+	if _, got := menuLabels(t, a); slices.ContainsFunc(got, func(l string) bool { return strings.HasPrefix(l, "Upgrade to") }) || !slices.Contains(got, "Fetch 10.50") {
+		t.Errorf("Installed, pinned and behind: %q", got)
+	}
+	selectOutdated(t, a, "pcre2")
+	if _, got := menuLabels(t, a); !reflect.DeepEqual(got, []string{"Fetch 10.50", "Upgrade all…", "Copy the name", "Open the homepage"}) {
+		t.Errorf("Outdated, pinned: %q", got)
+	}
+
+	for i, p := range a.snap.Packages {
+		if p.Name == "pcre2" {
+			a.snap.Packages[i].Linked, a.snap.Packages[i].KegOnly = false, false
+		}
+	}
+	a.sync()
+	selectInstalled(t, a, "pcre2")
+	if _, got := menuLabels(t, a); !slices.Contains(got, "Link") {
+		t.Errorf("an unlinked formula that isn't keg-only says a plain Link: %q", got)
 	}
 }

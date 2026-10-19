@@ -3,6 +3,7 @@ package ui
 import (
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -160,4 +161,37 @@ func TestNewActionsRefreshWhatTheyChange(t *testing.T) {
 	if got := refreshedBy(t, "fd", "R", "y"); got["installed"] == 0 || got["outdated"] == 0 || got["sizes"] == 0 {
 		t.Errorf("reinstall should refresh what's on disk: %v", got)
 	}
+}
+
+func TestMarkedFetchOnOutdatedIncludesPinned(t *testing.T) {
+	a, fs := pinnedApp(t)
+	selectOutdated(t, a, "pcre2")
+	keys(t, a, "space")
+	selectOutdated(t, a, "git")
+	keys(t, a, "space")
+	fs.calls = nil
+	keys(t, a, "f")
+	if want := [][]string{{"fetch", "pcre2", "git"}}; !sameCalls(fs.calls, want) {
+		t.Errorf("ran %v, want one fetch of both, pinned included", fs.calls)
+	}
+	if a.marks() != 2 {
+		t.Errorf("fetch keeps the marks: %d", a.marks())
+	}
+}
+
+// sameCalls reports whether got has the calls in want, with each call's
+// names in any order.
+func sameCalls(got, want [][]string) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range got {
+		g, w := slices.Clone(got[i]), slices.Clone(want[i])
+		slices.Sort(g)
+		slices.Sort(w)
+		if !slices.Equal(g, w) {
+			return false
+		}
+	}
+	return true
 }

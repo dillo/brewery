@@ -558,14 +558,14 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 
 // typeIntoJob switches to INSERT with the drawer open, so keys go to the
 // running job. A g pressed just before is forgotten: after INSERT, the next
-// key mustn't complete a gg or gx. Help closes, so it can't eat the first
-// key of the answer.
+// key mustn't complete a gg or gx. Help and the action menu close, so they
+// can't eat the first key of the answer.
 func (a *App) typeIntoJob() {
-	a.mode, a.drawer.open, a.gPending, a.help = modeInsert, true, false, false
+	a.mode, a.drawer.open, a.gPending, a.help, a.menu = modeInsert, true, false, false, nil
 }
 
-// handleKey routes a key press by mode first: an open confirmation gets
-// every key, and in insert mode keys go to brew, so typing an answer can
+// handleKey routes a key press by mode first: an open confirmation or
+// action menu gets every key, and in insert mode keys go to brew, so typing an answer can
 // never trigger a brewery shortcut such as q.
 func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 	k := msg.String()
@@ -603,8 +603,8 @@ func (a *App) handleKey(msg tea.KeyPressMsg) tea.Cmd {
 }
 
 // modalKey gives the key to whatever has taken over the keyboard: help,
-// an open confirmation, insert mode (brew), or a prompt being typed. ok is
-// false when nothing has.
+// an open confirmation, the action menu, insert mode (brew), or a prompt
+// being typed. ok is false when nothing has.
 func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 	k := msg.String()
 	switch {
@@ -1022,9 +1022,12 @@ func (a *App) statusBar() string {
 
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
-	hints := a.actionHints() + " · : command · ? help · q quit"
-	if a.drawer.job != nil && !a.drawer.open {
-		hints = "o output · " + hints
+	hints := a.actionHints()
+	if a.menu == nil { // the menu's footer stands alone
+		hints += " · : command · ? help · q quit"
+		if a.drawer.job != nil && !a.drawer.open {
+			hints = "o output · " + hints
+		}
 	}
 	hints = st.Muted.Render(hints)
 	if r != "" {
