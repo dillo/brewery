@@ -70,8 +70,10 @@ months, as brew does. Before today: `disabled on <date>`; today or later:
 
 ## Installed list
 
-The STATUS column, which already shows `pinned` and `↑`, adds
-`deprecated` (yellow) or `disabled` (red) after them.
+The STATUS column, which already shows `pinned` and `↑`, adds `⚠`
+(yellow) for deprecated or `✗` (red) for disabled after them. Symbols, not
+words, so the columns keep their room; the words appear in the details and
+the Deprecated view.
 
 ## Installed details
 

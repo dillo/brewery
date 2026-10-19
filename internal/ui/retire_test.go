@@ -52,7 +52,7 @@ func TestInstalledShowsRetirement(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "All")
 	out := stripANSI(a.render())
-	for _, want := range []string{`json-c\s.*deprecated`, `fontbase\s.*disabled`} {
+	for _, want := range []string{`json-c\s.*⚠`, `fontbase\s.*✗`} {
 		if !regexp.MustCompile(want).MatchString(out) {
 			t.Errorf("STATUS lacks %s:\n%s", want, out)
 		}

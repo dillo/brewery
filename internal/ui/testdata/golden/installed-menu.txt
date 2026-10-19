@@ -1,15 +1,15 @@
 ╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
 │ brewery                ││ All                                                        ││ lua-language-server                              │
 │  Home                  ││ Everything installed.                                      ││ lua-language-server 3.19.1                       │
-│                        ││  NAME                  VERSI…  TYPE  STATUS      SIZE      ││ Language Server for the Lua language             │
+│                        ││  NAME                  VERSION   TYPE   STATUS   SIZE      ││ Language Server for the Lua language             │
 │ PACKAGES               ││ ────────────────────────────────────────────────────────── ││                                                  │
-│  All                7  ││  docker-desktop        4.39.…  cask  ↑           2.2GB     ││ type       formula                               │
-│  Top-level          5  ││  fd                    10.5.0  for…              3.0MB     ││ tap        homebrew/core                         │
-│  Formulae           5  ││  fontbase              2.22.0  cask  disabled              ││ installed  on request · 2026-07-25               │
-│  Casks              2  ││  git                   2.51.0  for…  pinned      50.0MB    ││ latest     3.19.2 ↑                              │
-│  Dependencies       2  ││  json-c                0.19    for…  deprecated            ││ linked     yes                                   │
-│  Outdated          ↑2  ││  lua-language-server   3.19.1  for…  ↑                     ││ homepage   https://github.com/LuaLS/lua-languag… │
-│  Pinned             1  ││  pcre2                 10.49   for…                        ││                                                  │
+│  All                7  ││  docker-desktop        4.39.0,…  cask   ↑        2.2GB     ││ type       formula                               │
+│  Top-level          5  ││  fd                    10.5.0    form…           3.0MB     ││ tap        homebrew/core                         │
+│  Formulae           5  ││  fontbase              2.22.0    cask   ✗                  ││ installed  on request · 2026-07-25               │
+│  Casks              2  ││  git                   2.51.0    form…  pinned   50.0MB    ││ latest     3.19.2 ↑                              │
+│  Dependencies       2  ││  json-c                0.19      form…  ⚠                  ││ linked     yes                                   │
+│  Outdated          ↑2  ││  lua-language-server   3.19.1    form…  ↑                  ││ homepage   https://github.com/LuaLS/lua-languag… │
+│  Pinned             1  ││  pcre2                 10.49     form…                     ││                                                  │
 │  Deprecated         2  ││                         ╭──────────────────────────────────╮│ Dependencies                                     │
 │                        ││                         │ lua-language-server 3.19.1       ││ none                                             │
 │ MANAGE                 ││                         │                                  ││                                                  │

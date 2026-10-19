@@ -38,7 +38,7 @@ var views = [...]struct{ name, about string }{
 	filterDeprecated: {"Deprecated", "On their way out: deprecated, or disabled and no longer installable."},
 }
 
-var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 6}, {"TYPE", 9, 4}, {"STATUS", 12, 10}, {"SIZE", 8, -1}}
+var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
 
 // installedTab lists installed packages with a details preview.
 type installedTab struct {
@@ -168,9 +168,9 @@ func status(st theme.Styles, p brew.Package) string {
 	}
 	switch retireState(p) {
 	case "deprecated":
-		s = append(s, theme.Tint(st.P.Yellow, "deprecated"))
+		s = append(s, theme.Tint(st.P.Yellow, "⚠"))
 	case "disabled":
-		s = append(s, theme.Tint(st.P.Red, "disabled"))
+		s = append(s, theme.Tint(st.P.Red, "✗"))
 	}
 	return strings.Join(s, " ")
 }
