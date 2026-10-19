@@ -9,19 +9,19 @@
 │  Casks              2  ││  git           │ space      mark for u/x on several                 │ed  on request · 2026-08-29               │
 │  Dependencies       2  ││  lua-language-s│ l tab enter details, then j/k scroll               │    2.51.0                                │
 │  Outdated          ↑2  ││                │                                                    │    yes                                   │
-│  Pinned             1  ││                │ Lists                                              │e   https://git-scm.com                   │
-│                        ││                │ j k        move                                    │                                          │
-│ MANAGE                 ││                │ gg G       top, bottom                             │ncies                                     │
-│  Services          ✗1  ││                │ ctrl+d/u   half a page                             │                                          │
-│  Taps               2  ││                │ /          filter by name                          │2                                         │
-│                        ││                │ / esc      clear the filter                        │son-c                                     │
-│ DISCOVER               ││                │ y          copy the name                           │                                          │
+│  Pinned             1  ││                │ Lists                                              │    yes                                   │
+│                        ││                │ j k        move                                    │e   https://git-scm.com                   │
+│ MANAGE                 ││                │ gg G       top, bottom                             │                                          │
+│  Services          ✗1  ││                │ ctrl+d/u   half a page                             │ncies                                     │
+│  Taps               2  ││                │ /          filter by name                          │                                          │
+│                        ││                │ / esc      clear the filter                        │2                                         │
+│ DISCOVER               ││                │ y          copy the name                           │son-c                                     │
 │  Popular tools         ││                │ gx         open the homepage                       │                                          │
-│  Popular apps          ││                │                                                    │ installed depends on this                │
-│  Rising                ││                │ Everywhere                                         │                                          │
+│  Popular apps          ││                │                                                    │                                          │
+│  Rising                ││                │ Everywhere                                         │ installed depends on this                │
 │  New                   ││                │ h l        sidebar, list, details                  │                                          │
-│  Fonts                 ││                │ 1-5        Home, Packages, Manage, Discover, Tools │mpletion has been installed.              │
-│  Search all            ││                │ [ ]        previous or next entry                  │                                          │
+│  Fonts                 ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
+│  Search all            ││                │ [ ]        previous or next entry                  │mpletion has been installed.              │
 │                        ││                │ :          run any brew command                    │                                          │
 │ TOOLS                  ││                │ r          refresh                                 │                                          │
 │  History            2  ││                │ U          brew update                             │                                          │

@@ -32,6 +32,8 @@ type Package struct {
 	Latest      string    `json:"latest"`  // newest version known to brew
 	OnRequest   bool      `json:"on_request"`
 	Pinned      bool      `json:"pinned"`
+	Linked      bool      `json:"linked"`   // a formula's keg is linked into brew's prefix
+	KegOnly     bool      `json:"keg_only"` // brew doesn't link the formula unless forced
 	Outdated    bool      `json:"outdated"`
 	Deprecated  bool      `json:"deprecated"`
 	Caveats     string    `json:"caveats"`

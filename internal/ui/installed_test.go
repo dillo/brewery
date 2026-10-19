@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -249,5 +250,35 @@ func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	}
 	if a.focus == colDetails {
 		t.Error("coming back to Installed starts on the list")
+	}
+}
+
+func TestInstalledDetailsSayWhetherLinked(t *testing.T) {
+	for _, tt := range []struct {
+		name, want string
+		unlink     bool
+	}{
+		{"fd", `linked\s+yes`, false},
+		{"fd", `linked\s+no\s+│`, true},
+		{"json-c", `linked\s+no · keg-only`, false},
+	} {
+		a := newJobApp(t, &fakeStarter{})
+		if tt.unlink {
+			for i := range a.snap.Packages {
+				if a.snap.Packages[i].Name == tt.name {
+					a.snap.Packages[i].Linked = false
+				}
+			}
+			a.sync()
+		}
+		selectInstalled(t, a, tt.name)
+		if out := stripANSI(a.render()); !regexp.MustCompile(tt.want).MatchString(out) {
+			t.Errorf("%s (unlinked %v): details lack %q:\n%s", tt.name, tt.unlink, tt.want, out)
+		}
+	}
+	a := newJobApp(t, &fakeStarter{})
+	selectInstalled(t, a, "fontbase")
+	if out := stripANSI(a.render()); regexp.MustCompile(`linked\s+(yes|no)`).MatchString(out) {
+		t.Errorf("a cask has no linked row:\n%s", out)
 	}
 }
