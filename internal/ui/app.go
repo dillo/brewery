@@ -100,6 +100,9 @@ type App struct {
 	mode       mode
 	cmd        cmdline         // the ":" prompt
 	filterIn   textinput.Model // the "/" prompt
+	jumping    bool            // the "/" prompt is the sidebar's jump, not a list's filter
+	jumpFrom   int             // the entry the jump started on
+	jumpMiss   bool            // the jump's text matches no entry
 	confirm    *confirmBox     // open confirmation, or nil
 	menu       *menuBox        // open action menu, or nil
 	installing discRow         // the row the open install dialog is for
@@ -945,6 +948,22 @@ func (a *App) promptBar(mode, hint string, line func(w int) string) string {
 	return st.StatusBar.Width(a.width).Render(ansi.Truncate(badge+line(room)+hint, a.width, ""))
 }
 
+// filterBar is the status bar while the "/" prompt is open: a filter or,
+// in the sidebar, a jump.
+func (a *App) filterBar() string {
+	badge, hint := "FILTER", "enter keep · esc clear"
+	if a.jumping {
+		badge, hint = "JUMP", "enter open · esc back"
+		if a.jumpMiss {
+			hint = "no match · esc back"
+		}
+	}
+	return a.promptBar(badge, hint, func(w int) string {
+		a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
+		return a.filterIn.View()
+	})
+}
+
 // statusLeft is the mode's badge, the open entry and what is selected or
 // marked.
 func (a *App) statusLeft() string {
@@ -1016,10 +1035,7 @@ func (a *App) statusBar() string {
 	case modeCommand:
 		return a.promptBar("COMMAND", "tab complete · ↑↓ history · esc cancel", a.cmd.view)
 	case modeFilter:
-		return a.promptBar("FILTER", "enter keep · esc clear", func(w int) string {
-			a.filterIn.SetWidth(max(w-2, 1)) // the prompt and the cursor cell
-			return a.filterIn.View()
-		})
+		return a.filterBar()
 	}
 	left := a.statusLeft()
 	r := a.statusRight()
