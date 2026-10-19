@@ -15,6 +15,7 @@ import (
 
 	"github.com/dillo/brewery/internal/analytics"
 	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/github"
 	"github.com/dillo/brewery/internal/jobs"
 	"github.com/dillo/brewery/internal/state"
 )
@@ -83,9 +84,21 @@ func demoSnapshot(t *testing.T) state.Snapshot {
 		}
 	}
 	s.Sizes = map[string]int64{}
-	for _, p := range s.Packages {
+	for i, p := range s.Packages {
 		s.Sizes[p.Key()] = demoSize(p.Key())
+		s.Packages[i].Linked = p.Kind == brew.KindFormula // the demo's info.json predates linked_keg
+		if p.Name == "python@3.13" {                      // superseded, for the Deprecated view
+			s.Packages[i].Deprecated, s.Packages[i].Reason = true, "versioned_formula"
+			s.Packages[i].DeprecationDate, s.Packages[i].Replacement = "2026-04-01", "python@3.15"
+		}
 	}
+	// A second third-party tap, and what Check taps found yesterday.
+	s.Taps = append(s.Taps, brew.Tap{Name: "oldfriend/tools", Remote: "https://github.com/oldfriend/homebrew-tools", Formulae: 3})
+	s.TapChecks = []github.TapCheck{
+		{Tap: "dillo/tap", State: github.Fine},
+		{Tap: "oldfriend/tools", State: github.Archived},
+	}
+	s.TapsCheckedAt = demoNow.Add(-26 * time.Hour)
 	s.FetchedAt, s.DataAt = demoNow.Add(-2*time.Minute), demoNow.Add(-3*time.Hour)
 	return s
 }
@@ -224,6 +237,31 @@ func TestScreenshots(t *testing.T) {
 	show(t, a, "Popular tools") // Popular tools
 	selectDiscover(t, a, "pipx")
 	shoot(t, a, "discover")
+
+	selectInstalled(t, a, "gh") // outdated, so its menu offers the upgrade
+	show(t, a, "Top-level")
+	keys(t, a, "enter")
+	shoot(t, a, "menu")
+	keys(t, a, "esc")
+
+	selectInstalled(t, a, "python@3.13")
+	show(t, a, "Deprecated")
+	shoot(t, a, "deprecated")
+
+	show(t, a, "Services") // postgresql@16, with its log
+	keys(t, a, "l")
+	shoot(t, a, "services")
+
+	show(t, a, "Maintenance")
+	a.maint.table.SetCursor(maintTaps)
+	keys(t, a, "l")
+	shoot(t, a, "maintenance")
+
+	show(t, a, "Home") // the sidebar's jump from Home, part-way through /maint
+	keys(t, a, "h", "/")
+	typeText(t, a, "mai")
+	shoot(t, a, "jump")
+	keys(t, a, "esc")
 
 	p := newFakeProc(0, upgradeGh) // still running when the picture is taken
 	fs := &fakeStarter{procs: []*fakeProc{p}}
