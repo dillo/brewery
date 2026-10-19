@@ -8,11 +8,12 @@ import (
 	"time"
 
 	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/github"
 )
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache
 // files are ignored rather than half-loaded.
-const snapshotVersion = 5
+const snapshotVersion = 6
 
 // Snapshot is everything brewery knows about the installation at one time.
 type Snapshot struct {
@@ -29,8 +30,10 @@ type Snapshot struct {
 	AutoremoveRan   bool                 `json:"autoremove_ran"`
 	ServiceFiles    []string             `json:"service_files"` // brew's launchd files, by full path
 	ServiceFilesRan bool                 `json:"service_files_ran"`
-	Sizes           map[string]int64     `json:"sizes"`   // bytes on disk, by Package.Key
-	DataAt          time.Time            `json:"data_at"` // when brew last fetched package data
+	TapChecks       []github.TapCheck    `json:"tap_checks"`      // what the last tap check found, by tap
+	TapsCheckedAt   time.Time            `json:"taps_checked_at"` // when it finished; zero if never
+	Sizes           map[string]int64     `json:"sizes"`           // bytes on disk, by Package.Key
+	DataAt          time.Time            `json:"data_at"`         // when brew last fetched package data
 	FetchedAt       time.Time            `json:"fetched_at"`
 }
 

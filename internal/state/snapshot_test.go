@@ -9,16 +9,19 @@ import (
 	"time"
 
 	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/github"
 )
 
 func TestSaveLoadRoundTrip(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "nested", "snapshot.json")
 	in := Snapshot{
-		Packages:  testPkgs,
-		Outdated:  []brew.Outdated{{Name: "docker-desktop", Kind: brew.KindCask, Installed: "4.39.0", Current: "4.95.0"}},
-		Taps:      []brew.Tap{{Name: "anomalyco/tap", Formulae: 2}},
-		DoctorRan: true,
-		FetchedAt: time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC),
+		Packages:      testPkgs,
+		Outdated:      []brew.Outdated{{Name: "docker-desktop", Kind: brew.KindCask, Installed: "4.39.0", Current: "4.95.0"}},
+		Taps:          []brew.Tap{{Name: "anomalyco/tap", Formulae: 2}},
+		DoctorRan:     true,
+		TapChecks:     []github.TapCheck{{Tap: "o/t", State: github.Moved, MovedTo: "n/t"}},
+		TapsCheckedAt: time.Date(2026, 10, 19, 9, 0, 0, 0, time.UTC),
+		FetchedAt:     time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC),
 	}
 	if err := Save(path, in); err != nil {
 		t.Fatal(err)
