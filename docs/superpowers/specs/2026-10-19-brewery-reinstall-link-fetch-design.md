@@ -1,8 +1,141 @@
-# Reinstall, link and fetch on Installed: design
+# Action menu, with reinstall, link and fetch: design
 
-The last practical item from the Brewy backlog. `reinstall`, `link`,
-`unlink` and `fetch` can only be typed at `:` today. This adds keys for
-them on Installed, and `f` on Outdated.
+The last practical item from the Brewy backlog was keys for `reinstall`,
+`link`, `unlink` and `fetch`, which can only be typed at `:` today. Each
+new key is one more letter to remember, though, so this adds an action
+menu instead: `enter` on a row lists what can be done to it. Reinstall,
+link and fetch live in that menu, and keep direct keys (`R`, `L`, `f`)
+that the menu shows beside them.
+
+## The menu
+
+### Opening and closing
+
+- `enter` opens the menu on Installed, Outdated, Services, Taps, Discover
+  and History, from the list or from the details.
+- On an empty list (or one filtered to nothing), `enter` does nothing.
+- `enter` no longer moves from the list to the details. `l`, `right` and
+  `tab` still do.
+- Home, the sidebar and Maintenance keep their `enter`: Home opens the
+  tile, the sidebar goes to the list, and Maintenance runs the row (each
+  row is a single action already).
+
+### Inside the menu
+
+| Key | Does |
+|---|---|
+| `j`, `down` | next item, wrapping to the first |
+| `k`, `up` | previous item, wrapping to the last |
+| `enter` | runs the item under the cursor |
+| an item's key | runs that item; `gx` is `g` then `x` |
+| `esc`, `q` | closes the menu |
+
+Any other key is ignored while the menu is open. Running an item closes
+the menu first, then does exactly what the item's direct key does,
+including its notes and prompts.
+
+### Looks
+
+A box over the screen, drawn with the same `overlay` as the confirm box,
+with a rounded border.
+
+```
+╭ fd 10.2.0 ─────────────────────╮
+│ › Upgrade to 10.3.0          u │
+│   Fetch 10.3.0               f │
+│   Reinstall…                 R │
+│   Unlink…                    L │
+│   Pin                        p │
+│   Uninstall…                 x │
+│   Copy the name              y │
+│   Open the homepage         gx │
+│                                │
+│ j/k move · enter run · esc     │
+╰────────────────────────────────╯
+```
+
+- **Title:** what the menu acts on: `<name> <version>` for a package,
+  the name for a service or tap, `brew <args>` for a History job
+  (truncated to fit), and `N marked` with marks.
+- **Items:** the label on the left; its key on the right, muted. The
+  selected item is marked `›` and drawn in the accent colour.
+- A label ends in `…` when picking it asks first.
+- **Footer:** `j/k move · enter run · esc close`, muted.
+- The cursor starts on the first item.
+
+### Items per tab
+
+Only the items that apply to the selected row are listed, in this order.
+
+**Installed**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Upgrade to <newer>` | `u` | outdated and not pinned |
+| `Fetch <newer>` | `f` | outdated |
+| `Reinstall…` | `R` | always |
+| `Link` or `Unlink…` | `L` | a formula; `Link…` for an unlinked keg-only one |
+| `Pin` or `Unpin` | `p` | always |
+| `Uninstall…` | `x` | always |
+| `Copy the name` | `y` | always |
+| `Open the homepage` | `gx` | it has a web page |
+
+**Outdated**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Upgrade to <newer>` | `u` | not pinned |
+| `Fetch <newer>` | `f` | always |
+| `Upgrade all…` | `A` | always |
+| `Copy the name` | `y` | always |
+| `Open the homepage` | `gx` | it has a web page |
+
+**Services**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Start` | `s` | status isn't `started` |
+| `Stop…` | `S` | status is `started` |
+| `Restart` | `R` | status is `started` |
+| `Follow the log` | `L` | it has a log file |
+| `Copy the name` | `y` | always |
+| `Open the homepage` | `gx` | its formula has a web page |
+
+**Taps**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Untap…` | `x` | always |
+| `Copy the name` | `y` | always |
+| `Open the homepage` | `gx` | its remote is a web page |
+
+**Discover**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Install…` | `a` | always |
+| `Copy the name` | `y` | always |
+| `Open the homepage` | `gx` | it has a web page |
+
+**History**
+
+| Item | Key | Listed when |
+|---|---|---|
+| `Run again…` | `R` | the job has arguments |
+| `Copy the command` | `y` | always |
+
+### With marks
+
+On Installed and Outdated, when packages are marked, the menu acts on
+the marked set, titled `N marked`, and lists only the items that work on
+several:
+
+| Tab | Items |
+|---|---|
+| Installed | `Upgrade` (`u`), `Fetch` (`f`), `Reinstall…` (`R`), `Uninstall…` (`x`) |
+| Outdated | `Upgrade` (`u`), `Fetch` (`f`) |
+
+Each runs what its key does with marks today, checks included.
 
 ## Data
 
@@ -27,7 +160,9 @@ Installed's details for a formula gain a `linked` row:
 
 Casks don't get the row.
 
-## Keys
+## The new actions
+
+These are reached from the menu, or directly by their keys.
 
 ### `R`: reinstall (Installed)
 
@@ -99,9 +234,31 @@ The cache grows, so Cleanup's dry run is measured again.
 
 On Outdated, every row is outdated, so `f` always fetches.
 
+## Code shape
+
+- A new `internal/ui/menu.go` holds the menu:
+  - `menuItem{key, label string; run func() tea.Cmd}`;
+  - `menuBox{title string; items []menuItem; cursor int; gPending bool}`
+    with `key(k string) (run func() tea.Cmd, done bool)` and
+    `view(st theme.Styles, maxW int) string`;
+  - `(a *App) openMenu()`, which builds the items for the current tab
+    and selection, one helper per tab (`installedMenu`, `outdatedMenu`,
+    `servicesMenu`, `tapsMenu`, `discoverMenu`, `historyMenu`).
+- Each item's `run` calls the same function as its key, so the key and
+  the menu can't drift apart.
+- `App` gains `menu *menuBox`. `modalKey` gives it keys after `confirm`,
+  and `render` draws it as it draws `confirm`.
+- `tabKey` sends `enter` to `openMenu` on the six tabs above, from the
+  list or the details.
+- Every function stays under the complexity limits (gocognit and gocyclo
+  at 20).
+
 ## Help and hints
 
-**Help** adds these rows, after `p` on Installed:
+**Help:**
+- Each of the six tabs gains `enter` `actions` as its first row.
+- `l tab enter` becomes `l tab` wherever it appears.
+- New rows, after `p` on Installed:
 
 | Group | Key | Text |
 |---|---|---|
@@ -110,16 +267,26 @@ On Outdated, every row is outdated, so `f` always fetches.
 | Installed | `f` | `fetch the newer version` |
 | Outdated | `f` | `fetch the newer version` |
 
-The `space` text on Installed becomes `mark for u/x/R/f on several`, and
-on Outdated `mark for u/f on several`.
+- The `space` text on Installed becomes `mark for several`, and on
+  Outdated the same.
 
-**Hints:**
+**Hints:** they lead with the menu and drop most single letters.
 
 | Where | Hint |
 |---|---|
-| Installed list | `u upgrade · x uninstall · p pin · R reinstall · l details` |
-| Installed details | `j/k scroll · h back to the list · u upgrade · x uninstall` (unchanged) |
-| Outdated | `u upgrade · A upgrade all · f fetch` |
+| Installed list | `enter actions · space mark · l details` |
+| Installed details | `enter actions · j/k scroll · h back to the list` |
+| Outdated | `enter actions · space mark · A upgrade all` |
+| Services list | `enter actions · l details` |
+| Services details | `enter actions · h back to the list`, with `j/k scroll the log · ` in front when the log scrolls |
+| Taps | `enter actions` |
+| Discover list | `enter actions · / search · l details · r refetch` |
+| Discover details | `enter actions · j/k scroll · h back to the list` |
+| History list | `enter actions · l details · / filter by command` |
+| History details | `enter actions · j/k scroll · h back to the list` |
+| Menu open | `j/k move · enter run · esc close` |
+
+Maintenance, Home and the sidebar keep their hints.
 
 ## Testing
 
@@ -129,7 +296,19 @@ on Outdated `mark for u/f on several`.
   fd, and `"keg_only": true` with a null `linked_keg` on one formula.
   Check that the other tests still pass.
 
-**ui:**
+**ui, the menu:**
+- `enter` opens it on each of the six tabs, and not on an empty list.
+- `enter` on Home, the sidebar and Maintenance does what it did.
+- `enter` no longer opens the details; `l` and `tab` still do.
+- The items listed for each tab, including the conditional ones:
+  outdated or not, pinned, linked, keg-only, cask, service started or
+  not, no web page, marks on Installed and Outdated.
+- `j`/`k` wrap; `enter` runs the item under the cursor; an item's key
+  runs it; `g` then `x` opens the homepage; `esc` and `q` close it; any
+  other key is ignored.
+- Picking an item that asks opens its confirm box.
+
+**ui, the actions:**
 - `R`, single: prompt text, then args and refresh.
 - `R`, marked: the prompt, then one job per kind.
 - `L`:
@@ -147,8 +326,12 @@ on Outdated `mark for u/f on several`.
   a cask.
 - Help and hints.
 
+**Existing tests** that press `enter` to reach the details switch to `l`
+or `tab`.
+
 **Goldens and checks:**
-- The goldens change only for the details row and hints. Check the diff
-  before updating.
+- Add a golden of the Installed menu open on fd.
+- The other goldens change only for the details row and the hints. Check
+  the diff before updating.
 - `make cover` stays at 90% or above in total and per package.
 - `golangci-lint` reports `0 issues.` with the complexity limits at 20.
