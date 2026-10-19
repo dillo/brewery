@@ -23,6 +23,7 @@ const (
 	maintCleanup
 	maintAutoremove
 	maintServices
+	maintTaps
 	maintUpdate
 )
 
@@ -68,13 +69,14 @@ func (a *App) servicesState() (state tidyState, remove, stop []string) {
 }
 
 // syncMaint rebuilds Maintenance's rows from what doctor, the
-// dry-runs, the service files and History say now.
+// dry-runs, the service files, the last tap check and History say now.
 func (a *App) syncMaint() {
 	a.maint.setRows([]table.Row{
 		{"Doctor", a.doctorStatus()},
 		{"Cleanup", a.cleanupStatus()},
 		{"Autoremove", a.autoremoveStatus()},
 		{"Services cleanup", a.servicesStatus()},
+		{"Check taps", a.tapsStatus()},
 		{"Update Homebrew", a.updateStatus()},
 	})
 }
@@ -172,7 +174,7 @@ func (a *App) UseBrewVersion(v string) { a.brewVersion = v }
 
 // maintPreview is Maintenance's details for the selected row: what doctor
 // found, what each cleanup would free, what autoremove and services cleanup
-// would do, or Homebrew's version and its last update, each above what enter
+// would do, what the tap check found, or Homebrew's version and its last update, each above what enter
 // does.
 func (a *App) maintPreview(w, h int) (title, body string) {
 	st := a.st
@@ -217,6 +219,8 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 			body = strings.Join(servicesCleanupLines(remove, stop), "\n") + "\n\n" + st.Muted.Render("enter cleans up")
 		}
 		return "Services cleanup", body
+	case maintTaps:
+		return "Check taps", a.tapsPreview()
 	case maintUpdate:
 		last := "brewery hasn't run brew update"
 		if r, ok := a.lastUpdate(); ok {
@@ -230,7 +234,8 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 }
 
 // maintRun does what the selected Maintenance row offers: doctor again,
-// the cleanup, autoremove or services cleanup prompt, or brew update.
+// the cleanup, autoremove or services cleanup prompt, the tap check, or
+// brew update.
 func (a *App) maintRun() tea.Cmd {
 	switch a.maint.cursor() {
 	case maintDoctor:
@@ -241,6 +246,8 @@ func (a *App) maintRun() tea.Cmd {
 		return a.askAutoremove()
 	case maintServices:
 		return a.askServicesCleanup()
+	case maintTaps:
+		return a.checkTaps()
 	case maintUpdate:
 		return a.brewUpdate()
 	}

@@ -47,7 +47,7 @@ func TestMaintenanceDetails(t *testing.T) {
 	if out := stripANSI(a.render()); !strings.Contains(out, "The standard cleanup frees") {
 		t.Errorf("Cleanup's details word the estimates as the prompt does:\n%s", out)
 	}
-	keys(t, a, "j", "j", "j")
+	keys(t, a, "j", "j", "j", "j", "j")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "4.6.3") || !strings.Contains(out, "hasn't run brew update") {
 		t.Errorf("Update's details: the version, and no update yet:\n%s", out)
@@ -115,7 +115,7 @@ func TestMaintenanceRowsWhenClean(t *testing.T) {
 func TestMaintenanceUpdateDetails(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "Maintenance")
-	keys(t, a, "j", "j", "j", "j")
+	keys(t, a, "j", "j", "j", "j", "j")
 	out := stripANSI(a.render())
 	if !strings.Contains(out, "unknown") {
 		t.Errorf("with no version the details say unknown:\n%s", out)
@@ -145,7 +145,7 @@ func TestMaintenanceEnter(t *testing.T) {
 	if a.confirm == nil || a.confirm.title != "Clean up Homebrew?" {
 		t.Fatalf("enter on Cleanup asks to clean up: %+v", a.confirm)
 	}
-	keys(t, a, "n", "j", "j", "j", "enter") // Update Homebrew
+	keys(t, a, "n", "j", "j", "j", "j", "enter") // Update Homebrew
 	if c := lastCall(fs); strings.Join(c, " ") != "update" {
 		t.Errorf("enter on Update Homebrew runs brew update: %v", c)
 	}

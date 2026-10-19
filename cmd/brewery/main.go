@@ -17,6 +17,7 @@ import (
 
 	"github.com/dillo/brewery/internal/analytics"
 	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/github"
 	"github.com/dillo/brewery/internal/jobs"
 	"github.com/dillo/brewery/internal/state"
 	"github.com/dillo/brewery/internal/ui"
@@ -111,6 +112,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	app.UseCatalog(client)
 	// Discover's analytics are kept beside the snapshot.
 	app.UseAnalytics(analytics.NewStore(filepath.Join(filepath.Dir(cachePath), "analytics"), version))
+	app.UseTapChecker(github.NewClient()) // only used when the user runs Check taps
 	// Full-screen commands get the terminal's stderr: while the TUI runs,
 	// os.Stderr and file descriptor 2 are the crash log. terminal is set
 	// once the crash log starts, before the program runs any command.

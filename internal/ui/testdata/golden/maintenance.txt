@@ -1,13 +1,13 @@
 ╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
-│ brewery                ││ Maintenance · 5                                            ││ Doctor                                           │
+│ brewery                ││ Maintenance · 6                                            ││ Doctor                                           │
 │  Home                  ││  TASK                STATUS                                ││ ⚠ The following taps are not trusted:            │
 │                        ││ ────────────────────────────────────────────────────────── ││   oven-sh/bun                                    │
 │ PACKAGES               ││  Doctor              2 warnings                            ││                                                  │
 │  All                7  ││  Cleanup             frees 3.9KB                           ││   Untap them with:                               │
 │  Top-level          5  ││  Autoremove          removes 2 formulae                    ││     brew untap oven-sh/bun                       │
 │  Formulae           5  ││  Services cleanup    1 unused file                         ││                                                  │
-│  Casks              2  ││  Update Homebrew     1h ago                                ││ ⚠ Some installed casks are deprecated or disabl… │
-│  Dependencies       2  ││                                                            ││   fontbase                                       │
+│  Casks              2  ││  Check taps          not checked yet                       ││ ⚠ Some installed casks are deprecated or disabl… │
+│  Dependencies       2  ││  Update Homebrew     1h ago                                ││   fontbase                                       │
 │  Outdated          ↑2  ││                                                            ││                                                  │
 │  Pinned             1  ││                                                            ││ enter runs brew doctor again                     │
 │                        ││                                                            ││                                                  │

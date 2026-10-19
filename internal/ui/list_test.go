@@ -59,7 +59,7 @@ func TestServiceAndTapRows(t *testing.T) {
 	if got := rows[0][1]; got != theme.Tint(testStyles.P.Red, "error (exit 1)") {
 		t.Errorf("a failed service should be red: %q", got)
 	}
-	if got := tapRows(snap.Taps)[0]; got[1] != "2" || got[2] != "1" || got[3] != "" {
+	if got := (&App{snap: snap}).tapRows()[0]; got[1] != "2" || got[2] != "1" || got[3] != "" {
 		t.Errorf("tap row = %v", got)
 	}
 }

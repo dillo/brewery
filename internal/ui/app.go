@@ -49,15 +49,17 @@ const (
 
 // App is the root Bubble Tea model.
 type App struct {
-	src       Source
-	catalog   Catalog   // Discover's catalogue, or nil
-	analytics Analytics // Discover's install counts, or nil
-	start     Starter
-	cachePath string
-	st        theme.Styles
-	now       func() time.Time
-	ctx       context.Context // cancelled on quit, stopping running queries
-	cancel    context.CancelFunc
+	src          Source
+	catalog      Catalog    // Discover's catalogue, or nil
+	analytics    Analytics  // Discover's install counts, or nil
+	tapChecker   TapChecker // asks GitHub about taps, or nil
+	checkingTaps bool       // a tap check is running
+	start        Starter
+	cachePath    string
+	st           theme.Styles
+	now          func() time.Time
+	ctx          context.Context // cancelled on quit, stopping running queries
+	cancel       context.CancelFunc
 
 	snap   state.Snapshot
 	ix     *state.Index
@@ -309,7 +311,7 @@ func (a *App) sync() {
 	a.installed.setData(a.snap.Packages, a.ix)
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))
-	a.taps.setRows(tapRows(a.snap.Taps))
+	a.taps.setRows(a.tapRows())
 	a.discover.setHave(a.snap.Packages)
 }
 
@@ -382,6 +384,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd {
 		return a.handleResult(msg)
 	case catalogueMsg:
 		return a.gotCatalogue(msg)
+	case tapsCheckedMsg:
+		return a.gotTapChecks(msg)
 	case cachedStatsMsg:
 		return a.gotCachedStats(msg)
 	case fetchedStatsMsg:
