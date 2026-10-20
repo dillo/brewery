@@ -27,7 +27,7 @@ func Locate() (string, error) {
 	}
 	candidates = append(candidates, "/opt/homebrew/bin/brew", "/usr/local/bin/brew")
 	for _, c := range candidates {
-		if info, err := os.Stat(c); err == nil && !info.IsDir() {
+		if info, err := os.Stat(c); err == nil && !info.IsDir() { // #nosec G703 -- only stats where the user says brew is
 			return c, nil
 		}
 	}
@@ -59,7 +59,7 @@ type ExecRunner struct {
 // brew and everything it spawned. WaitDelay bounds the wait for a child that
 // escaped the kill but still holds the output pipes.
 func (r ExecRunner) Run(ctx context.Context, args ...string) ([]byte, []byte, error) {
-	cmd := exec.CommandContext(ctx, r.Bin, args...)
+	cmd := exec.CommandContext(ctx, r.Bin, args...) // #nosec G204 -- Bin is the brew that Locate found
 	cmd.Env = append(os.Environ(), r.Env...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Cancel = func() error { return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) }

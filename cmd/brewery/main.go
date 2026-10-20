@@ -125,13 +125,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		return cmd
 	}
-	app.UseTakeover(func(args []string) *exec.Cmd { return fullScreen(exec.Command(bin, args...)) })
+	app.UseTakeover(func(args []string) *exec.Cmd { return fullScreen(exec.Command(bin, args...)) }) // #nosec G204 -- bin is the brew that Locate found
 	// less +F follows the log as it grows; ctrl+c stops following, q returns.
 	app.UsePager(func(files []string) *exec.Cmd {
-		return fullScreen(exec.Command("less", append([]string{"+F", "--"}, files...)...))
+		return fullScreen(exec.Command("less", append([]string{"+F", "--"}, files...)...)) // #nosec G204 -- files follow --
 	})
 
-	app.UseOpener(func(url string) error { return exec.Command("open", url).Run() }) // macOS's open
+	app.UseOpener(func(url string) error { return exec.Command("open", url).Run() }) // #nosec G204 -- macOS's open; only ever given an http(s) URL
 	app.UseClipboard(clipboard.WriteAll)
 
 	crash, crashErr := startCrashLog(jobs.DefaultStateDir())

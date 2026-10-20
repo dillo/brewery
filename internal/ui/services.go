@@ -40,7 +40,7 @@ type logMsg struct {
 // readLogTail returns the last lines of the file at path as plain text: a
 // log can hold colors and progress redraws that would garble the pane.
 func readLogTail(path string) (string, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec G304 -- the log path brew reports for the service
 	if err != nil {
 		return "", err
 	}

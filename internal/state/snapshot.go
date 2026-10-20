@@ -55,7 +55,7 @@ func DefaultCachePath() string {
 // Load reads a cached snapshot. A missing, corrupt or outdated file returns
 // an empty Snapshot and an error the caller may ignore.
 func Load(path string) (Snapshot, error) {
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(path) // #nosec G304 -- our own cache file
 	if err != nil {
 		return Snapshot{}, err
 	}
@@ -76,7 +76,7 @@ func Save(path string, s Snapshot) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
 	tmp, err := os.CreateTemp(filepath.Dir(path), "snapshot-*.json")
@@ -84,16 +84,16 @@ func Save(path string, s Snapshot) error {
 		return err
 	}
 	if _, err := tmp.Write(b); err != nil {
-		tmp.Close()
-		os.Remove(tmp.Name())
+		_ = tmp.Close()
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	if err := tmp.Close(); err != nil {
-		os.Remove(tmp.Name())
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	if err := os.Rename(tmp.Name(), path); err != nil {
-		os.Remove(tmp.Name())
+		_ = os.Remove(tmp.Name())
 		return err
 	}
 	return nil

@@ -3,6 +3,7 @@ package brew
 import (
 	"errors"
 	"io"
+	"math"
 	"os"
 	"os/exec"
 	"syscall"
@@ -25,7 +26,7 @@ type Proc struct {
 // env is appended to the current environment. The command leads its own
 // process group, so Interrupt and Kill reach everything it started.
 func StartPTY(bin string, args, env []string, cols, rows int) (*Proc, error) {
-	cmd := exec.Command(bin, args...)
+	cmd := exec.Command(bin, args...) // #nosec G204 -- bin is the brew that Locate found
 	cmd.Env = append(os.Environ(), env...)
 	f, err := pty.StartWithSize(cmd, winsize(cols, rows))
 	if err != nil {
@@ -34,8 +35,12 @@ func StartPTY(bin string, args, env []string, cols, rows int) (*Proc, error) {
 	return &Proc{cmd: cmd, pty: f}, nil
 }
 
+// winsize clamps cols and rows to what a terminal size can hold.
 func winsize(cols, rows int) *pty.Winsize {
-	return &pty.Winsize{Cols: uint16(max(cols, 1)), Rows: uint16(max(rows, 1))}
+	return &pty.Winsize{
+		Cols: uint16(min(max(cols, 1), math.MaxUint16)),
+		Rows: uint16(min(max(rows, 1), math.MaxUint16)),
+	}
 }
 
 // Read returns the command's output. Once the command has exited and its
@@ -64,7 +69,7 @@ func (p *Proc) Kill() error { return syscall.Kill(-p.cmd.Process.Pid, syscall.SI
 // signal ended it. Call it after Read has returned io.EOF.
 func (p *Proc) Wait() (int, error) {
 	err := p.cmd.Wait()
-	p.pty.Close()
+	_ = p.pty.Close()
 	if exitErr, ok := errors.AsType[*exec.ExitError](err); ok {
 		return exitErr.ExitCode(), nil
 	}
