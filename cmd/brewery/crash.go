@@ -51,12 +51,12 @@ func startCrashLog(dir string) (*crashLog, error) {
 	if err == nil {
 		err = unix.Dup2(int(f.Fd()), 2)
 		if err != nil {
-			unix.Close(fd2)
+			_ = unix.Close(fd2)
 		}
 	}
 	if err != nil {
-		f.Close()
-		os.Remove(f.Name())
+		_ = f.Close()
+		_ = os.Remove(f.Name())
 		return nil, err
 	}
 	c := &crashLog{dir: dir, f: f, stderr: os.Stderr, terminal: os.NewFile(uintptr(fd2), "/dev/stderr"), earlier: earlier}
@@ -69,12 +69,12 @@ func startCrashLog(dir string) (*crashLog, error) {
 // removed and stop returns "".
 func (c *crashLog) stop(now time.Time) string {
 	_ = unix.Dup2(int(c.terminal.Fd()), 2) // best effort: brewery is on its way out
-	c.terminal.Close()
+	_ = c.terminal.Close()
 	os.Stderr = c.stderr
 	info, err := c.f.Stat()
-	c.f.Close()
+	_ = c.f.Close()
 	if err != nil || info.Size() == 0 {
-		os.Remove(c.f.Name())
+		_ = os.Remove(c.f.Name())
 		return ""
 	}
 	return keepCrash(c.dir, c.f.Name(), now)
@@ -90,7 +90,7 @@ func keepCrash(dir, tmp string, at time.Time) string {
 	logs, _ := filepath.Glob(filepath.Join(dir, "crash-*.log"))
 	slices.Sort(logs) // the names sort by time
 	for _, old := range logs[:max(len(logs)-keepCrashes, 0)] {
-		os.Remove(old)
+		_ = os.Remove(old)
 	}
 	return path
 }
@@ -111,7 +111,7 @@ func adoptLeftovers(dir string) []string {
 			continue
 		}
 		if info.Size() == 0 {
-			os.Remove(tmp)
+			_ = os.Remove(tmp)
 			continue
 		}
 		kept = append(kept, keepCrash(dir, tmp, info.ModTime()))

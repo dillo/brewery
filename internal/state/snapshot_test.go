@@ -137,3 +137,16 @@ func TestSaveFails(t *testing.T) {
 		t.Errorf("files left behind: %v", left)
 	}
 }
+
+func TestSaveIsPrivate(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "nested", "snapshot.json")
+	if err := Save(path, Snapshot{}); err != nil {
+		t.Fatal(err)
+	}
+	if fi, err := os.Stat(filepath.Dir(path)); err != nil || fi.Mode().Perm() != 0o700 {
+		t.Errorf("dir mode = %v, %v; want 0700", fi.Mode().Perm(), err)
+	}
+	if fi, err := os.Stat(path); err != nil || fi.Mode().Perm() != 0o600 {
+		t.Errorf("file mode = %v, %v; want 0600", fi.Mode().Perm(), err)
+	}
+}

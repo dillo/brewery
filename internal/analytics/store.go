@@ -69,7 +69,7 @@ func (s Store) path(list string) string {
 // Cached is the last copy of list, and when it was fetched.
 func (s Store) Cached(list string) (List, time.Time, error) {
 	path := s.path(list)
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(path) // #nosec G304 -- our own cache dir; path() strips "/" from list
 	if err != nil {
 		return List{}, time.Time{}, err
 	}
@@ -125,16 +125,16 @@ func (s Store) Tried() string {
 // SetTried records day (2006-01-02) as the day a fetch last started, so a
 // fetch that failed isn't tried again by every start that day.
 func (s Store) SetTried(day string) error {
-	if err := os.MkdirAll(s.Dir, 0o755); err != nil {
+	if err := os.MkdirAll(s.Dir, 0o700); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(s.Dir, triedFile), []byte(day+"\n"), 0o644)
+	return os.WriteFile(filepath.Join(s.Dir, triedFile), []byte(day+"\n"), 0o600)
 }
 
 // save writes the copy of list atomically, so a crash midway never leaves
 // half a file.
 func (s Store) save(list string, b []byte) error {
-	if err := os.MkdirAll(s.Dir, 0o755); err != nil {
+	if err := os.MkdirAll(s.Dir, 0o700); err != nil {
 		return err
 	}
 	f, err := os.CreateTemp(s.Dir, ".fetch-*")
@@ -143,7 +143,7 @@ func (s Store) save(list string, b []byte) error {
 	}
 	defer os.Remove(f.Name()) // fails harmlessly once renamed
 	if _, err := f.Write(b); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Close(); err != nil {

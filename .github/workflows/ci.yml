@@ -17,7 +17,27 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Test
-        run: go test -race ./...
+        shell: bash # with pipefail, so a failing test still fails through tee
+        run: go test -race -coverprofile=cover.out ./... | tee test.out
+      # Each package's coverage and the total go on the run's summary page;
+      # a total below the floor fails the build.
+      - name: Coverage
+        shell: bash
+        env:
+          FLOOR: 90
+        run: |
+          total=$(go tool cover -func=cover.out | awk '/^total:/ { sub("%", "", $NF); print $NF }')
+          {
+            echo "### Coverage: ${total}% (floor ${FLOOR}%)"
+            echo '```'
+            grep 'coverage:' test.out | awk '{ print $2, $5 }' | column -t
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if awk -v t="$total" -v f="$FLOOR" 'BEGIN { exit !(t < f) }'; then
+            echo "::error::coverage ${total}% is below the ${FLOOR}% floor"
+            exit 1
+          fi
+          echo "coverage ${total}% (floor ${FLOOR}%)"
       - name: Vet
         run: go vet ./...
       - name: Format

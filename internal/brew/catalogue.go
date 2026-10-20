@@ -84,11 +84,11 @@ func (c *Client) NewSinceUpdate(ctx context.Context) ([]Entry, error) {
 		file string
 		kind Kind
 	}{{"formula_names", KindFormula}, {"cask_names", KindCask}} {
-		before, err := os.ReadFile(filepath.Join(api, l.file+".before.txt"))
+		before, err := os.ReadFile(filepath.Join(api, l.file+".before.txt")) // #nosec G304 -- brew's own cache dir, from brew --cache
 		if err != nil {
 			continue
 		}
-		now, err := os.ReadFile(filepath.Join(api, l.file+".txt"))
+		now, err := os.ReadFile(filepath.Join(api, l.file+".txt")) // #nosec G304 -- brew's own cache dir, from brew --cache
 		if err != nil {
 			continue
 		}

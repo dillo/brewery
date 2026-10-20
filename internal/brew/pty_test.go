@@ -122,3 +122,16 @@ func TestPTYEndsWhenTheCommandExitsDespiteABackgroundChild(t *testing.T) {
 		t.Errorf("output ended after %v: it waited for the background child", d)
 	}
 }
+
+func TestWinsizeStaysInRange(t *testing.T) {
+	for _, c := range []struct{ cols, rows, wantCols, wantRows int }{
+		{80, 24, 80, 24},
+		{0, -5, 1, 1},
+		{70000, 1 << 40, 65535, 65535},
+	} {
+		ws := winsize(c.cols, c.rows)
+		if int(ws.Cols) != c.wantCols || int(ws.Rows) != c.wantRows {
+			t.Errorf("winsize(%d, %d) = %dx%d, want %dx%d", c.cols, c.rows, ws.Cols, ws.Rows, c.wantCols, c.wantRows)
+		}
+	}
+}

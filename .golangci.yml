@@ -9,6 +9,7 @@ linters:
     - gocognit
     - gocritic
     - gocyclo
+    - gosec
     - misspell
     - modernize
     - nestif
@@ -31,6 +32,11 @@ linters:
         linters:
           - gocognit
           - gocyclo
+      # Tests write fixtures and scripts with ordinary permissions; gosec
+      # itself skips them unless asked.
+      - path: _test\.go
+        linters:
+          - gosec
 
 formatters:
   enable:

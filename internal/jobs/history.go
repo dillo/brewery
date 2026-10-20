@@ -124,7 +124,7 @@ func (h History) Save(r Record) error {
 		werr = cerr
 	}
 	if werr != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return werr
 	}
 	// Jobs that start within the clock's precision share a name. publish
@@ -139,18 +139,18 @@ func (h History) Save(r Record) error {
 			break
 		}
 		if !os.IsExist(err) {
-			os.Remove(tmp)
+			_ = os.Remove(tmp)
 			return err
 		}
 		name = fmt.Sprintf("%s-%d.json", stem, i)
 	}
-	os.Remove(tmp) // still there after a link; already gone after a rename
+	_ = os.Remove(tmp) // still there after a link; already gone after a rename
 	files, err := h.files()
 	if err != nil {
 		return err
 	}
 	for _, f := range files[:max(len(files)-Keep, 0)] {
-		os.Remove(f)
+		_ = os.Remove(f)
 	}
 	return nil
 }
@@ -198,7 +198,7 @@ func (h History) Load() ([]Record, error) {
 	}
 	var recs []Record
 	for _, file := range slices.Backward(files) {
-		b, err := os.ReadFile(file)
+		b, err := os.ReadFile(file) // #nosec G304 -- files() lists our own state dir
 		if err != nil {
 			continue
 		}
@@ -216,7 +216,7 @@ func (h History) sweepTemps() {
 	stray, _ := filepath.Glob(filepath.Join(h.Dir, "*.tmp"))
 	for _, f := range stray {
 		if fi, err := os.Stat(f); err == nil && time.Since(fi.ModTime()) > time.Minute {
-			os.Remove(f)
+			_ = os.Remove(f)
 		}
 	}
 }
