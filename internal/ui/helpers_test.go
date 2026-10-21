@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
@@ -54,6 +55,11 @@ func fixtureSnapshot(t *testing.T) state.Snapshot {
 	s.ServiceFiles = []string{agents + "homebrew.mxcl.mysql.plist", agents + "homebrew.mxcl.postgresql@16.plist", agents + "homebrew.mxcl.redis.plist"}
 	s.ServiceFilesRan = true
 	s.Sizes = map[string]int64{"formula/git": 52_480_000, "cask/docker-desktop": 2_362_232_012, "formula/fd": 3_100_000}
+	scan, err := brew.ParseVulns(readFixture(t, "vulns.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.Vulns, s.VulnsAt = &scan, testNow.Add(-3*time.Hour)
 	return s
 }
 

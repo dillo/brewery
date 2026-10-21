@@ -21,7 +21,11 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 		DoctorRan:     true,
 		TapChecks:     []github.TapCheck{{Tap: "o/t", State: github.Moved, MovedTo: "n/t"}},
 		TapsCheckedAt: time.Date(2026, 10, 19, 9, 0, 0, 0, time.UTC),
-		FetchedAt:     time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC),
+		Vulns: &brew.VulnScan{Checked: 2, Skipped: []string{"fd"}, Findings: []brew.VulnFinding{
+			{Formula: "json-c", Version: "0.19", Vulns: []brew.Vuln{{ID: "OSV-1", Severity: "HIGH", Summary: "s", Fixed: []string{"0.20"}}}},
+		}},
+		VulnsAt:   time.Date(2026, 10, 20, 8, 0, 0, 0, time.UTC),
+		FetchedAt: time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC),
 	}
 	if err := Save(path, in); err != nil {
 		t.Fatal(err)

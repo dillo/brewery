@@ -201,6 +201,7 @@ func (a *App) afterJob(j *jobs.Job) tea.Cmd {
 	act := a.acts[j.ID]
 	saving := a.record(j, a.drawer.output())
 	if act.full {
+		a.noVulns = false // brew update can bring the vulns command
 		return tea.Batch(saving, a.refresh())
 	}
 	return tea.Batch(saving, a.request(act.refresh...))

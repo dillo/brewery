@@ -28,11 +28,15 @@ func (a *App) helpGroups() []helpGroup {
 			{"enter", "open the tile; on Recent jobs, all jobs"},
 		}}
 	case a.tab == tabInstalled:
-		here = helpGroup{"Installed", [][2]string{
+		ks := [][2]string{
 			{"enter", "actions"}, {"u", "upgrade"}, {"x", "uninstall"}, {"p", "pin or unpin"},
 			{"R", "reinstall"}, {"L", "link or unlink"}, {"f", "fetch the newer version"},
 			{"space", "mark for several"}, {"l tab", "details, then j/k scroll"},
-		}}
+		}
+		if a.installed.filter == filterSkunky {
+			ks = append(ks, [2]string{"r", "refresh, and scan with brew vulns now"})
+		}
+		here = helpGroup{"Installed", ks}
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{
 			{"enter", "actions"}, {"u", "upgrade"}, {"f", "fetch the newer version"}, {"A", "upgrade all"}, {"space", "mark for several"},

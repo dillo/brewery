@@ -11,15 +11,16 @@
 │  Outdated          ↑2  ││  ✓ pcre2               formula    Perl compatible regula…  ││                                                  │
 │  Pinned             1  ││  python@3.15           formula    Interpreted, interacti…  ││ Installs                                         │
 │  Deprecated         2  ││  ripgrep               formula    Search tool like grep …  ││ 30 days    217,104                               │
-│                        ││  wget                  formula    Internet file retriever  ││ 90 days    710,524                               │
-│ MANAGE                 ││  0-ad                  cask       Real-time strategy game  ││ 365 days   2,994,048                             │
-│  Services          ✗1  ││  ape                   cask       Software for DNA seque…  ││                                                  │
-│  Taps               2  ││  codex                 cask       OpenAI's coding agent …  ││                                                  │
-│                        ││  ✓ docker-desktop      cask       App to build and share…  ││                                                  │
-│ DISCOVER               ││  firefox               cask       Web browser              ││                                                  │
-│  Popular tools         ││  font-fira-code        cask       Fira Code                ││                                                  │
-│  Popular apps          ││  font-jetbrains-mono   cask       JetBrains Mono           ││                                                  │
-│  Rising                ││  ✓ fontbase            cask       Font manager             ││                                                  │
+│  Skunky            !2  ││  wget                  formula    Internet file retriever  ││ 90 days    710,524                               │
+│                        ││  0-ad                  cask       Real-time strategy game  ││ 365 days   2,994,048                             │
+│ MANAGE                 ││  ape                   cask       Software for DNA seque…  ││                                                  │
+│  Services          ✗1  ││  codex                 cask       OpenAI's coding agent …  ││                                                  │
+│  Taps               2  ││  ✓ docker-desktop      cask       App to build and share…  ││                                                  │
+│                        ││  firefox               cask       Web browser              ││                                                  │
+│ DISCOVER               ││  font-fira-code        cask       Fira Code                ││                                                  │
+│  Popular tools         ││  font-jetbrains-mono   cask       JetBrains Mono           ││                                                  │
+│  Popular apps          ││  ✓ fontbase            cask       Font manager             ││                                                  │
+│  Rising                ││                                                            ││                                                  │
 │  New                   ││                                                            ││                                                  │
 │  Fonts                 ││                                                            ││                                                  │
 │  Search all            ││                                                            ││                                                  │
@@ -27,7 +28,6 @@
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │

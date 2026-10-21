@@ -24,6 +24,7 @@ type Source interface {
 	Autoremove(ctx context.Context) ([]string, error)
 	ServiceFiles(ctx context.Context) ([]string, error)
 	DataUpdated(ctx context.Context) (time.Time, error)
+	Vulns(ctx context.Context) (brew.VulnScan, error)
 }
 
 var _ Source = (*brew.Client)(nil)
@@ -40,10 +41,11 @@ const (
 	qSizes
 	qAutoremove
 	qServiceFiles
+	qVulns
 )
 
 // queryNames name each query in the status bar.
-var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup", "sizes", "autoremove", "service files"}
+var queryNames = [...]string{"installed", "outdated", "services", "taps", "doctor", "cleanup", "sizes", "autoremove", "service files", "vulns"}
 
 // resultMsg carries one query's result back to the App.
 type resultMsg struct {
@@ -57,13 +59,14 @@ type resultMsg struct {
 	sizes        map[string]int64
 	autoremove   []string
 	serviceFiles []string
+	vulns        brew.VulnScan
 	dataAt       time.Time // with outdated: when brew last fetched package data, if known
 	err          error
 }
 
 // jsonQueries are the queries a full refresh runs in parallel; doctor,
-// cleanup's and autoremove's dry-runs, the service files and the disk sizes
-// follow once they have all returned.
+// cleanup's and autoremove's dry-runs, the service files, the disk sizes and,
+// when it's due, the vulnerability scan follow once they have all returned.
 var jsonQueries = []query{qInstalled, qOutdated, qServices, qTaps}
 
 // fetch runs one query. ctx is the App's root context, so quitting stops
@@ -94,6 +97,8 @@ func fetch(ctx context.Context, src Source, q query, pkgs []brew.Package) tea.Cm
 			m.autoremove, m.err = src.Autoremove(ctx)
 		case qServiceFiles:
 			m.serviceFiles, m.err = src.ServiceFiles(ctx)
+		case qVulns:
+			m.vulns, m.err = src.Vulns(ctx)
 		}
 		return m
 	}

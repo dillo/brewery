@@ -11,23 +11,23 @@
 │  Outdated          ↑2  ││                │ space      mark for several                        │    yes                                   │
 │  Pinned             1  ││                │ l tab      details, then j/k scroll                │    yes                                   │
 │  Deprecated         2  ││                │                                                    │e   https://git-scm.com                   │
-│                        ││                │ Lists                                              │                                          │
-│ MANAGE                 ││                │ j k        move                                    │ncies                                     │
-│  Services          ✗1  ││                │ gg G       top, bottom                             │                                          │
-│  Taps               2  ││                │ ctrl+d/u   half a page                             │2                                         │
-│                        ││                │ /          filter by name                          │son-c                                     │
-│ DISCOVER               ││                │ / esc      clear the filter                        │                                          │
-│  Popular tools         ││                │ y          copy the name                           │                                          │
-│  Popular apps          ││                │ gx         open the homepage                       │ installed depends on this                │
-│  Rising                ││                │                                                    │                                          │
-│  New                   ││                │ Everywhere                                         │                                          │
-│  Fonts                 ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │
-│  Search all            ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
-│                        ││                │ [ ]        previous or next entry                  │                                          │
-│ TOOLS                  ││                │ :          run any brew command                    │                                          │
-│  History            2  ││                │ r          refresh                                 │                                          │
-│  Maintenance           ││                │ U          brew update                             │                                          │
-│                        ││                │ c          clean up                                │                                          │
+│  Skunky            !2  ││                │ Lists                                              │                                          │
+│                        ││                │ j k        move                                    │ncies                                     │
+│ MANAGE                 ││                │ gg G       top, bottom                             │                                          │
+│  Services          ✗1  ││                │ ctrl+d/u   half a page                             │2                                         │
+│  Taps               2  ││                │ /          filter by name                          │son-c                                     │
+│                        ││                │ / esc      clear the filter                        │                                          │
+│ DISCOVER               ││                │ y          copy the name                           │                                          │
+│  Popular tools         ││                │ gx         open the homepage                       │ installed depends on this                │
+│  Popular apps          ││                │                                                    │                                          │
+│  Rising                ││                │ Everywhere                                         │                                          │
+│  New                   ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │
+│  Fonts                 ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
+│  Search all            ││                │ [ ]        previous or next entry                  │                                          │
+│                        ││                │ :          run any brew command                    │                                          │
+│ TOOLS                  ││                │ r          refresh                                 │                                          │
+│  History            2  ││                │ U          brew update                             │                                          │
+│  Maintenance           ││                │ c          clean up                                │                                          │
 │                        ││                │ o          show or hide output                     │                                          │
 │                        ││                │ i          type into the running job               │                                          │
 │                        ││                │ ctrl+c     stop the running job                    │                                          │

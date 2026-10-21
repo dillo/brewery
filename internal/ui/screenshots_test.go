@@ -117,6 +117,7 @@ func (d demoSource) Cleanup(context.Context) (brew.Cleanup, error) { return d.sn
 func (d demoSource) Sizes(context.Context, []brew.Package) (map[string]int64, error) {
 	return d.snap.Sizes, nil
 }
+func (d demoSource) Vulns(context.Context) (brew.VulnScan, error)   { return brew.VulnScan{}, nil }
 func (d demoSource) DataUpdated(context.Context) (time.Time, error) { return d.snap.DataAt, nil }
 
 // demoStats serves Homebrew's analytics as of the demo machine's day.

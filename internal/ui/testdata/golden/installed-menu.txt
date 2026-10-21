@@ -10,24 +10,24 @@
 │  Dependencies       2  ││  json-c                0.19      form…  ⚠                  ││ linked     yes                                   │
 │  Outdated          ↑2  ││  lua-language-server   3.19.1    form…  ↑                  ││ homepage   https://github.com/LuaLS/lua-languag… │
 │  Pinned             1  ││  pcre2                 10.49     form…                     ││                                                  │
-│  Deprecated         2  ││                         ╭──────────────────────────────────╮│ Dependencies                                     │
-│                        ││                         │ lua-language-server 3.19.1       ││ none                                             │
-│ MANAGE                 ││                         │                                  ││                                                  │
-│  Services          ✗1  ││                         │ › Upgrade to 3.19.2            u ││ Used by                                          │
-│  Taps               2  ││                         │   Fetch 3.19.2                 f ││ nothing installed depends on this                │
-│                        ││                         │   Reinstall…                   R ││                                                  │
-│ DISCOVER               ││                         │   Unlink…                      L ││                                                  │
-│  Popular tools         ││                         │   Pin                          p ││                                                  │
-│  Popular apps          ││                         │   Uninstall…                   x ││                                                  │
-│  Rising                ││                         │   Copy the name                y ││                                                  │
-│  New                   ││                         │   Open the homepage           gx ││                                                  │
-│  Fonts                 ││                         │                                  ││                                                  │
-│  Search all            ││                         │ j/k move · enter run · esc close ││                                                  │
-│                        ││                         ╰──────────────────────────────────╯│                                                  │
+│  Deprecated         2  ││                         ╭──────────────────────────────────╮│ Vulnerabilities                                  │
+│  Skunky            !2  ││                         │ lua-language-server 3.19.1       ││   HIGH      GHSA-7f3x-lua-0001                   │
+│                        ││                         │                                  ││             Path traversal in workspace          │
+│ MANAGE                 ││                         │ › Upgrade to 3.19.2            u ││             fixed in 3.20.0                      │
+│  Services          ✗1  ││                         │   Fetch 3.19.2                 f ││   3.19.2 is available · u upgrades               │
+│  Taps               2  ││                         │   Reinstall…                   R ││                                                  │
+│                        ││                         │   Unlink…                      L ││ Dependencies                                     │
+│ DISCOVER               ││                         │   Pin                          p ││ none                                             │
+│  Popular tools         ││                         │   Uninstall…                   x ││                                                  │
+│  Popular apps          ││                         │   Copy the name                y ││ Used by                                          │
+│  Rising                ││                         │   Open the homepage           gx ││ nothing installed depends on this                │
+│  New                   ││                         │                                  ││                                                  │
+│  Fonts                 ││                         │ j/k move · enter run · esc close ││                                                  │
+│  Search all            ││                         ╰──────────────────────────────────╯│                                                  │
+│                        ││                                                            ││                                                  │
 │ TOOLS                  ││                                                            ││                                                  │
 │  History            2  ││                                                            ││                                                  │
 │  Maintenance           ││                                                            ││                                                  │
-│                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │

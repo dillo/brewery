@@ -42,6 +42,7 @@ var entries = []entry{
 	{"Outdated", secPackages, tabOutdated, 0},
 	{"Pinned", secPackages, tabInstalled, int(filterPinned)},
 	{"Deprecated", secPackages, tabInstalled, int(filterDeprecated)},
+	{"Skunky", secPackages, tabInstalled, int(filterSkunky)},
 	{"Services", secManage, tabServices, 0},
 	{"Taps", secManage, tabTaps, 0},
 	{"Popular tools", secDiscover, tabDiscover, int(discTools)},
@@ -133,6 +134,9 @@ func (a *App) badgeCount(e entry) (n int, chip string) {
 	n = -1
 	switch e.tab {
 	case tabInstalled:
+		if installedFilter(e.view) == filterSkunky {
+			return a.skunkyBadge()
+		}
 		if a.loaded[qInstalled] {
 			n = a.installed.count(installedFilter(e.view))
 		}
