@@ -1,0 +1,53 @@
+{
+  "findings": [
+    {
+      "formula": "git",
+      "version": "2.50.0",
+      "tag": "v2.50.0",
+      "repo_url": "https://github.com/git/git",
+      "vulnerabilities": [
+        {"id": "CVE-2025-48386", "severity": "HIGH", "summary": "Credential helper overflow", "aliases": [], "fixed_versions": ["2.50.1"]}
+      ],
+      "patched": [
+        {"id": "CVE-2025-48384", "severity": "HIGH", "summary": "Carriage return in submodule path", "aliases": [], "fixed_versions": ["2.50.1"]}
+      ]
+    },
+    {
+      "formula": "pcre2",
+      "version": "10.49",
+      "tag": "pcre2-10.49",
+      "repo_url": "https://github.com/PCRE2Project/pcre2",
+      "vulnerabilities": [],
+      "patched": [
+        {"id": "OSV-2025-101", "severity": "HIGH", "summary": "Heap-buffer-overflow in match", "aliases": [], "fixed_versions": ["0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c"]}
+      ]
+    },
+    {
+      "formula": "json-c",
+      "version": "0.19",
+      "tag": "json-c-0.19",
+      "repo_url": "https://github.com/json-c/json-c",
+      "vulnerabilities": [
+        {"id": "CVE-2026-31337", "severity": "UNKNOWN", "summary": "Stack exhaustion in tokener", "aliases": [], "fixed_versions": ["a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"]},
+        {"id": "OSV-2024-512", "severity": "MEDIUM", "summary": "Integer overflow in printbuf", "aliases": [], "fixed_versions": ["0.20", "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c"]},
+        {"id": "OSV-2023-77", "severity": "LOW", "summary": "Uninitialised read in printer", "aliases": [], "fixed_versions": []}
+      ],
+      "patched": []
+    },
+    {
+      "formula": "lua-language-server",
+      "version": "3.19.0",
+      "tag": "3.19.0",
+      "repo_url": "https://github.com/LuaLS/lua-language-server",
+      "vulnerabilities": [
+        {"id": "GHSA-7f3x-lua-0001", "severity": "HIGH", "summary": "Path traversal in workspace", "aliases": [], "fixed_versions": ["3.20.0"]}
+      ],
+      "patched": []
+    }
+  ],
+  "skipped_formulae": ["fd"],
+  "checked": 4,
+  "complete": false,
+  "outdated_without_sbom": [],
+  "unscanned_formulae": {}
+}

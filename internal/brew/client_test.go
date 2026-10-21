@@ -14,10 +14,13 @@ import (
 )
 
 // fakeRunner returns canned output keyed by the joined argument list.
+// A failing command writes stderr's text for it, or "Error: something
+// broke".
 type fakeRunner struct {
-	out   map[string][]byte
-	err   map[string]error
-	delay time.Duration
+	out    map[string][]byte
+	err    map[string]error
+	stderr map[string]string
+	delay  time.Duration
 }
 
 func (f fakeRunner) Run(ctx context.Context, args ...string) ([]byte, []byte, error) {
@@ -30,7 +33,11 @@ func (f fakeRunner) Run(ctx context.Context, args ...string) ([]byte, []byte, er
 	}
 	key := strings.Join(args, " ")
 	if err := f.err[key]; err != nil {
-		return f.out[key], []byte("Error: something broke"), err
+		errb := "Error: something broke"
+		if s, ok := f.stderr[key]; ok {
+			errb = s
+		}
+		return f.out[key], []byte(errb), err
 	}
 	return f.out[key], nil, nil
 }

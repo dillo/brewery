@@ -4,6 +4,7 @@ package brew
 
 import (
 	"context"
+	"errors"
 	"io"
 	"strings"
 	"testing"
@@ -170,4 +171,34 @@ func TestLiveBrewVersion(t *testing.T) {
 		t.Errorf("this machine's brew %s is older than brewery's floor", v.Text)
 	}
 	t.Logf("brew %s", v.Text)
+}
+
+// TestLiveVulns scans with the real brew vulns, which asks OSV.dev.
+func TestLiveVulns(t *testing.T) {
+	bin, err := Locate()
+	if err != nil {
+		t.Skip("brew not installed")
+	}
+	c := NewClient(ExecRunner{Bin: bin, Env: QueryEnv})
+	c.Timeout = 2 * time.Minute
+	scan, err := c.Vulns(context.Background())
+	if errors.Is(err, ErrNoVulns) {
+		t.Skip("this brew has no vulns command")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	if scan.Checked == 0 {
+		t.Error("no formulae checked")
+	}
+	for _, f := range scan.Findings {
+		if f.Formula == "" || f.Version == "" || len(f.Vulns) == 0 {
+			t.Errorf("incomplete finding: %+v", f)
+		}
+		for _, v := range f.Vulns {
+			if v.ID == "" || v.Severity == "" {
+				t.Errorf("%s: incomplete vulnerability: %+v", f.Formula, v)
+			}
+		}
+	}
 }
