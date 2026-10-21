@@ -129,10 +129,10 @@ const vulnsEvery = 24 * time.Hour
 
 // slowQueries are what runs once the JSON queries are in: doctor, the
 // dry-runs, the service files, the sizes, and the vulnerability scan when
-// it's due. A scan asked for with r is spent here.
+// it's due and none is running. A scan asked for with r is spent here.
 func (a *App) slowQueries() []query {
 	qs := []query{qDoctor, qCleanup, qSizes, qAutoremove, qServiceFiles}
-	if a.vulnsDue() {
+	if a.vulnsDue() && !a.inflight[qVulns] { // a running scan is not asked again
 		qs = append(qs, qVulns)
 	}
 	a.forceVulns = false

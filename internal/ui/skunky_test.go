@@ -395,3 +395,30 @@ func TestHelpOnSkunky(t *testing.T) {
 		t.Error("Help on Skunky should say r scans")
 	}
 }
+
+func TestNoSecondScanWhileOneRuns(t *testing.T) {
+	a, _ := newScanApp(t, 0, false)
+	for _, force := range []bool{false, true} {
+		a.inflight[qVulns], a.forceVulns = true, force
+		if slices.Contains(a.slowQueries(), qVulns) {
+			t.Errorf("forceVulns=%v: a slow pass while a scan runs must not ask for another", force)
+		}
+		if a.forceVulns {
+			t.Errorf("forceVulns=%v: the slow pass should spend the request", force)
+		}
+	}
+	a.inflight[qVulns] = false
+	if !slices.Contains(a.slowQueries(), qVulns) {
+		t.Error("with no scan running and none yet, the slow pass should scan")
+	}
+
+	// End to end: a slow pass that starts mid-scan leads to one scan, not two.
+	a, src := newScanApp(t, 0, false)
+	scan := a.request(qVulns)
+	slow := a.request(a.slowQueries()...)
+	drain(t, a, scan)
+	drain(t, a, slow)
+	if src.calls["vulns"] != 1 {
+		t.Errorf("%d scans, want 1", src.calls["vulns"])
+	}
+}
