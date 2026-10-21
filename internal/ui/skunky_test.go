@@ -10,6 +10,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/state"
@@ -282,5 +283,115 @@ func TestSkunkyNotes(t *testing.T) {
 	a.inflight[qVulns] = true
 	if got, want := a.vulnsEmpty(), "checking with brew vulns…"; got != want {
 		t.Errorf("empty note while scanning %q, want %q", got, want)
+	}
+}
+
+// pkg is the fixture package named name.
+func pkg(t *testing.T, a *App, name string) brew.Package {
+	t.Helper()
+	for _, p := range a.snap.Packages {
+		if p.Name == name {
+			return p
+		}
+	}
+	t.Fatalf("no package %s", name)
+	return brew.Package{}
+}
+
+func TestSkunkyDetails(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	a.installed.pvW, a.installed.h = 60, 30
+	jc := stripANSI(a.installed.preview(pkg(t, a, "json-c")))
+	for _, want := range []string{
+		"Vulnerabilities",
+		"  MEDIUM    OSV-2024-512",
+		"            Integer overflow in printbuf",
+		"            fixed in 0.20",
+		"  UNKNOWN   CVE-2026-31337",
+		"            fixed upstream, not yet released",
+		"  LOW       OSV-2023-77",
+	} {
+		if !strings.Contains(jc, want+"\n") {
+			t.Errorf("json-c's details should have the line %q:\n%s", want, jc)
+		}
+	}
+	if i, j, k := strings.Index(jc, "OSV-2024-512"), strings.Index(jc, "CVE-2026-31337"), strings.Index(jc, "OSV-2023-77"); i > j || j > k {
+		t.Errorf("findings should go worst first:\n%s", jc)
+	}
+	if strings.Contains(jc, "printer\n            fixed") || strings.Contains(jc, "is available") {
+		t.Errorf("LOW has no fix, and json-c isn't outdated:\n%s", jc)
+	}
+	if strings.Index(jc, "Vulnerabilities") > strings.Index(jc, "Dependencies") {
+		t.Errorf("the findings come before the dependencies:\n%s", jc)
+	}
+
+	lua := stripANSI(a.installed.preview(pkg(t, a, "lua-language-server")))
+	for _, want := range []string{"  HIGH      GHSA-7f3x-lua-0001", "            fixed in 3.20.0", "  3.19.2 is available · u upgrades"} {
+		if !strings.Contains(lua, want+"\n") {
+			t.Errorf("lua-language-server's details should have the line %q:\n%s", want, lua)
+		}
+	}
+	for _, name := range []string{"fd", "git"} { // nothing found; a finding for another version
+		if out := stripANSI(a.installed.preview(pkg(t, a, name))); strings.Contains(out, "Vulnerabilities") {
+			t.Errorf("%s has no open findings at its version:\n%s", name, out)
+		}
+	}
+}
+
+func TestSkunkyDetailsWrapSummaries(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	for i, f := range a.snap.Vulns.Findings {
+		if f.Formula == "lua-language-server" {
+			a.snap.Vulns.Findings[i].Vulns[0].Summary = strings.Repeat("overflow ", 12)
+		}
+	}
+	a.sync()
+	a.installed.pvW, a.installed.h = 52, 30
+	iw, _ := paneInner(a.installed.pvW, a.installed.h)
+	out := stripANSI(a.installed.preview(pkg(t, a, "lua-language-server")))
+	if n := strings.Count(out, "            overflow"); n < 2 {
+		t.Errorf("a long summary should wrap onto indented lines, got %d:\n%s", n, out)
+	}
+	for l := range strings.SplitSeq(out, "\n") {
+		if strings.Contains(l, "overflow") && lipgloss.Width(l) > iw {
+			t.Errorf("line wider than the pane's %d: %q", iw, l)
+		}
+	}
+}
+
+func TestFixedText(t *testing.T) {
+	commit := "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+	for _, c := range []struct {
+		fixed []string
+		want  string
+	}{
+		{[]string{"0.20", "0.19.1"}, "fixed in 0.20, 0.19.1"},
+		{[]string{commit}, "fixed upstream, not yet released"},
+		{[]string{"0.20", commit}, "fixed in 0.20"},
+		{nil, ""},
+	} {
+		if got := fixedText(c.fixed); got != c.want {
+			t.Errorf("fixedText(%v) = %q, want %q", c.fixed, got, c.want)
+		}
+	}
+}
+
+func TestHelpOnSkunky(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	scans := func() bool {
+		for _, g := range a.helpGroups() {
+			if slices.Contains(g.keys, [2]string{"r", "refresh, and scan with brew vulns now"}) {
+				return true
+			}
+		}
+		return false
+	}
+	show(t, a, "Top-level")
+	if scans() {
+		t.Error("Help mentions the scan off Skunky")
+	}
+	show(t, a, "Skunky")
+	if !scans() {
+		t.Error("Help on Skunky should say r scans")
 	}
 }

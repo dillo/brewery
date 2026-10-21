@@ -1,7 +1,10 @@
 package ui
 
 import (
+	"cmp"
 	"fmt"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -197,4 +200,64 @@ func (a *App) vulnsEmpty() string {
 		return "checking with brew vulns…"
 	}
 	return "not scanned yet · r scans now"
+}
+
+// vulnIndent is where a finding's ID, summary and fix start in the
+// details, past its severity.
+const vulnIndent = 12
+
+// commitHash matches a git commit: OSV often records a fix as the commit
+// that made it, before any release has it.
+var commitHash = regexp.MustCompile(`^[0-9a-f]{40}$`)
+
+// fixedText says what fixes a finding: the versions, or that only a commit
+// does so far, or "" when nothing does yet.
+func fixedText(fixed []string) string {
+	var versions []string
+	for _, f := range fixed {
+		if !commitHash.MatchString(f) {
+			versions = append(versions, f)
+		}
+	}
+	switch {
+	case len(versions) > 0:
+		return "fixed in " + strings.Join(versions, ", ")
+	case len(fixed) > 0:
+		return "fixed upstream, not yet released"
+	}
+	return ""
+}
+
+// writeVulns writes p's open findings, worst first, when the last scan has
+// them for the version installed. It doesn't say an upgrade fixes them:
+// brew's versions and OSV's fixes are written too differently to compare
+// safely, and a wrong "fixed" is worse than none.
+func (t *installedTab) writeVulns(b *strings.Builder, p brew.Package) {
+	f, ok := t.finding(p)
+	if !ok {
+		return
+	}
+	st := t.st
+	iw, _ := paneInner(t.pvW, t.h)
+	indent := strings.Repeat(" ", vulnIndent)
+	vulns := slices.Clone(f.Vulns)
+	slices.SortStableFunc(vulns, func(x, y brew.Vuln) int {
+		return cmp.Or(cmp.Compare(severityRank(x.Severity), severityRank(y.Severity)), strings.Compare(x.ID, y.ID))
+	})
+	b.WriteString("\n" + st.Accent.Render("Vulnerabilities") + "\n")
+	for _, v := range vulns {
+		gap := strings.Repeat(" ", max(vulnIndent-2-len(v.Severity), 1))
+		b.WriteString("  " + severityText(st, v.Severity) + gap + v.ID + "\n")
+		if v.Summary != "" {
+			for l := range strings.SplitSeq(ansi.Wrap(v.Summary, max(iw-vulnIndent, minFlex), ""), "\n") {
+				b.WriteString(indent + l + "\n")
+			}
+		}
+		if fixed := fixedText(v.Fixed); fixed != "" {
+			b.WriteString(indent + st.Muted.Render(fixed) + "\n")
+		}
+	}
+	if p.Outdated {
+		b.WriteString(st.Muted.Render("  "+p.Latest+" is available · u upgrades") + "\n")
+	}
 }

@@ -354,6 +354,7 @@ func (t *installedTab) preview(p brew.Package) string {
 	pairs = append(pairs, retireRows(st, p, t.now())...)
 	pairs = append(pairs, "homepage", p.Homepage)
 	b.WriteString(kv(st, pairs...))
+	t.writeVulns(&b, p)
 
 	if p.Kind == brew.KindFormula || len(p.DirectDeps) > 0 || len(t.ix.UsedBy(p.FullName)) > 0 {
 		t.writeDeps(&b, p)
