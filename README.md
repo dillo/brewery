@@ -51,8 +51,8 @@ A few notes:
 **Packages**
 
 - Everything installed, in views: All, Top-level, Formulae, Casks,
-  Dependencies, Outdated, Pinned and Deprecated, each with a count in the
-  sidebar.
+  Dependencies, Outdated, Pinned, Deprecated and Skunky, each with a count in
+  the sidebar.
 - A details pane for the selected package: version, size on disk, how and
   when it was installed, whether it's pinned or linked, its homepage and
   caveats, and a tree of what it needs and what needs it.
@@ -65,6 +65,11 @@ A few notes:
 - Deprecated and disabled packages are marked in the list, and their details
   explain why in brew's own words, when they will be disabled, and what to
   install instead.
+- Skunky lists installed formulae with known vulnerabilities, worst first,
+  from `brew vulns` (OSV.dev). It scans at most once a day, or now with `r`
+  on the view. The details list each finding and what fixes it. Casks, and
+  formulae brew can't match to an upstream source, aren't scanned, so an
+  empty list means nothing known was found, not that all is safe.
 
 **An action menu**
 
@@ -149,7 +154,7 @@ Type `/` in the sidebar to jump to an entry.
 
 - **Home**: counts, doctor's warnings and recent jobs
 - **Packages**: All, Top-level, Formulae, Casks, Dependencies, Outdated,
-  Pinned and Deprecated
+  Pinned, Deprecated and Skunky
 - **Manage**: Services, with each service's log, and Taps, with what Check
   taps found
 - **Discover**: Popular tools, Popular apps, Rising, New, Fonts, and Search

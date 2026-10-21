@@ -1,0 +1,40 @@
+╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
+│ brewery                ││ Skunky                                                     ││ lua-language-server                              │
+│  Home                  ││ Installed formulae with known security problems, worst fi… ││ lua-language-server 3.19.1                       │
+│                        ││  NAME                  VERSION   SEVE…  STATUS   SIZE      ││ Language Server for the Lua language             │
+│ PACKAGES               ││ ────────────────────────────────────────────────────────── ││                                                  │
+│  All                7  ││  lua-language-server   3.19.1    HIGH   ↑                  ││ type       formula                               │
+│  Top-level          5  ││  json-c                0.19      MEDI…  ⚠                  ││ tap        homebrew/core                         │
+│  Formulae           5  ││                                                            ││ installed  on request · 2026-07-25               │
+│  Casks              2  ││                                                            ││ latest     3.19.2 ↑                              │
+│  Dependencies       2  ││                                                            ││ linked     yes                                   │
+│  Outdated          ↑2  ││                                                            ││ homepage   https://github.com/LuaLS/lua-languag… │
+│  Pinned             1  ││                                                            ││                                                  │
+│  Deprecated         2  ││                                                            ││ Vulnerabilities                                  │
+│  Skunky            !2  ││                                                            ││   HIGH      GHSA-7f3x-lua-0001                   │
+│                        ││                                                            ││             Path traversal in workspace          │
+│ MANAGE                 ││                                                            ││             fixed in 3.20.0                      │
+│  Services          ✗1  ││                                                            ││   3.19.2 is available · u upgrades               │
+│  Taps               2  ││                                                            ││                                                  │
+│                        ││                                                            ││ Dependencies                                     │
+│ DISCOVER               ││                                                            ││ none                                             │
+│  Popular tools         ││                                                            ││                                                  │
+│  Popular apps          ││                                                            ││ Used by                                          │
+│  Rising                ││                                                            ││ nothing installed depends on this                │
+│  New                   ││                                                            ││                                                  │
+│  Fonts                 ││                                                            ││                                                  │
+│  Search all            ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│ TOOLS                  ││                                                            ││                                                  │
+│  History            2  ││                                                            ││                                                  │
+│  Maintenance           ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││                                                            ││                                                  │
+│                        ││ scanned 3h ago · 4 of 5 formulae checked · casks aren't s… ││                                                  │
+╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
+ NORMAL  Skunky › lua-language-server                                  enter actions · space mark · l details · : command · ? help · q quit 

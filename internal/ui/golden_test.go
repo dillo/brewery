@@ -82,6 +82,11 @@ func TestScreens(t *testing.T) {
 			keys(t, a, "esc", "g", "g", "j", "j", "j") // close it, and go back to git for the screens after
 		}
 	}
+	show(t, a, "Skunky")
+	keys(t, a, "g", "g") // lua-language-server: HIGH, and outdated
+	golden(t, "skunky", stripANSI(a.render()))
+	show(t, a, "Top-level")
+	keys(t, a, "g", "g", "j", "j", "j") // back to git for the narrow screens
 	a.Update(tea.WindowSizeMsg{Width: 90, Height: 40})
 	show(t, a, "Top-level")
 	golden(t, "narrow-list", stripANSI(a.render()))
