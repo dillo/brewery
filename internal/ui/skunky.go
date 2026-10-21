@@ -262,6 +262,10 @@ func (t *installedTab) writeVulns(b *strings.Builder, p brew.Package) {
 		}
 	}
 	if p.Outdated {
-		b.WriteString(st.Muted.Render("  "+p.Latest+" is available · u upgrades") + "\n")
+		how := "u upgrades"
+		if p.Pinned {
+			how = "p unpins, then u upgrades" // brew won't upgrade a pinned formula
+		}
+		b.WriteString(st.Muted.Render("  "+p.Latest+" is available · "+how) + "\n")
 	}
 }
