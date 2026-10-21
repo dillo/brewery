@@ -152,6 +152,10 @@ func (a *App) vulnsDue() bool {
 	return a.snap.Vulns == nil || a.now().Sub(a.snap.VulnsAt) >= vulnsEvery
 }
 
+// casksClause ends the coverage note. The list pane drops it when the note
+// doesn't fit, so the counts stay whole.
+const casksClause = " · casks aren't scanned"
+
 // vulnsNote is the line under Skunky's list: when brew vulns last ran and
 // how much it could check, or why it couldn't run. It's "" before any scan,
 // when the empty note says so.
@@ -167,7 +171,7 @@ func (a *App) vulnsNote() string {
 	case a.snap.Vulns == nil:
 		return ""
 	}
-	return fmt.Sprintf("scanned %s · %d of %d formulae checked · casks aren't scanned",
+	return fmt.Sprintf("scanned %s · %d of %d formulae checked"+casksClause,
 		ago(a.now(), a.snap.VulnsAt), a.snap.Vulns.Checked, a.formulaCount())
 }
 

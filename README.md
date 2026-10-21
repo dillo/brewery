@@ -66,10 +66,12 @@ A few notes:
   explain why in brew's own words, when they will be disabled, and what to
   install instead.
 - Skunky lists installed formulae with known vulnerabilities, worst first,
-  from `brew vulns` (OSV.dev). It scans at most once a day, or now with `r`
-  on the view. The details list each finding and what fixes it. Casks, and
-  formulae brew can't match to an upstream source, aren't scanned, so an
-  empty list means nothing known was found, not that all is safe.
+  from `brew vulns` (OSV.dev). To scan, brewery sends the names and versions
+  of your installed formulae to OSV.dev, at most once a day in the
+  background, or when you press `r` on the view. The details list each
+  finding and what fixes it. Casks, and formulae brew can't match to an
+  upstream source, aren't scanned, so an empty list means nothing known was
+  found, not that all is safe.
 
 **An action menu**
 

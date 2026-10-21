@@ -14,6 +14,7 @@ import (
 
 	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/theme"
 )
 
 // appRowNames are the names Installed lists now, in order.
@@ -429,5 +430,61 @@ func TestNoVulnsClearsAnEarlierScanError(t *testing.T) {
 	a.apply(resultMsg{q: qVulns, err: brew.ErrNoVulns})
 	if a.errs[qVulns] != nil {
 		t.Errorf("a brew without vulns isn't an error, whatever failed before: %v", a.errs[qVulns])
+	}
+}
+
+func TestSkunkyShowsSeverityWhole(t *testing.T) {
+	a, _ := newScanApp(t, 3*time.Hour, true)
+	show(t, a, "Skunky")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "SEVERITY") {
+		t.Errorf("the header should say SEVERITY in full:\n%s", out)
+	}
+	var row string
+	for l := range strings.SplitSeq(out, "\n") {
+		if strings.Contains(l, "json-c") {
+			row = l
+		}
+	}
+	if !strings.Contains(row, "MEDIUM") {
+		t.Errorf("json-c's row should say MEDIUM in full: %q", row)
+	}
+}
+
+func TestSkunkyNoteDropsTheCasksClauseToFit(t *testing.T) {
+	for _, c := range []struct {
+		width     int
+		wantCasks bool
+	}{{140, false}, {200, true}} {
+		a, _ := newScanApp(t, 3*time.Hour, true)
+		a.Update(tea.WindowSizeMsg{Width: c.width, Height: 40})
+		show(t, a, "Skunky")
+		out := stripANSI(a.render())
+		if !strings.Contains(out, "scanned 3h ago · 4 of 5 formulae checked") {
+			t.Errorf("%d wide: the counts should be whole:\n%s", c.width, out)
+		}
+		if got := strings.Contains(out, "casks aren't scanned"); got != c.wantCasks {
+			t.Errorf("%d wide: casks clause shown %v, want %v", c.width, got, c.wantCasks)
+		}
+		for l := range strings.SplitSeq(out, "\n") {
+			if strings.Contains(l, "scanned 3h ago") && strings.Contains(l, "…") {
+				t.Errorf("%d wide: the note is cut off: %q", c.width, l)
+			}
+		}
+	}
+}
+
+func TestSeverityText(t *testing.T) {
+	for _, c := range []struct{ s, want string }{
+		{"CRITICAL", theme.Tint(testStyles.P.Red, "CRITICAL")},
+		{"HIGH", theme.Tint(testStyles.P.Red, "HIGH")},
+		{"MEDIUM", theme.Tint(testStyles.P.Yellow, "MEDIUM")},
+		{"LOW", testStyles.Muted.Render("LOW")},
+		{"UNKNOWN", testStyles.Muted.Render("UNKNOWN")},
+		{"MODERATE", testStyles.Muted.Render("MODERATE")},
+	} {
+		if got := severityText(testStyles, c.s); got != c.want {
+			t.Errorf("%s: %q, want %q", c.s, got, c.want)
+		}
 	}
 }

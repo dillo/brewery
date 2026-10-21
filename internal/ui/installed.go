@@ -9,6 +9,7 @@ import (
 
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/state"
@@ -169,7 +170,7 @@ func (t *installedTab) cols() []col {
 		return installedCols
 	}
 	c := slices.Clone(installedCols)
-	c[2].title = "SEVERITY"
+	c[2] = col{"SEVERITY", 9, 8} // CRITICAL and SEVERITY are 8 cells: never squeezed
 	return c
 }
 
@@ -280,6 +281,9 @@ func (t *installedTab) view(err error, focus column) string {
 	footer := ""
 	if t.filter == filterSkunky && t.scanNote != nil {
 		if n := t.scanNote(); n != "" {
+			if ansi.StringWidth(n) > iw {
+				n = strings.TrimSuffix(n, casksClause) // keep the counts whole
+			}
 			footer = "\n" + about(t.st, n, iw)
 			ih--
 		}

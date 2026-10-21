@@ -1,10 +1,10 @@
 ╭────────────────────────╮╭────────────────────────────────────────────────────────────╮╭──────────────────────────────────────────────────╮
 │ brewery                ││ Skunky                                                     ││ lua-language-server                              │
 │  Home                  ││ Installed formulae with known security problems, worst fi… ││ lua-language-server 3.19.1                       │
-│                        ││  NAME                  VERSION   SEVE…  STATUS   SIZE      ││ Language Server for the Lua language             │
+│                        ││  NAME                          VERSION   SEVERITY  STATUS  ││ Language Server for the Lua language             │
 │ PACKAGES               ││ ────────────────────────────────────────────────────────── ││                                                  │
-│  All                7  ││  lua-language-server   3.19.1    HIGH   ↑                  ││ type       formula                               │
-│  Top-level          5  ││  json-c                0.19      MEDI…  ⚠                  ││ tap        homebrew/core                         │
+│  All                7  ││  lua-language-server           3.19.1    HIGH      ↑       ││ type       formula                               │
+│  Top-level          5  ││  json-c                        0.19      MEDIUM    ⚠       ││ tap        homebrew/core                         │
 │  Formulae           5  ││                                                            ││ installed  on request · 2026-07-25               │
 │  Casks              2  ││                                                            ││ latest     3.19.2 ↑                              │
 │  Dependencies       2  ││                                                            ││ linked     yes                                   │
@@ -35,6 +35,6 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
-│                        ││ scanned 3h ago · 4 of 5 formulae checked · casks aren't s… ││                                                  │
+│                        ││ scanned 3h ago · 4 of 5 formulae checked                   ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
  NORMAL  Skunky › lua-language-server                                  enter actions · space mark · l details · : command · ? help · q quit 

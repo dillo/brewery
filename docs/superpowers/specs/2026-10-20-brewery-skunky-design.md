@@ -83,6 +83,8 @@ and its count straight away. The next scan judges the new version.
 - **On demand.** On the Skunky view, `r` refreshes as it does everywhere
   and also adds `qVulns` to the slow pass whatever its age. `r` on any
   other view keeps the 24-hour rule.
+- **Never twice at once.** A slow pass that starts while a scan is running
+  doesn't add `qVulns`, so the installed formulae go to OSV.dev once.
 - After an upgrade, the refresh that follows keeps the 24-hour rule too.
   The version rule above is what clears an upgraded formula.
 
@@ -109,7 +111,9 @@ brew prints ranks with UNKNOWN.
 **SEVERITY column.** On this view only, the TYPE column is headed
 `SEVERITY` and shows the worst finding's level: red for CRITICAL and HIGH,
 yellow for MEDIUM, muted for the rest. Every row is a formula, so TYPE
-would add nothing there. The other columns don't change.
+would add nothing there. The column is never narrower than 8 cells, so
+`SEVERITY` and `CRITICAL` show whole; the other fixed columns give way first.
+The other columns don't change.
 
 **Coverage note.** A muted line under the list, like Outdated's "brew's
 data from …":
@@ -121,7 +125,10 @@ data from …":
 | last scan failed, no earlier result | `couldn't scan: <reason>` |
 | brew too old | `brew vulns isn't available · U updates brew` |
 
-`<ago>` is the helper Maintenance uses. The reason is shortened to fit.
+`<ago>` is the helper Maintenance uses. The reason is shortened to fit. When the
+scanned note doesn't fit the list pane, the ` · casks aren't scanned` clause is
+dropped, so the counts stay whole; `vulnsNote` itself doesn't know the width,
+and the list view trims the clause.
 
 **Empty view.**
 
