@@ -335,7 +335,9 @@ func (a *App) apply(m resultMsg) {
 		m.sizes, m.err = merged, nil
 	}
 	if errors.Is(m.err, brew.ErrNoVulns) {
+		// Not a failure: a brew without vulns has nothing to show or retry.
 		a.noVulns = true
+		return
 	}
 	a.errs[m.q] = m.err
 	a.home.doctorErr = a.errs[qDoctor]

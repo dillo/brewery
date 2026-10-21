@@ -128,13 +128,13 @@ func (c *countingSource) Vulns(ctx context.Context) (brew.VulnScan, error) {
 	return c.fakeSource.Vulns(ctx)
 }
 
-// newScanApp is an app on the fixtures whose last scan was ago before now,
+// newScanApp is an app on the fixtures whose last scan was since before now,
 // or that has never scanned when scanned is false. It counts brew calls.
-func newScanApp(t *testing.T, ago time.Duration, scanned bool) (*App, *countingSource) {
+func newScanApp(t *testing.T, since time.Duration, scanned bool) (*App, *countingSource) {
 	t.Helper()
 	src := newCountingSource(t)
 	snap := fixtureSnapshot(t)
-	snap.VulnsAt = testNow.Add(-ago)
+	snap.VulnsAt = testNow.Add(-since)
 	if !scanned {
 		snap.Vulns, snap.VulnsAt = nil, time.Time{}
 	}
@@ -153,6 +153,7 @@ func TestVulnsScanAtMostDaily(t *testing.T) {
 	}{
 		{"never scanned", 0, false, 1},
 		{"23 hours ago", 23 * time.Hour, true, 0},
+		{"24 hours ago", 24 * time.Hour, true, 1},
 		{"25 hours ago", 25 * time.Hour, true, 1},
 	} {
 		a, src := newScanApp(t, c.ago, c.scanned)
@@ -197,6 +198,36 @@ func TestNoVulnsCommandStopsAsking(t *testing.T) {
 	}
 	if got, want := a.vulnsEmpty(), "no scan to show"; got != want {
 		t.Errorf("empty note %q, want %q", got, want)
+	}
+	if a.errs[qVulns] != nil {
+		t.Errorf("a brew without vulns isn't an error: %v", a.errs[qVulns])
+	}
+	if bar := stripANSI(a.statusBar()); strings.Contains(bar, "vulns failed") {
+		t.Errorf("status bar %q mentions a failed scan", bar)
+	}
+	if n, chip := a.badgeCount(entries[entryIndex("Skunky")]); n != -1 || chip != "" {
+		t.Errorf("badge %d %q, want none", n, chip)
+	}
+}
+
+func TestFullRefreshJobTriesVulnsAgain(t *testing.T) {
+	src := newCountingSource(t)
+	fs := &fakeStarter{}
+	a := New(src, fs.start, fixtureSnapshot(t), filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.tickEvery = 0
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
+	a.snap.Vulns, a.snap.VulnsAt = nil, time.Time{}
+	src.vulnsErr = brew.ErrNoVulns
+	drain(t, a, a.refresh())
+	if src.calls["vulns"] != 1 || !a.noVulns {
+		t.Fatalf("%d scans, noVulns %v, want 1 and true", src.calls["vulns"], a.noVulns)
+	}
+	src.vulnsErr = nil
+	keys(t, a, "U")
+	if src.calls["vulns"] != 2 || a.snap.Vulns == nil || a.noVulns {
+		t.Errorf("after brew update: %d scans, Vulns %v, noVulns %v; want 2, set, false",
+			src.calls["vulns"], a.snap.Vulns, a.noVulns)
 	}
 }
 

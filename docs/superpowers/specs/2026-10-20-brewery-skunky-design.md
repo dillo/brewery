@@ -172,8 +172,10 @@ scan with brew vulns now`.
 - **A failed scan** keeps the last result: its rows, count and details
   stay. The badge shows the stale chip and the note says why.
 - `VulnsAt` isn't updated, so the next refresh tries again.
-- **`ErrNoVulns`** shows its note, and `qVulns` isn't run again until
-  brewery restarts.
+- **`ErrNoVulns`** isn't an error: no failed-query mark in the status bar
+  and no stale chip. The view shows its note, and `qVulns` isn't run again
+  until a job that refreshes everything (such as `U`) finishes, since brew
+  update may bring the command.
 - **Quitting** cancels a running scan, as with other queries.
 
 ## Testing
@@ -209,7 +211,8 @@ scan with brew vulns now`.
 - **Scheduling:**
   - nil scans, 23 hours ago doesn't, 25 hours ago does;
   - `r` on Skunky scans regardless, and `r` elsewhere doesn't;
-  - after `ErrNoVulns`, nothing scans again.
+  - after `ErrNoVulns`, nothing scans again until a full-refresh job (`U`)
+    finishes.
 - **Snapshot:** the scan survives a save and a load.
 
 **Goldens:**
