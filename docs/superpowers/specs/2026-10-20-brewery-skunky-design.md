@@ -167,7 +167,9 @@ Vulnerabilities
   - a mix of the two: only the versions are shown;
   - none: no line.
 - **Upgrade hint:** when the formula is outdated, the block closes with
-  `<latest> is available · u upgrades`, muted. It doesn't claim the upgrade
+  `<latest> is available · u upgrades`, muted; for a pinned formula, which
+  brew won't upgrade, `<latest> is available · p unpins, then u upgrades`.
+  It doesn't claim the upgrade
   fixes anything: brew's versions and OSV's fixes are written differently
   (tags, commits, ranges), and a wrong "fixed" is worse than none.
 

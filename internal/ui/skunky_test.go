@@ -332,6 +332,11 @@ func TestSkunkyDetails(t *testing.T) {
 			t.Errorf("lua-language-server's details should have the line %q:\n%s", want, lua)
 		}
 	}
+	pinned := pkg(t, a, "lua-language-server")
+	pinned.Pinned = true // brew won't upgrade it until it's unpinned
+	if out := stripANSI(a.installed.preview(pinned)); !strings.Contains(out, "  3.19.2 is available · p unpins, then u upgrades\n") {
+		t.Errorf("a pinned formula's hint should say to unpin first:\n%s", out)
+	}
 	for _, name := range []string{"fd", "git"} { // nothing found; a finding for another version
 		if out := stripANSI(a.installed.preview(pkg(t, a, name))); strings.Contains(out, "Vulnerabilities") {
 			t.Errorf("%s has no open findings at its version:\n%s", name, out)
