@@ -1,13 +1,18 @@
 package ui
 
 import (
+	"context"
+	"errors"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/dillo/brewery/internal/brew"
+	"github.com/dillo/brewery/internal/state"
 )
 
 // appRowNames are the names Installed lists now, in order.
@@ -115,5 +120,136 @@ func TestSkunkyKeepsTheSelectedPackage(t *testing.T) {
 	show(t, a, "Skunky")
 	if p, _ := a.installed.selected(); p.Name != "lua-language-server" {
 		t.Errorf("selected %s after moving to Skunky, want lua-language-server", p.Name)
+	}
+}
+
+func (c *countingSource) Vulns(ctx context.Context) (brew.VulnScan, error) {
+	c.calls["vulns"]++
+	return c.fakeSource.Vulns(ctx)
+}
+
+// newScanApp is an app on the fixtures whose last scan was ago before now,
+// or that has never scanned when scanned is false. It counts brew calls.
+func newScanApp(t *testing.T, ago time.Duration, scanned bool) (*App, *countingSource) {
+	t.Helper()
+	src := newCountingSource(t)
+	snap := fixtureSnapshot(t)
+	snap.VulnsAt = testNow.Add(-ago)
+	if !scanned {
+		snap.Vulns, snap.VulnsAt = nil, time.Time{}
+	}
+	a := New(src, nil, snap, filepath.Join(t.TempDir(), "s.json"))
+	a.now = func() time.Time { return testNow }
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
+	return a, src
+}
+
+func TestVulnsScanAtMostDaily(t *testing.T) {
+	for _, c := range []struct {
+		name    string
+		ago     time.Duration
+		scanned bool
+		want    int
+	}{
+		{"never scanned", 0, false, 1},
+		{"23 hours ago", 23 * time.Hour, true, 0},
+		{"25 hours ago", 25 * time.Hour, true, 1},
+	} {
+		a, src := newScanApp(t, c.ago, c.scanned)
+		drain(t, a, a.refresh())
+		if src.calls["vulns"] != c.want {
+			t.Errorf("%s: %d scans, want %d", c.name, src.calls["vulns"], c.want)
+		}
+	}
+	a, _ := newScanApp(t, 25*time.Hour, true)
+	drain(t, a, a.refresh())
+	saved, err := state.Load(a.cachePath)
+	if err != nil || saved.Vulns == nil || !saved.VulnsAt.Equal(testNow) {
+		t.Errorf("the scan should be saved with its time: %v %+v %v", err, saved.Vulns, saved.VulnsAt)
+	}
+}
+
+func TestROnSkunkyScansNow(t *testing.T) {
+	a, src := newScanApp(t, time.Hour, true)
+	show(t, a, "Top-level")
+	keys(t, a, "r")
+	if src.calls["vulns"] != 0 {
+		t.Errorf("r elsewhere keeps the daily rule: %d scans", src.calls["vulns"])
+	}
+	show(t, a, "Skunky")
+	keys(t, a, "r")
+	keys(t, a, "r")
+	if src.calls["vulns"] != 2 {
+		t.Errorf("r on Skunky scans every time: %d scans, want 2", src.calls["vulns"])
+	}
+}
+
+func TestNoVulnsCommandStopsAsking(t *testing.T) {
+	a, src := newScanApp(t, 0, false)
+	src.vulnsErr = brew.ErrNoVulns
+	drain(t, a, a.refresh())
+	drain(t, a, a.refresh())
+	if src.calls["vulns"] != 1 {
+		t.Errorf("%d scans, want 1: a brew without vulns isn't asked again", src.calls["vulns"])
+	}
+	if got, want := a.vulnsNote(), "brew vulns isn't available · U updates brew"; got != want {
+		t.Errorf("note %q, want %q", got, want)
+	}
+	if got, want := a.vulnsEmpty(), "no scan to show"; got != want {
+		t.Errorf("empty note %q, want %q", got, want)
+	}
+}
+
+func TestFailedScanKeepsTheLastOne(t *testing.T) {
+	a, src := newScanApp(t, 50*time.Hour, true)
+	src.vulnsErr = errors.New("no network")
+	drain(t, a, a.refresh())
+	if n := a.installed.count(filterSkunky); n != 2 {
+		t.Errorf("Skunky lists %d after a failed scan, want the last scan's 2", n)
+	}
+	if got, want := a.vulnsNote(), "couldn't scan: no network · showing the scan from 2d ago"; got != want {
+		t.Errorf("note %q, want %q", got, want)
+	}
+	if _, chip := a.badgeCount(entries[entryIndex("Skunky")]); !strings.Contains(stripANSI(chip), "⚠") {
+		t.Errorf("badge %q, want the stale chip", stripANSI(chip))
+	}
+	if !a.snap.VulnsAt.Equal(testNow.Add(-50 * time.Hour)) {
+		t.Errorf("a failed scan mustn't move VulnsAt: %v", a.snap.VulnsAt)
+	}
+	drain(t, a, a.refresh())
+	if src.calls["vulns"] != 2 {
+		t.Errorf("%d scans, want 2: the next refresh tries again", src.calls["vulns"])
+	}
+	a.snap.Vulns = nil
+	if got, want := a.vulnsNote(), "couldn't scan: no network"; got != want {
+		t.Errorf("note with no earlier scan %q, want %q", got, want)
+	}
+}
+
+func TestSkunkyNotes(t *testing.T) {
+	a := newJobApp(t, &fakeStarter{})
+	if got, want := a.vulnsNote(), "scanned 3h ago · 4 of 5 formulae checked · casks aren't scanned"; got != want {
+		t.Errorf("note %q, want %q", got, want)
+	}
+	show(t, a, "Skunky")
+	if out := stripANSI(a.render()); !strings.Contains(out, "scanned 3h ago · 4 of 5 formulae checked") {
+		t.Errorf("Skunky should show its note:\n%s", out)
+	}
+	a.snap.Vulns = &brew.VulnScan{Checked: 4}
+	a.sync()
+	if out := stripANSI(a.render()); !strings.Contains(out, "no known vulnerabilities in the 4 formulae checked") {
+		t.Errorf("a clean scan's empty note:\n%s", out)
+	}
+	a.snap.Vulns = nil
+	a.sync()
+	if got, want := a.vulnsEmpty(), "not scanned yet · r scans now"; got != want {
+		t.Errorf("empty note %q, want %q", got, want)
+	}
+	if got := a.vulnsNote(); got != "" {
+		t.Errorf("no note before any scan, got %q", got)
+	}
+	a.inflight[qVulns] = true
+	if got, want := a.vulnsEmpty(), "checking with brew vulns…"; got != want {
+		t.Errorf("empty note while scanning %q, want %q", got, want)
 	}
 }

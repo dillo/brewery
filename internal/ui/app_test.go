@@ -19,7 +19,7 @@ import (
 )
 
 // fakeSource serves the fixture snapshot. servicesErr, doctorErr, cleanupErr,
-// autoremoveErr and serviceFilesErr make one query fail.
+// autoremoveErr, serviceFilesErr and vulnsErr make one query fail.
 type fakeSource struct {
 	snap            state.Snapshot
 	servicesErr     error
@@ -27,6 +27,7 @@ type fakeSource struct {
 	cleanupErr      error
 	autoremoveErr   error
 	serviceFilesErr error
+	vulnsErr        error
 }
 
 func newFakeSource(t *testing.T) *fakeSource { return &fakeSource{snap: fixtureSnapshot(t)} }
@@ -39,6 +40,15 @@ func (f *fakeSource) Doctor(context.Context) ([]brew.DoctorWarning, error) {
 		return nil, f.doctorErr
 	}
 	return f.snap.Doctor, nil
+}
+func (f *fakeSource) Vulns(context.Context) (brew.VulnScan, error) {
+	if f.vulnsErr != nil {
+		return brew.VulnScan{}, f.vulnsErr
+	}
+	if f.snap.Vulns == nil {
+		return brew.VulnScan{}, nil
+	}
+	return *f.snap.Vulns, nil
 }
 func (f *fakeSource) DataUpdated(context.Context) (time.Time, error) {
 	return testNow.Add(-6 * time.Hour), nil

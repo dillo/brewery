@@ -45,22 +45,23 @@ var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {
 
 // installedTab lists installed packages with a details preview.
 type installedTab struct {
-	st     theme.Styles
-	filter installedFilter
-	all    []brew.Package
-	ix     *state.Index
-	rows   []brew.Package              // the filtered rows, in table order
-	match  string                      // the "/" filter on names
-	pv     scroller                    // where the preview is scrolled to
-	marked map[string]bool             // packages picked with space, by pkgKey
-	sizes  map[string]int64            // bytes on disk, by Package.Key; nil until measured
-	vulns  map[string]brew.VulnFinding // the last scan's findings, by formula; nil before one
-	now    func() time.Time            // today, for the disable date
-	loaded bool
-	table  table.Model
-	listW  int // the list pane's width; 0 hides it
-	pvW    int // the preview's width; 0 hides it
-	h      int
+	st                  theme.Styles
+	filter              installedFilter
+	all                 []brew.Package
+	ix                  *state.Index
+	rows                []brew.Package              // the filtered rows, in table order
+	match               string                      // the "/" filter on names
+	pv                  scroller                    // where the preview is scrolled to
+	marked              map[string]bool             // packages picked with space, by pkgKey
+	sizes               map[string]int64            // bytes on disk, by Package.Key; nil until measured
+	vulns               map[string]brew.VulnFinding // the last scan's findings, by formula; nil before one
+	now                 func() time.Time            // today, for the disable date
+	scanNote, scanEmpty func() string               // Skunky's notes, from the App; nil in tests that don't set them
+	loaded              bool
+	table               table.Model
+	listW               int // the list pane's width; 0 hides it
+	pvW                 int // the preview's width; 0 hides it
+	h                   int
 }
 
 func newInstalledTab(st theme.Styles) installedTab {
@@ -276,6 +277,13 @@ func (t *installedTab) view(err error, focus column) string {
 		body += refreshBanner(t.st, err, iw) + "\n"
 		ih -= bannerHeight
 	}
+	footer := ""
+	if t.filter == filterSkunky && t.scanNote != nil {
+		if n := t.scanNote(); n != "" {
+			footer = "\n" + about(t.st, n, iw)
+			ih--
+		}
+	}
 	t.table.SetHeight(max(ih, 0))
 	title := views[t.filter].name
 	if t.match != "" {
@@ -289,7 +297,7 @@ func (t *installedTab) view(err error, focus column) string {
 	}
 	var list string
 	if t.listW > 0 {
-		list = pane(t.st, title, body+rows, t.listW, t.h, focus == colList)
+		list = pane(t.st, title, body+rows+footer, t.listW, t.h, focus == colList)
 	}
 	if t.pvW == 0 {
 		return list
@@ -307,6 +315,9 @@ func (t *installedTab) view(err error, focus column) string {
 func (t *installedTab) emptyNote() string {
 	if t.match != "" {
 		return "nothing in this view matches /" + t.match
+	}
+	if t.filter == filterSkunky && t.scanEmpty != nil {
+		return t.scanEmpty()
 	}
 	if t.filter == filterDeprecated {
 		return "nothing installed is deprecated or disabled"

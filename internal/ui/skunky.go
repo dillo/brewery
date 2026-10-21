@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/theme"
@@ -98,6 +101,9 @@ func (t *installedTab) worstRank(p brew.Package) int {
 // skunkyBadge is Skunky's sidebar count: the formulae with findings, as a
 // red chip when any is HIGH or CRITICAL, and nothing before the first scan.
 func (a *App) skunkyBadge() (n int, chip string) {
+	if a.errs[qVulns] != nil {
+		return -1, a.st.ChipStale.Render("⚠") // the last scan failed: what's shown may be old
+	}
 	if a.snap.Vulns == nil {
 		return -1, ""
 	}
@@ -112,4 +118,83 @@ func (a *App) skunkyBadge() (n int, chip string) {
 		return -1, a.st.ChipErr.Render(fmt.Sprintf("!%d", n))
 	}
 	return n, ""
+}
+
+// vulnsEvery is how often the slow pass scans with brew vulns, which sends
+// the installed formulae to OSV.dev.
+const vulnsEvery = 24 * time.Hour
+
+// slowQueries are what runs once the JSON queries are in: doctor, the
+// dry-runs, the service files, the sizes, and the vulnerability scan when
+// it's due. A scan asked for with r is spent here.
+func (a *App) slowQueries() []query {
+	qs := []query{qDoctor, qCleanup, qSizes, qAutoremove, qServiceFiles}
+	if a.vulnsDue() {
+		qs = append(qs, qVulns)
+	}
+	a.forceVulns = false
+	return qs
+}
+
+// vulnsDue reports whether the slow pass should scan: when r on Skunky
+// asked for it, or when there's no scan or it's a day old, unless brew has
+// no vulns command.
+func (a *App) vulnsDue() bool {
+	switch {
+	case a.noVulns:
+		return false
+	case a.forceVulns:
+		return true
+	}
+	return a.snap.Vulns == nil || a.now().Sub(a.snap.VulnsAt) >= vulnsEvery
+}
+
+// vulnsNote is the line under Skunky's list: when brew vulns last ran and
+// how much it could check, or why it couldn't run. It's "" before any scan,
+// when the empty note says so.
+func (a *App) vulnsNote() string {
+	err := a.errs[qVulns]
+	switch {
+	case a.noVulns:
+		return "brew vulns isn't available · U updates brew"
+	case err != nil && a.snap.Vulns != nil:
+		return "couldn't scan: " + scanReason(err) + " · showing the scan from " + ago(a.now(), a.snap.VulnsAt)
+	case err != nil:
+		return "couldn't scan: " + scanReason(err)
+	case a.snap.Vulns == nil:
+		return ""
+	}
+	return fmt.Sprintf("scanned %s · %d of %d formulae checked · casks aren't scanned",
+		ago(a.now(), a.snap.VulnsAt), a.snap.Vulns.Checked, a.formulaCount())
+}
+
+// scanReason is err's first line, shortened to fit the note.
+func scanReason(err error) string {
+	first, _, _ := strings.Cut(err.Error(), "\n")
+	return ansi.Truncate(first, reasonW, "…")
+}
+
+// formulaCount is how many formulae are installed.
+func (a *App) formulaCount() int {
+	n := 0
+	for _, p := range a.snap.Packages {
+		if p.Kind == brew.KindFormula {
+			n++
+		}
+	}
+	return n
+}
+
+// vulnsEmpty says why Skunky has no rows. It never says anything is safe,
+// only what was checked.
+func (a *App) vulnsEmpty() string {
+	switch {
+	case a.snap.Vulns != nil:
+		return fmt.Sprintf("no known vulnerabilities in the %d formulae checked", a.snap.Vulns.Checked)
+	case a.noVulns:
+		return "no scan to show"
+	case a.inflight[qVulns]:
+		return "checking with brew vulns…"
+	}
+	return "not scanned yet · r scans now"
 }

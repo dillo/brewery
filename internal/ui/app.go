@@ -2,6 +2,7 @@ package ui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"os/exec"
@@ -69,6 +70,8 @@ type App struct {
 	inflight    map[query]bool // queries running now
 	again       map[query]bool // requested while running: run once more when done
 	doctorAfter bool           // run doctor and cleanup's dry-runs when the JSON queries are done
+	forceVulns  bool           // r on Skunky: scan in the next slow pass, however recent the last scan
+	noVulns     bool           // brew has no vulns command: don't ask again
 	// sizesAfterInstalled holds a sizes request made while the package list
 	// is being fetched: sizes run once that result is in, so they measure
 	// the fresh list, not the one from before the change.
@@ -179,6 +182,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.maint.preview = a.maintPreview
 	a.installed.now = func() time.Time { return a.now() } // follows a.now, which tests replace
 	a.outdated.note = a.dataAge
+	a.installed.scanNote, a.installed.scanEmpty = a.vulnsNote, a.vulnsEmpty
 	a.discover.note = a.statsAge
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
@@ -191,6 +195,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.loaded[qSizes] = snap.Sizes != nil
 	a.loaded[qAutoremove] = snap.AutoremoveRan
 	a.loaded[qServiceFiles] = snap.ServiceFilesRan
+	a.loaded[qVulns] = snap.Vulns != nil
 	a.sync()
 	return a
 }
@@ -329,6 +334,9 @@ func (a *App) apply(m resultMsg) {
 		maps.Copy(merged, m.sizes)
 		m.sizes, m.err = merged, nil
 	}
+	if errors.Is(m.err, brew.ErrNoVulns) {
+		a.noVulns = true
+	}
 	a.errs[m.q] = m.err
 	a.home.doctorErr = a.errs[qDoctor]
 	if m.err != nil {
@@ -355,6 +363,8 @@ func (a *App) apply(m resultMsg) {
 		a.snap.ServiceFiles, a.snap.ServiceFilesRan = m.serviceFiles, true
 	case qSizes:
 		a.snap.Sizes = m.sizes
+	case qVulns:
+		a.snap.Vulns, a.snap.VulnsAt = &m.vulns, a.now()
 	}
 	a.sync()
 }
@@ -558,7 +568,7 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 	}
 	if a.doctorAfter && !a.jsonBusy() {
 		a.doctorAfter = false
-		doctor = a.request(qDoctor, qCleanup, qSizes, qAutoremove, qServiceFiles)
+		doctor = a.request(a.slowQueries()...)
 	}
 	// Save before doctor starts: doctor can take 30s, and quitting
 	// meanwhile must not lose the JSON results.
@@ -713,10 +723,7 @@ func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
 	case "l", "right":
 		a.focusDetails()
 	case "r":
-		if a.tab == tabDiscover {
-			return tea.Batch(a.refresh(), a.fetchStats(true)), true
-		}
-		return a.refresh(), true
+		return a.refreshKey(), true
 	default:
 		return nil, false
 	}
@@ -1064,4 +1071,16 @@ func (a *App) statusBar() string {
 	gap := max(room-lipgloss.Width(left)-lipgloss.Width(r), 1)
 	line := ansi.Truncate(left+strings.Repeat(" ", gap)+r+" ", a.width, "…") // … says something was cut
 	return st.StatusBar.Width(a.width).Render(line)
+}
+
+// refreshKey is r: refresh everything, and what the view shows besides. On
+// Discover that's the stats; on Skunky it's the scan, whatever its age.
+func (a *App) refreshKey() tea.Cmd {
+	switch {
+	case a.tab == tabDiscover:
+		return tea.Batch(a.refresh(), a.fetchStats(true))
+	case a.tab == tabInstalled && a.installed.filter == filterSkunky:
+		a.forceVulns = true
+	}
+	return a.refresh()
 }
