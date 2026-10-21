@@ -11,8 +11,9 @@
 │  Outdated          ↑2  ││   Untap them with:                                               ││                                            │
 │  Pinned             1  ││     brew untap oven-sh/bun                                       ││                                            │
 │  Deprecated         2  ││                                                                  ││                                            │
-│                        ││ ⚠ Some installed casks are deprecated or disabled.               ││                                            │
-│ MANAGE                 ││   fontbase                                                       ││                                            │
+│  Skunky            !2  ││ ⚠ Some installed casks are deprecated or disabled.               ││                                            │
+│                        ││   fontbase                                                       ││                                            │
+│ MANAGE                 ││                                                                  ││                                            │
 │  Services          ✗1  ││                                                                  ││                                            │
 │  Taps               2  ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
@@ -27,7 +28,6 @@
 │ TOOLS                  ││                                                                  ││                                            │
 │  History            2  ││                                                                  ││                                            │
 │  Maintenance           ││                                                                  ││                                            │
-│                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │
 │                        ││                                                                  ││                                            │

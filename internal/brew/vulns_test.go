@@ -23,7 +23,7 @@ func TestParseVulns(t *testing.T) {
 	for _, f := range scan.Findings {
 		names = append(names, f.Formula+" "+f.Version)
 	}
-	if want := []string{"git 2.50.0", "json-c 0.19", "lua-language-server 3.19.0"}; !slices.Equal(names, want) {
+	if want := []string{"git 2.50.0", "json-c 0.19", "lua-language-server 3.19.1"}; !slices.Equal(names, want) {
 		t.Errorf("findings %v, want %v: pcre2 has only patched ones", names, want)
 	}
 	want := Vuln{ID: "OSV-2024-512", Severity: "MEDIUM", Summary: "Integer overflow in printbuf",

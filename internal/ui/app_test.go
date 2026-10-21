@@ -469,6 +469,7 @@ func TestViewFitsSmallTerminals(t *testing.T) {
 			selectInstalled(t, a, "lua-language-server")
 			for i, e := range entries {
 				settle(t, a, a.selectEntry(i))
+				a.layout() // as Update would: an empty view drops its details column
 				out := a.render()
 				if h := lipgloss.Height(out); h != size.h {
 					t.Errorf("%dx%d failing=%v: %s renders %d lines, want %d\n%s", size.w, size.h, failing, e.label, h, size.h, stripANSI(out))

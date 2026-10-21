@@ -2,6 +2,7 @@ package ui
 
 import (
 	"cmp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -24,6 +25,7 @@ const (
 	filterFormulae
 	filterPinned
 	filterDeprecated
+	filterSkunky
 )
 
 // views are the Installed tab's views, in the sidebar's order,
@@ -36,6 +38,7 @@ var views = [...]struct{ name, about string }{
 	filterFormulae:   {"Formulae", "Command-line tools and libraries (formulae)."},
 	filterPinned:     {"Pinned", "Held at their version: brew upgrade skips them."},
 	filterDeprecated: {"Deprecated", "On their way out: deprecated, or disabled and no longer installable."},
+	filterSkunky:     {"Skunky", "Installed formulae with known security problems, worst first."},
 }
 
 var installedCols = []col{{"NAME", 0, 20}, {"VERSION", 16, 8}, {"TYPE", 9, 4}, {"STATUS", 10, 6}, {"SIZE", 8, -1}}
@@ -46,12 +49,13 @@ type installedTab struct {
 	filter installedFilter
 	all    []brew.Package
 	ix     *state.Index
-	rows   []brew.Package   // the filtered rows, in table order
-	match  string           // the "/" filter on names
-	pv     scroller         // where the preview is scrolled to
-	marked map[string]bool  // packages picked with space, by pkgKey
-	sizes  map[string]int64 // bytes on disk, by Package.Key; nil until measured
-	now    func() time.Time // today, for the disable date
+	rows   []brew.Package              // the filtered rows, in table order
+	match  string                      // the "/" filter on names
+	pv     scroller                    // where the preview is scrolled to
+	marked map[string]bool             // packages picked with space, by pkgKey
+	sizes  map[string]int64            // bytes on disk, by Package.Key; nil until measured
+	vulns  map[string]brew.VulnFinding // the last scan's findings, by formula; nil before one
+	now    func() time.Time            // today, for the disable date
 	loaded bool
 	table  table.Model
 	listW  int // the list pane's width; 0 hides it
@@ -92,6 +96,9 @@ func (t *installedTab) shows(f installedFilter, p brew.Package) bool {
 		return p.Pinned
 	case filterDeprecated:
 		return retireState(p) != ""
+	case filterSkunky:
+		_, ok := t.finding(p)
+		return ok
 	}
 	return true
 }
@@ -108,25 +115,71 @@ func (t *installedTab) count(f installedFilter) int {
 }
 
 func (t *installedTab) apply() {
+	before := t.selectedKey()
 	t.rows = t.rows[:0]
 	for _, p := range t.all {
 		if t.shows(t.filter, p) && matches(p.Name, t.match) {
 			t.rows = append(t.rows, p)
 		}
 	}
-	sort.SliceStable(t.rows, func(i, j int) bool {
-		if t.rows[i].Name != t.rows[j].Name {
-			return t.rows[i].Name < t.rows[j].Name
-		}
-		return t.rows[i].Kind < t.rows[j].Kind
-	})
+	sort.SliceStable(t.rows, t.less)
 	rows := make([]table.Row, len(t.rows))
 	for i, p := range t.rows {
-		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, kindCell(t.st.Icons, p.Kind), status(t.st, p), t.size(p)}
+		rows[i] = table.Row{marked(p.Name, t.marked[pkgKey(p)]), p.Version, t.typeCell(p), status(t.st, p), t.size(p)}
 	}
-	before := t.selectedKey()
-	setRowsKeeping(&t.table, rows, installedKey)
+	if t.h > 0 {
+		t.resize(t.listW, t.pvW, t.h) // the view's columns may differ
+	}
+	setRows(&t.table, rows)
+	t.selectKey(before)
 	t.followSelection(before)
+}
+
+// less orders rows by name, a formula before a cask of the same name; on
+// Skunky, by worst finding first.
+func (t *installedTab) less(i, j int) bool {
+	p, q := t.rows[i], t.rows[j]
+	if t.filter == filterSkunky {
+		if rp, rq := t.worstRank(p), t.worstRank(q); rp != rq {
+			return rp < rq
+		}
+	}
+	if p.Name != q.Name {
+		return p.Name < q.Name
+	}
+	return p.Kind < q.Kind
+}
+
+// selectKey moves the cursor to the package whose pkgKey is key, if the
+// view lists it.
+func (t *installedTab) selectKey(key string) {
+	for i, p := range t.rows {
+		if pkgKey(p) == key {
+			t.table.SetCursor(i)
+			return
+		}
+	}
+}
+
+// cols are Installed's columns. On Skunky, every row is a formula, so
+// TYPE gives way to SEVERITY.
+func (t *installedTab) cols() []col {
+	if t.filter != filterSkunky {
+		return installedCols
+	}
+	c := slices.Clone(installedCols)
+	c[2].title = "SEVERITY"
+	return c
+}
+
+// typeCell is the TYPE column's cell: on Skunky, the worst finding's
+// severity.
+func (t *installedTab) typeCell(p brew.Package) string {
+	if t.filter == filterSkunky {
+		f, _ := t.finding(p)
+		return severityText(t.st, worst(f))
+	}
+	return kindCell(t.st.Icons, p.Kind)
 }
 
 // selectedKey identifies the selected package, or is "" for none.
@@ -145,10 +198,6 @@ func (t *installedTab) followSelection(before string) {
 		t.pv.off = 0
 	}
 }
-
-// installedKey identifies an Installed row by name and type: a formula
-// and a cask can share a name.
-func installedKey(r table.Row) string { return unmarked(r[0]) + "\x00" + r[2] }
 
 // size is p's size on disk, or "" before it has been measured.
 func (t *installedTab) size(p brew.Package) string {
@@ -211,7 +260,7 @@ func (t *installedTab) scroll(k string) {
 func (t *installedTab) resize(listW, pvW, h int) {
 	t.listW, t.pvW, t.h = listW, pvW, h
 	iw, ih := paneInner(cmp.Or(listW, pvW), h)
-	sizeTable(&t.table, installedCols, iw, max(ih-aboutHeight, 0))
+	sizeTable(&t.table, t.cols(), iw, max(ih-aboutHeight, 0))
 }
 
 // view sizes the table each time because a failed refresh shares the list

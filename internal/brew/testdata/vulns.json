@@ -36,8 +36,8 @@
     },
     {
       "formula": "lua-language-server",
-      "version": "3.19.0",
-      "tag": "3.19.0",
+      "version": "3.19.1",
+      "tag": "3.19.1",
       "repo_url": "https://github.com/LuaLS/lua-language-server",
       "vulnerabilities": [
         {"id": "GHSA-7f3x-lua-0001", "severity": "HIGH", "summary": "Path traversal in workspace", "aliases": [], "fixed_versions": ["3.20.0"]}
