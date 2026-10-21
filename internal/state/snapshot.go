@@ -13,7 +13,7 @@ import (
 
 // snapshotVersion changes whenever Snapshot's shape changes; older cache
 // files are ignored rather than half-loaded.
-const snapshotVersion = 7
+const snapshotVersion = 8
 
 // Snapshot is everything brewery knows about the installation at one time.
 type Snapshot struct {
@@ -32,6 +32,8 @@ type Snapshot struct {
 	ServiceFilesRan bool                 `json:"service_files_ran"`
 	TapChecks       []github.TapCheck    `json:"tap_checks"`      // what the last tap check found, by tap
 	TapsCheckedAt   time.Time            `json:"taps_checked_at"` // when it finished; zero if never
+	Vulns           *brew.VulnScan       `json:"vulns"`           // what brew vulns last found; nil if it never ran
+	VulnsAt         time.Time            `json:"vulns_at"`        // when it ran
 	Sizes           map[string]int64     `json:"sizes"`           // bytes on disk, by Package.Key
 	DataAt          time.Time            `json:"data_at"`         // when brew last fetched package data
 	FetchedAt       time.Time            `json:"fetched_at"`
