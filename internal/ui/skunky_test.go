@@ -108,12 +108,12 @@ func TestSkunkyKeepsTheSelectedPackage(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	show(t, a, "All")
 	for i, p := range a.installed.rows {
-		if p.Name == "json-c" {
+		if p.Name == "lua-language-server" {
 			a.installed.table.SetCursor(i)
 		}
 	}
 	show(t, a, "Skunky")
-	if p, _ := a.installed.selected(); p.Name != "json-c" {
-		t.Errorf("selected %s after moving to Skunky, want json-c", p.Name)
+	if p, _ := a.installed.selected(); p.Name != "lua-language-server" {
+		t.Errorf("selected %s after moving to Skunky, want lua-language-server", p.Name)
 	}
 }
