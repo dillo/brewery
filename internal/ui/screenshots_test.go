@@ -99,6 +99,22 @@ func demoSnapshot(t *testing.T) state.Snapshot {
 		{Tap: "oldfriend/tools", State: github.Archived},
 	}
 	s.TapsCheckedAt = demoNow.Add(-26 * time.Hour)
+	// What brew vulns found this morning, made up like the rest: gh is
+	// outdated, so its details offer the upgrade.
+	s.Vulns = &brew.VulnScan{Checked: 51, Skipped: []string{"ca-certificates", "gettext", "ncurses"}, Findings: []brew.VulnFinding{
+		{Formula: "gh", Version: "2.101.0", Vulns: []brew.Vuln{
+			{ID: "OSV-2026-4521", Severity: "HIGH", Summary: "Token written to a debug log", Fixed: []string{"2.102.0"}},
+			{ID: "OSV-2026-4388", Severity: "MEDIUM", Summary: "Unchecked redirect in browse", Fixed: []string{"2.102.0"}},
+		}},
+		{Formula: "libssh2", Version: "1.11.1", Vulns: []brew.Vuln{
+			{ID: "OSV-2026-3170", Severity: "MEDIUM", Summary: "Out-of-bounds read in packet handling",
+				Fixed: []string{"5d2f0c4e8a1b3c7d9e0f2a4b6c8d0e1f3a5b7c9d"}},
+		}},
+		{Formula: "c-ares", Version: "1.34.8", Vulns: []brew.Vuln{
+			{ID: "OSV-2026-2904", Severity: "LOW", Summary: "Read past the end of a short reply"},
+		}},
+	}}
+	s.VulnsAt = demoNow.Add(-5 * time.Hour)
 	s.FetchedAt, s.DataAt = demoNow.Add(-2*time.Minute), demoNow.Add(-3*time.Hour)
 	return s
 }
@@ -117,7 +133,7 @@ func (d demoSource) Cleanup(context.Context) (brew.Cleanup, error) { return d.sn
 func (d demoSource) Sizes(context.Context, []brew.Package) (map[string]int64, error) {
 	return d.snap.Sizes, nil
 }
-func (d demoSource) Vulns(context.Context) (brew.VulnScan, error)   { return brew.VulnScan{}, nil }
+func (d demoSource) Vulns(context.Context) (brew.VulnScan, error)   { return *d.snap.Vulns, nil }
 func (d demoSource) DataUpdated(context.Context) (time.Time, error) { return d.snap.DataAt, nil }
 
 // demoStats serves Homebrew's analytics as of the demo machine's day.
@@ -248,6 +264,10 @@ func TestScreenshots(t *testing.T) {
 	selectInstalled(t, a, "python@3.13")
 	show(t, a, "Deprecated")
 	shoot(t, a, "deprecated")
+
+	selectInstalled(t, a, "gh") // the worst, and outdated
+	show(t, a, "Skunky")
+	shoot(t, a, "skunky")
 
 	show(t, a, "Services") // postgresql@16, with its log
 	keys(t, a, "l")

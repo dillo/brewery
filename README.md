@@ -132,6 +132,11 @@ Packages on their way out, with brew's reason and what to install instead.
 
 ![The Deprecated view: python@3.13, a versioned formula that will be disabled on 2027-04-01, with python@3.15 as its replacement](docs/screenshots/deprecated.png)
 
+Formulae with known vulnerabilities, worst first, with each finding and
+what fixes it.
+
+![The Skunky view: gh with a HIGH and a MEDIUM finding, both fixed in 2.102.0, libssh2 at MEDIUM and c-ares at LOW, with how many formulae the last scan checked](docs/screenshots/skunky.png)
+
 Services, with the end of each one's log.
 
 ![Services: postgresql@16 started, with its command, file and the end of its log in the details](docs/screenshots/services.png)
@@ -176,7 +181,7 @@ its actions.
 | `1`–`5` | Home, Packages, Manage, Discover, Tools |
 | `[` `]` | previous or next sidebar entry |
 | `:` | run any brew command; `:jobs` opens History |
-| `r` | refresh |
+| `r` | refresh; on Skunky, also scan for vulnerabilities now |
 | `U` | `brew update` |
 | `c` | clean up |
 | `o` | show or hide brew's output |
