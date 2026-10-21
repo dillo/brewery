@@ -66,7 +66,9 @@ time.Time` (`vulns_at`), and `snapshotVersion` goes from 7 to 8. `nil`
 means never scanned, which isn't the same as a scan that found nothing.
 
 **Which formulae are skunky.** An installed formula is skunky when the scan
-has a finding for its name at the version installed now. After an upgrade
+has a finding for its name at the version installed now, less brew's
+revision: brew vulns reports `jpeg-xl 0.12.0` when `0.12.0_1` is installed,
+so a trailing `_<digits>` is dropped before comparing. After an upgrade
 the installed version no longer matches, so the formula leaves the view
 and its count straight away. The next scan judges the new version.
 
@@ -132,12 +134,12 @@ The nothing-found note says what was checked, never that anything is safe.
 
 ## Details
 
-A `vulnerabilities` block, on every Installed view, for a formula with
+A `Vulnerabilities` section, on every Installed view, for a formula with
 open findings at its installed version. It sits after the key/value rows
-and before the dependency tree.
+and before the dependency tree, headed like `Dependencies` and `Caveats`.
 
 ```
-vulnerabilities
+Vulnerabilities
   HIGH      OSV-2021-777
             Heap-use-after-free in xmlAddNextSibling
   MEDIUM    CVE-2026-1234
@@ -213,7 +215,9 @@ scan with brew vulns now`.
 **Goldens:**
 - These change, and nothing else may:
   - the sidebar on every screen (one more entry);
-  - Help, if it shows the sidebar.
+  - Help, if it shows the sidebar;
+  - Installed's menu, whose details (lua-language-server) gain the
+    Vulnerabilities section.
 - There's a new golden for the Skunky view.
 - Check the diff before updating.
 
