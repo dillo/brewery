@@ -106,17 +106,29 @@ func DefaultStateDir() string {
 
 // Save writes r and removes the oldest records beyond Keep.
 func (h History) Save(r Record) error {
-	b, err := json.Marshal(r)
+	tmp, err := h.writeTemp(r)
 	if err != nil {
 		return err
+	}
+	if err := h.publishUnique(tmp, r.Started); err != nil {
+		return err
+	}
+	return h.prune()
+}
+
+// writeTemp writes r to a new temp file in h.Dir and returns its path.
+func (h History) writeTemp(r Record) (string, error) {
+	b, err := json.Marshal(r)
+	if err != nil {
+		return "", err
 	}
 	// Records hold brew's output and typed args: keep them private.
 	if err := os.MkdirAll(h.Dir, 0o700); err != nil {
-		return err
+		return "", err
 	}
 	f, err := os.CreateTemp(h.Dir, "*.tmp") // 0600
 	if err != nil {
-		return err
+		return "", err
 	}
 	tmp := f.Name()
 	_, werr := f.Write(b)
@@ -125,26 +137,31 @@ func (h History) Save(r Record) error {
 	}
 	if werr != nil {
 		_ = os.Remove(tmp)
-		return werr
+		return "", werr
 	}
-	// Jobs that start within the clock's precision share a name. publish
-	// fails if the name is taken, so another save is never replaced: try
-	// "-1", "-2", … instead. (The order among records with the same start
-	// time is unspecified.)
-	stem := filepath.Join(h.Dir, r.Started.UTC().Format("20060102T150405.000000000"))
+	return tmp, nil
+}
+
+// publishUnique puts tmp at a record name for started, and removes tmp.
+// Jobs that start within the clock's precision share a name. publish
+// fails if the name is taken, so another save is never replaced: try
+// "-1", "-2", … instead. (The order among records with the same start
+// time is unspecified.)
+func (h History) publishUnique(tmp string, started time.Time) error {
+	defer func() { _ = os.Remove(tmp) }() // still there after a link or a failure; already gone after a rename
+	stem := filepath.Join(h.Dir, started.UTC().Format("20060102T150405.000000000"))
 	name := stem + ".json"
 	for i := 1; ; i++ {
 		err := h.publish(tmp, name)
-		if err == nil {
-			break
-		}
-		if !os.IsExist(err) {
-			_ = os.Remove(tmp)
+		if err == nil || !os.IsExist(err) {
 			return err
 		}
 		name = fmt.Sprintf("%s-%d.json", stem, i)
 	}
-	_ = os.Remove(tmp) // still there after a link; already gone after a rename
+}
+
+// prune removes the oldest records beyond Keep.
+func (h History) prune() error {
 	files, err := h.files()
 	if err != nil {
 		return err
