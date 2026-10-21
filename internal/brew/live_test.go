@@ -180,7 +180,6 @@ func TestLiveVulns(t *testing.T) {
 		t.Skip("brew not installed")
 	}
 	c := NewClient(ExecRunner{Bin: bin, Env: QueryEnv})
-	c.Timeout = 2 * time.Minute
 	scan, err := c.Vulns(context.Background())
 	if errors.Is(err, ErrNoVulns) {
 		t.Skip("this brew has no vulns command")

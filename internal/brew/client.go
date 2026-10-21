@@ -91,7 +91,10 @@ func (e *QueryError) Unwrap() error { return e.Err }
 type Client struct {
 	r       Runner
 	Timeout time.Duration
-	Prefix  string // where brew is installed (/opt/homebrew): Cellar and Caskroom are in it
+	// VulnsTimeout is Vulns' own: a scan of a large install, or a slow
+	// OSV.dev, takes longer than the other queries are given.
+	VulnsTimeout time.Duration
+	Prefix       string // where brew is installed (/opt/homebrew): Cellar and Caskroom are in it
 
 	AgentsDir string // where brew services keeps its launchd files
 
@@ -102,7 +105,7 @@ type Client struct {
 }
 
 func NewClient(r Runner) *Client {
-	c := &Client{r: r, Timeout: 30 * time.Second}
+	c := &Client{r: r, Timeout: 30 * time.Second, VulnsTimeout: 2 * time.Minute}
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
 		c.AgentsDir = filepath.Join(home, "Library", "LaunchAgents")
 	}

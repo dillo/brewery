@@ -76,8 +76,11 @@ func TestClientVulns(t *testing.T) {
 	}
 
 	c = NewClient(fakeRunner{delay: time.Second})
-	c.Timeout = 10 * time.Millisecond
-	if _, err := c.Vulns(ctx); err == nil || !strings.Contains(err.Error(), "timed out") {
+	if c.VulnsTimeout != 2*time.Minute {
+		t.Errorf("the scan's timeout is %s, want 2m0s: it asks OSV.dev, so it gets longer than the other queries", c.VulnsTimeout)
+	}
+	c.VulnsTimeout = 10 * time.Millisecond
+	if _, err := c.Vulns(ctx); err == nil || !strings.Contains(err.Error(), "timed out after 10ms") {
 		t.Errorf("want a timeout, got %v", err)
 	}
 }

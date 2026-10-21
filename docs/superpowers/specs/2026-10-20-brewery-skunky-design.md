@@ -28,7 +28,9 @@ It exits 1 when it finds anything, as doctor does. Casks aren't scanned.
 A scan of 138 formulae took about 10 seconds; 49 were skipped.
 
 **brew package.** `(c *Client) Vulns(ctx) (VulnScan, error)` runs
-`brew vulns --json` with the client's timeout.
+`brew vulns --json` with its own 2-minute timeout (`Client.VulnsTimeout`),
+because a scan of a large install or a slow OSV.dev can take longer than the
+30s the other queries get.
 
 ```go
 type VulnScan struct {

@@ -80,15 +80,16 @@ func ParseVulns(b []byte) (VulnScan, error) {
 // ErrNoVulns.
 func (c *Client) Vulns(ctx context.Context) (VulnScan, error) {
 	args := []string{"vulns", "--json"}
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
+	ctx, cancel := context.WithTimeout(ctx, c.VulnsTimeout)
 	defer cancel()
 	out, errb, err := c.r.Run(ctx, args...)
 	if err != nil && ctx.Err() != nil {
-		return VulnScan{}, &QueryError{Args: args, Stderr: string(errb), Err: fmt.Errorf("timed out after %s", c.Timeout)}
+		return VulnScan{}, &QueryError{Args: args, Stderr: string(errb), Err: fmt.Errorf("timed out after %s", c.VulnsTimeout)}
 	}
 	if strings.Contains(string(errb), "Unknown command") {
 		return VulnScan{}, ErrNoVulns
 	}
+	// Any non-zero exit with parseable JSON is a result: brew vulns exits 1 for findings.
 	var exitErr *exec.ExitError
 	if err != nil && !errors.As(err, &exitErr) {
 		return VulnScan{}, &QueryError{Args: args, Stderr: string(errb), Err: err}

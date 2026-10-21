@@ -422,3 +422,12 @@ func TestNoSecondScanWhileOneRuns(t *testing.T) {
 		t.Errorf("%d scans, want 1", src.calls["vulns"])
 	}
 }
+
+func TestNoVulnsClearsAnEarlierScanError(t *testing.T) {
+	a, _ := newScanApp(t, 0, false)
+	a.errs[qVulns] = errors.New("no network")
+	a.apply(resultMsg{q: qVulns, err: brew.ErrNoVulns})
+	if a.errs[qVulns] != nil {
+		t.Errorf("a brew without vulns isn't an error, whatever failed before: %v", a.errs[qVulns])
+	}
+}
