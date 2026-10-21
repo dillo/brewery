@@ -165,12 +165,23 @@ func (a *App) withoutPinnedBehind(ts []target) ([]target, string) {
 // unmarked package still needs one, it explains why brew would refuse.
 func (a *App) askUninstallMarked() {
 	pkgs := a.installed.markedPackages()
+	if blocked := a.uninstallBlockers(pkgs); len(blocked) > 0 {
+		a.confirm = &confirmBox{
+			title:   "Can't uninstall these",
+			body:    append(blocked, "Unmark it, or mark those too."),
+			choices: []choice{{"n", "close", nil}},
+		}
+		return
+	}
+	a.confirm = a.uninstallMarkedBox(pkgs)
+}
+
+// uninstallBlockers says, for each of pkgs that a package outside pkgs
+// still needs, which packages need it.
+func (a *App) uninstallBlockers(pkgs []brew.Package) []string {
 	gone := map[string]bool{}
-	var names, full []string
 	for _, p := range pkgs {
 		gone[p.FullName] = true
-		names = append(names, p.Name)
-		full = append(full, p.FullName)
 	}
 	var blocked []string
 	for _, p := range pkgs {
@@ -184,35 +195,21 @@ func (a *App) askUninstallMarked() {
 			blocked = append(blocked, p.Name+" is required by "+strings.Join(by, ", ")+".")
 		}
 	}
-	if len(blocked) > 0 {
-		a.confirm = &confirmBox{
-			title:   "Can't uninstall these",
-			body:    append(blocked, "Unmark it, or mark those too."),
-			choices: []choice{{"n", "close", nil}},
-		}
-		return
-	}
-	refresh := append(slices.Clone(diskQueries), qServices, qServiceFiles)
-	ts := make([]target, len(pkgs))
-	for i, p := range pkgs {
-		ts[i] = target{p.FullName, p.Kind}
-	}
-	run := func(extra []string) func() tea.Cmd {
-		return func() tea.Cmd {
-			a.clearMarks()
-			all := slices.Clone(ts)
-			for _, o := range extra {
-				all = append(all, target{o, brew.KindFormula}) // only formulae are installed as dependencies
-			}
-			return a.byKind(all, func(kind brew.Kind, names []string) action {
-				return action{title: "uninstall " + strings.Join(names, " "), args: kindArgs("uninstall", kind, names...), refresh: refresh}
-			})
-		}
+	return blocked
+}
+
+// uninstallMarkedBox asks to uninstall pkgs and, when they leave
+// dependencies nothing else needs, offers to uninstall those too.
+func (a *App) uninstallMarkedBox(pkgs []brew.Package) *confirmBox {
+	var names, full []string
+	for _, p := range pkgs {
+		names = append(names, p.Name)
+		full = append(full, p.FullName)
 	}
 	box := &confirmBox{
 		title:   fmt.Sprintf("Uninstall %d packages?", len(pkgs)),
 		body:    []string{strings.Join(names, ", ")},
-		choices: []choice{{"y", "uninstall", run(nil)}},
+		choices: []choice{{"y", "uninstall", a.uninstallMarked(pkgs, nil)}},
 	}
 	if orphans := a.ix.Orphans(full...); len(orphans) > 0 {
 		noun := "dependency"
@@ -220,10 +217,29 @@ func (a *App) askUninstallMarked() {
 			noun = "dependencies"
 		}
 		box.body = append(box.body, "", fmt.Sprintf("That leaves %d %s nothing else needs:", len(orphans), noun), strings.Join(orphans, ", "))
-		box.choices = append(box.choices, choice{"o", "uninstall + orphans", run(orphans)})
+		box.choices = append(box.choices, choice{"o", "uninstall + orphans", a.uninstallMarked(pkgs, orphans)})
 	}
 	box.choices = append(box.choices, choice{"n", "cancel", nil})
-	a.confirm = box
+	return box
+}
+
+// uninstallMarked returns a choice's action: clear the marks, then
+// uninstall pkgs and the formulae named in extra.
+func (a *App) uninstallMarked(pkgs []brew.Package, extra []string) func() tea.Cmd {
+	refresh := append(slices.Clone(diskQueries), qServices, qServiceFiles)
+	ts := make([]target, 0, len(pkgs)+len(extra))
+	for _, p := range pkgs {
+		ts = append(ts, target{p.FullName, p.Kind})
+	}
+	for _, o := range extra {
+		ts = append(ts, target{o, brew.KindFormula}) // only formulae are installed as dependencies
+	}
+	return func() tea.Cmd {
+		a.clearMarks()
+		return a.byKind(ts, func(kind brew.Kind, names []string) action {
+			return action{title: "uninstall " + strings.Join(names, " "), args: kindArgs("uninstall", kind, names...), refresh: refresh}
+		})
+	}
 }
 
 // markedPackages are the marked packages, by name.
