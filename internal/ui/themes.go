@@ -158,3 +158,27 @@ func (a *App) keepTheme(name string) tea.Cmd {
 	a.flash = a.st.OK.Render("theme: " + t.Title)
 	return nil
 }
+
+// themeCommand is :theme. With no name it opens the picker; with one it
+// switches to that theme and saves it.
+func (a *App) themeCommand(args []string) tea.Cmd {
+	if len(args) == 0 {
+		a.openThemes()
+		return nil
+	}
+	for _, t := range theme.Themes {
+		if t.Name == args[0] {
+			return a.keepTheme(t.Name)
+		}
+	}
+	return a.note("no theme called " + args[0] + " · :theme lists them")
+}
+
+// themeCandidates are the names :theme takes, each with its title.
+func themeCandidates() []candidate {
+	cs := make([]candidate, len(theme.Themes))
+	for i, t := range theme.Themes {
+		cs[i] = candidate{t.Name, t.Title}
+	}
+	return cs
+}

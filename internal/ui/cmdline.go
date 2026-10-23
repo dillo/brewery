@@ -163,6 +163,8 @@ func (a *App) execute(line string) tea.Cmd {
 		return a.askQuit()
 	case "jobs":
 		return a.showHistory()
+	case "theme":
+		return a.themeCommand(args[1:])
 	}
 	if args[0] == "install" && a.queue.Pending(args) != nil {
 		return a.note(strings.Join(args, " ") + " is already queued")

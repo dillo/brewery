@@ -193,3 +193,51 @@ func TestTypingIntoAJobCancelsThePicker(t *testing.T) {
 		t.Errorf("brew asking for input closes the picker and puts the old theme back: in use %q", a.themeName)
 	}
 }
+
+func TestThemeCommand(t *testing.T) {
+	a, dir := pickerApp(t)
+	keys(t, a, ":")
+	typeText(t, a, "theme dracula")
+	keys(t, a, "enter")
+	if a.themeName != "dracula" || theme.LoadTheme(dir) != "dracula" {
+		t.Errorf(":theme dracula switches and saves: in use %q, saved %q", a.themeName, theme.LoadTheme(dir))
+	}
+	if a.themes != nil {
+		t.Error(":theme with a name doesn't open the picker")
+	}
+
+	keys(t, a, ":")
+	typeText(t, a, "theme nope")
+	keys(t, a, "enter")
+	if a.themeName != "dracula" {
+		t.Errorf("an unknown name changes nothing: in use %q", a.themeName)
+	}
+	if !strings.Contains(stripANSI(a.statusBar()), "no theme called nope") {
+		t.Errorf("an unknown name says so: %q", stripANSI(a.statusBar()))
+	}
+
+	keys(t, a, ":")
+	typeText(t, a, "theme")
+	keys(t, a, "enter")
+	if a.themes == nil || a.themes.was != "dracula" {
+		t.Errorf(":theme alone opens the picker on the theme in use: %+v", a.themes)
+	}
+}
+
+func TestThemeCompletion(t *testing.T) {
+	a := newCompletingApp(t, &fakeStarter{})
+	for _, tt := range []struct{ line, word, want string }{
+		{"th", "th", "theme"},
+		{"theme d", "d", "dracula"},
+		{"theme catppuccin-m", "catppuccin-m", "catppuccin-macchiato catppuccin-mocha"},
+		{"theme nord ", "", ""}, // one name only
+	} {
+		word, cs := a.candidates(tt.line)
+		if word != tt.word || candidateTexts(cs) != tt.want {
+			t.Errorf("candidates(%q) = %q, %q; want %q, %q", tt.line, word, candidateTexts(cs), tt.word, tt.want)
+		}
+	}
+	if _, cs := a.candidates("theme d"); cs[0].desc != "Dracula" {
+		t.Errorf("a theme's title comes along as its description: %q", cs[0].desc)
+	}
+}
