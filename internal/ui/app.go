@@ -108,6 +108,8 @@ type App struct {
 	jumpMiss   bool            // the jump's text matches no entry
 	confirm    *confirmBox     // open confirmation, or nil
 	menu       *menuBox        // open action menu, or nil
+	themeName  string          // the theme in use
+	themeDir   string          //nolint:unused // read by keepTheme in a later task; where the chosen theme is saved, "" saves nothing
 	installing discRow         // the row the open install dialog is for
 	help       bool            // the ? overlay is open
 	flash      string          // one-off status message, cleared by the next key
@@ -155,7 +157,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	ctx, cancel := context.WithCancel(context.Background())
 	a := &App{
 		src: src, start: start, cachePath: cachePath, st: st, now: time.Now, ctx: ctx, cancel: cancel,
-		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome,
+		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome, themeName: theme.Themes[0].Name,
 		focus: colSidebar, lastIn: map[section]int{},
 		inflight: map[query]bool{}, again: map[query]bool{},
 		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
@@ -218,10 +220,7 @@ func (a *App) UseIcons(on bool) {
 	if on {
 		ic = theme.Nerd
 	}
-	// Every part keeps its own copy of the styles.
-	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.maint.st, &a.home.st, &a.drawer.st, &a.discover.st} {
-		st.Icons = ic
-	}
+	a.restyle(func(st *theme.Styles) { st.Icons = ic })
 	a.sync()
 }
 
