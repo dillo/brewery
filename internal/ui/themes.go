@@ -34,7 +34,6 @@ func (a *App) UseTheme(name string) {
 	styleInput(&a.cmd.input, st, st.P.Blue)
 	styleInput(&a.filterIn, st, st.P.Teal)
 	a.jobs.setRows(jobRows(st, a.history, a.now()))
-	a.discover.apply()
 	a.sync()
 	a.syncMaint()
 }

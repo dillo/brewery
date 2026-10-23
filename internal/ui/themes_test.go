@@ -237,7 +237,7 @@ func TestThemeCompletion(t *testing.T) {
 			t.Errorf("candidates(%q) = %q, %q; want %q, %q", tt.line, word, candidateTexts(cs), tt.word, tt.want)
 		}
 	}
-	if _, cs := a.candidates("theme d"); cs[0].desc != "Dracula" {
-		t.Errorf("a theme's title comes along as its description: %q", cs[0].desc)
+	if _, cs := a.candidates("theme d"); len(cs) == 0 || cs[0].desc != "Dracula" {
+		t.Errorf("a theme's title comes along as its description: %v", cs)
 	}
 }
