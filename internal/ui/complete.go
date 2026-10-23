@@ -264,8 +264,7 @@ func (c *cmdline) popup(st theme.Styles, w int) string {
 			rows = append(rows, st.Text.Render(row)+st.Muted.Render(desc))
 		}
 	}
-	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Blue).Padding(0, 1)
-	return box.Width(inner + 4).Render(strings.Join(rows, "\n"))
+	return boxStyle(st.P.Blue).Width(inner + 4).Render(strings.Join(rows, "\n"))
 }
 
 // popupStart is the first of rows visible candidates out of n, scrolled so

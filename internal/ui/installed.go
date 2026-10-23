@@ -69,6 +69,12 @@ func newInstalledTab(st theme.Styles) installedTab {
 	return installedTab{st: st, table: newTable(st, installedCols), now: time.Now, ix: state.NewIndex(nil)}
 }
 
+// setStyles draws the tab, its table included, with st from now on.
+func (t *installedTab) setStyles(st theme.Styles) {
+	t.st = st
+	t.table.SetStyles(tableStyles(st))
+}
+
 func (t *installedTab) setData(pkgs []brew.Package, ix *state.Index) {
 	t.all, t.ix = pkgs, ix
 	pruneMarks(t.marked, func(yield func(string) bool) {

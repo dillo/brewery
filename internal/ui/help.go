@@ -111,6 +111,5 @@ func (a *App) helpView(maxW, maxH int) string {
 			lipgloss.NewStyle().Width(colW).Render(strings.Join(left, "\n")), "   ",
 			strings.Join(right, "\n")), "\n")
 	}
-	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Mauve).
-		Padding(0, 1).Render(strings.Join(lines, "\n"))
+	return boxStyle(st.P.Mauve).Render(strings.Join(lines, "\n"))
 }

@@ -32,6 +32,20 @@ func TestThemes(t *testing.T) {
 	}
 }
 
+func TestIndex(t *testing.T) {
+	if i, ok := Index("dracula"); !ok || Themes[i].Name != "dracula" {
+		t.Errorf("Index(dracula) = %d, %v", i, ok)
+	}
+	if i, ok := Index("catppuccin-macchiato"); !ok || i != 0 {
+		t.Errorf("Index(catppuccin-macchiato) = %d, %v; want 0, true", i, ok)
+	}
+	for _, name := range []string{"", "nope", "Dracula"} {
+		if i, ok := Index(name); ok {
+			t.Errorf("Index(%q) = %d, true; there is no such theme", name, i)
+		}
+	}
+}
+
 func TestLookup(t *testing.T) {
 	if got := Lookup("dracula"); got.Name != "dracula" || got.Title != "Dracula" {
 		t.Errorf("Lookup(dracula) = %s (%s)", got.Name, got.Title)

@@ -1,6 +1,10 @@
 package theme
 
-import "charm.land/lipgloss/v2"
+import (
+	"slices"
+
+	"charm.land/lipgloss/v2"
+)
 
 // Theme is a palette and the names brewery knows it by: Name is what
 // :theme takes and the saved file holds, Title is what the picker shows.
@@ -98,10 +102,15 @@ var Themes = []Theme{
 // Lookup returns the theme called name, or the default when brewery has
 // none by that name.
 func Lookup(name string) Theme {
-	for _, t := range Themes {
-		if t.Name == name {
-			return t
-		}
+	if i, ok := Index(name); ok {
+		return Themes[i]
 	}
 	return Themes[0]
+}
+
+// Index returns where the theme called name is in Themes, and whether
+// brewery has one by that name.
+func Index(name string) (int, bool) {
+	i := slices.IndexFunc(Themes, func(t Theme) bool { return t.Name == name })
+	return i, i >= 0
 }

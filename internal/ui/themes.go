@@ -3,7 +3,6 @@ package ui
 import (
 	"strings"
 
-	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
@@ -11,31 +10,38 @@ import (
 	"github.com/dillo/brewery/internal/theme"
 )
 
-// restyle changes every part's copy of the styles with f. Each part keeps
-// its own copy, so changing a.st alone would show in only some places.
-func (a *App) restyle(f func(*theme.Styles)) {
-	for _, st := range []*theme.Styles{&a.st, &a.installed.st, &a.outdated.st, &a.services.st, &a.taps.st, &a.jobs.st, &a.maint.st, &a.home.st, &a.drawer.st, &a.discover.st} {
-		f(st)
+// setStyles draws every part with st from now on. Each part keeps its own
+// copy, and tables and prompts keep styles from when they were built, so
+// changing a.st alone would show in only some places.
+func (a *App) setStyles(st theme.Styles) {
+	a.st, a.home.st, a.drawer.st = st, st, st
+	for _, t := range []*listTab{&a.outdated, &a.services, &a.taps, &a.jobs, &a.maint} {
+		t.setStyles(st)
 	}
+	a.installed.setStyles(st)
+	a.discover.setStyles(st)
+	styleInput(&a.cmd.input, st, st.P.Blue)
+	styleInput(&a.filterIn, st, st.P.Teal)
+}
+
+// recolour rebuilds the rows that were coloured when they were set.
+func (a *App) recolour() {
+	a.jobs.setRows(jobRows(a.st, a.history, a.now()))
+	a.sync()
+	a.syncMaint()
 }
 
 // UseTheme switches to the theme called name, or to the default when
-// brewery has none by that name. It isn't saved: keepTheme does that.
-func (a *App) UseTheme(name string) {
+// brewery has none by that name, and returns the one it switched to. It
+// isn't saved: keepTheme does that.
+func (a *App) UseTheme(name string) theme.Theme {
 	t := theme.Lookup(name)
 	st := theme.New(t.Palette)
 	st.Icons = a.st.Icons
-	a.restyle(func(s *theme.Styles) { *s = st })
+	a.setStyles(st)
 	a.themeName = t.Name
-	// Styles set when a part was built, and rows coloured when they were set.
-	for _, tb := range []*table.Model{&a.installed.table, &a.outdated.table, &a.services.table, &a.taps.table, &a.jobs.table, &a.maint.table, &a.discover.table} {
-		tb.SetStyles(tableStyles(st))
-	}
-	styleInput(&a.cmd.input, st, st.P.Blue)
-	styleInput(&a.filterIn, st, st.P.Teal)
-	a.jobs.setRows(jobRows(st, a.history, a.now()))
-	a.sync()
-	a.syncMaint()
+	a.recolour()
+	return t
 }
 
 // themeBox is the theme picker. The theme under the cursor is in use
@@ -97,8 +103,7 @@ func (b *themeBox) view(st theme.Styles, maxW int) string {
 		lines = append(lines, ansi.Truncate(mark+label, inner, "…"))
 	}
 	lines = append(lines, "", st.Muted.Render(ansi.Truncate(themesFooter, inner, "…")))
-	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Mauve).
-		Padding(0, 1).Render(strings.Join(lines, "\n"))
+	return boxStyle(st.P.Mauve).Render(strings.Join(lines, "\n"))
 }
 
 // UseThemeDir sets where the chosen theme is saved. Without it, a theme
@@ -107,13 +112,8 @@ func (a *App) UseThemeDir(dir string) { a.themeDir = dir }
 
 // openThemes opens the picker on the theme in use.
 func (a *App) openThemes() {
-	b := &themeBox{was: a.themeName}
-	for i, t := range theme.Themes {
-		if t.Name == a.themeName {
-			b.cursor = i
-		}
-	}
-	a.themes = b
+	i, _ := theme.Index(a.themeName) // always found: UseTheme only keeps names it knows
+	a.themes = &themeBox{cursor: i, was: a.themeName}
 }
 
 // themesKey handles a key while the picker is open: a move switches to the
@@ -146,16 +146,21 @@ func (a *App) cancelThemes() {
 // keepTheme switches to the theme called name and saves it for next time.
 // A theme that can't be saved still applies until brewery quits.
 func (a *App) keepTheme(name string) tea.Cmd {
-	a.UseTheme(name)
-	t := theme.Lookup(name)
-	if a.themeDir != "" {
-		if err := theme.SaveTheme(a.themeDir, t.Name); err != nil {
-			a.flash = a.st.Err.Render("✗ theme: " + t.Title + " for now; couldn't save it: " + err.Error())
-			return nil
-		}
+	t := a.UseTheme(name)
+	if err := a.saveTheme(t.Name); err != nil {
+		a.flash = a.st.Err.Render("✗ theme: " + t.Title + " for now; couldn't save it: " + err.Error())
+		return nil
 	}
 	a.flash = a.st.OK.Render("theme: " + t.Title)
 	return nil
+}
+
+// saveTheme keeps name for the next run, when there's somewhere to keep it.
+func (a *App) saveTheme(name string) error {
+	if a.themeDir == "" {
+		return nil
+	}
+	return theme.SaveTheme(a.themeDir, name)
 }
 
 // themeCommand is :theme. With no name it opens the picker; with one it
@@ -165,12 +170,10 @@ func (a *App) themeCommand(args []string) tea.Cmd {
 		a.openThemes()
 		return nil
 	}
-	for _, t := range theme.Themes {
-		if t.Name == args[0] {
-			return a.keepTheme(t.Name)
-		}
+	if _, ok := theme.Index(args[0]); !ok {
+		return a.note("no theme called " + args[0] + " · :theme lists them")
 	}
-	return a.note("no theme called " + args[0] + " · :theme lists them")
+	return a.keepTheme(args[0])
 }
 
 // themeCandidates are the names :theme takes, each with its title.

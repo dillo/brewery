@@ -55,8 +55,7 @@ func (c *confirmBox) view(st theme.Styles, maxW int) string {
 		keys[i] = st.Accent.Bold(true).Render("["+ch.key+"]") + " " + ch.label
 	}
 	lines = append(lines, "", ansi.Truncate(strings.Join(keys, "   "), inner, "…"))
-	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Peach).
-		Padding(0, 1).Render(strings.Join(lines, "\n"))
+	return boxStyle(st.P.Peach).Render(strings.Join(lines, "\n"))
 }
 
 // overlay draws box centered over body, which is w×h; the result is w×h.

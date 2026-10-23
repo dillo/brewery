@@ -221,7 +221,9 @@ func (a *App) UseIcons(on bool) {
 	if on {
 		ic = theme.Nerd
 	}
-	a.restyle(func(st *theme.Styles) { st.Icons = ic })
+	st := a.st
+	st.Icons = ic
+	a.setStyles(st)
 	a.sync()
 }
 

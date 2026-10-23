@@ -96,6 +96,12 @@ func tableStyles(st theme.Styles) table.Styles {
 	return table.Styles{Header: st.TableHeader, Cell: st.TableCell, Selected: st.TableSelected}
 }
 
+// boxStyle frames a box drawn over the screen, such as the action menu or
+// a confirmation, in a rounded border of colour c.
+func boxStyle(c color.Color) lipgloss.Style {
+	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(c).Padding(0, 1)
+}
+
 // styleInput colours a prompt: its first character in prompt, what's typed
 // in the text colour, and a cursor that doesn't blink.
 func styleInput(in *textinput.Model, st theme.Styles, prompt color.Color) {

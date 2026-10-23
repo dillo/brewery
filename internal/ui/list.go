@@ -45,6 +45,12 @@ func newListTab(st theme.Styles, name string, cols []col, key func(table.Row) st
 	return listTab{st: st, name: name, cols: cols, key: key, empty: empty, table: newTable(st, cols)}
 }
 
+// setStyles draws the tab, its table included, with st from now on.
+func (t *listTab) setStyles(st theme.Styles) {
+	t.st = st
+	t.table.SetStyles(tableStyles(st))
+}
+
 func (t *listTab) setRows(rows []table.Row) {
 	t.all = rows
 	pruneMarks(t.marked, func(yield func(string) bool) {

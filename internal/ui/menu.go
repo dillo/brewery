@@ -93,8 +93,7 @@ func (m *menuBox) view(st theme.Styles, maxW int) string {
 		lines = append(lines, mark+label+gap+st.Muted.Render(it.key))
 	}
 	lines = append(lines, "", st.Muted.Render(ansi.Truncate(menuFooter, inner, "…")))
-	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Mauve).
-		Padding(0, 1).Render(strings.Join(lines, "\n"))
+	return boxStyle(st.P.Mauve).Render(strings.Join(lines, "\n"))
 }
 
 // hasMenu reports whether tab's rows have an action menu. Maintenance's

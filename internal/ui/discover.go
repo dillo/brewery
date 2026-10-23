@@ -215,6 +215,12 @@ func newDiscoverTab(st theme.Styles) discoverTab {
 	}
 }
 
+// setStyles draws the tab, its table included, with st from now on.
+func (t *discoverTab) setStyles(st theme.Styles) {
+	t.st = st
+	t.table.SetStyles(tableStyles(st))
+}
+
 // statsFrom reports whether every list was fetched on day.
 func (t *discoverTab) statsFrom(day string) bool {
 	for _, l := range analytics.Lists {
