@@ -3,6 +3,8 @@ package ui
 import (
 	"fmt"
 	"image/color"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -79,5 +81,115 @@ func TestUseThemeKeepsIcons(t *testing.T) {
 	a.UseTheme("nord")
 	if a.st.Icons != theme.Nerd || a.installed.st.Icons != theme.Nerd {
 		t.Error("switching theme should keep the Nerd Font icons")
+	}
+}
+
+func TestThemeBoxKeys(t *testing.T) {
+	n := len(theme.Themes)
+	b := &themeBox{}
+	for _, tt := range []struct {
+		keys       []string
+		cursor     int
+		done, keep bool
+	}{
+		{[]string{"k"}, n - 1, false, false}, // wraps to the last
+		{[]string{"j"}, 0, false, false},     // and back round
+		{[]string{"down", "down", "up"}, 1, false, false},
+		{[]string{"G"}, n - 1, false, false},
+		{[]string{"g", "g"}, 0, false, false},
+		{[]string{"j", "enter"}, 1, true, true},
+		{[]string{"esc"}, 1, true, false},
+		{[]string{"q"}, 1, true, false},
+		{[]string{"g", "esc"}, 1, true, false},
+	} {
+		var done, keep bool
+		for _, k := range tt.keys {
+			done, keep = b.key(k)
+		}
+		if b.cursor != tt.cursor || done != tt.done || keep != tt.keep {
+			t.Errorf("%v: cursor %d, done %v, keep %v; want %d, %v, %v", tt.keys, b.cursor, done, keep, tt.cursor, tt.done, tt.keep)
+		}
+	}
+}
+
+// pickerApp is an app that saves its theme to a temp directory.
+func pickerApp(t *testing.T) (*App, string) {
+	t.Helper()
+	a := newJobApp(t, &fakeStarter{})
+	dir := t.TempDir()
+	a.UseThemeDir(dir)
+	show(t, a, "Home")
+	return a, dir
+}
+
+// saved reports whether a theme file was written to dir.
+func saved(dir string) bool {
+	_, err := os.Stat(filepath.Join(dir, "theme"))
+	return err == nil
+}
+
+func TestPickerPreviewsAndCancels(t *testing.T) {
+	a, dir := pickerApp(t)
+	keys(t, a, "t")
+	if a.themes == nil || a.themes.cursor != 0 || a.themes.was != "catppuccin-macchiato" {
+		t.Fatalf("t opens the picker on the theme in use: %+v", a.themes)
+	}
+	keys(t, a, "j")
+	if a.themeName != theme.Themes[1].Name {
+		t.Errorf("j previews the next theme: in use %q", a.themeName)
+	}
+	if !strings.Contains(a.render(), "j/k preview · enter keep · esc cancel") {
+		t.Error("the picker's footer should show")
+	}
+	keys(t, a, "esc")
+	if a.themes != nil || a.themeName != "catppuccin-macchiato" {
+		t.Errorf("esc closes the picker and puts the old theme back: in use %q", a.themeName)
+	}
+	if saved(dir) {
+		t.Error("previewing and cancelling mustn't save anything")
+	}
+}
+
+func TestPickerKeepsAndSaves(t *testing.T) {
+	a, dir := pickerApp(t)
+	keys(t, a, "t", "j", "j", "enter")
+	want := theme.Themes[2]
+	if a.themes != nil || a.themeName != want.Name {
+		t.Errorf("enter keeps the theme under the cursor: in use %q", a.themeName)
+	}
+	if got := theme.LoadTheme(dir); got != want.Name {
+		t.Errorf("saved %q, want %q", got, want.Name)
+	}
+	if !strings.Contains(stripANSI(a.statusBar()), "theme: "+want.Title) {
+		t.Errorf("the status bar should say which theme: %q", stripANSI(a.statusBar()))
+	}
+	keys(t, a, "t")
+	if a.themes.cursor != 2 || a.themes.was != want.Name {
+		t.Errorf("the picker opens on the kept theme: %+v", a.themes)
+	}
+}
+
+func TestPickerSaveFailureStillApplies(t *testing.T) {
+	a, _ := pickerApp(t)
+	file := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(file, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	a.UseThemeDir(filepath.Join(file, "brewery")) // can't make a dir under a file
+	keys(t, a, "t", "j", "enter")
+	if a.themeName != theme.Themes[1].Name {
+		t.Errorf("the theme applies even when it can't be saved: in use %q", a.themeName)
+	}
+	if !strings.Contains(stripANSI(a.statusBar()), "couldn't save") {
+		t.Errorf("the status bar should say it couldn't be saved: %q", stripANSI(a.statusBar()))
+	}
+}
+
+func TestTypingIntoAJobCancelsThePicker(t *testing.T) {
+	a, _ := pickerApp(t)
+	keys(t, a, "t", "j")
+	a.typeIntoJob()
+	if a.themes != nil || a.themeName != "catppuccin-macchiato" {
+		t.Errorf("brew asking for input closes the picker and puts the old theme back: in use %q", a.themeName)
 	}
 }

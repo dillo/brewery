@@ -1,0 +1,40 @@
+╭────────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────╮╭────────────────────────╮
+│ brewery                ││ Installed          ││ Outdated           ││ Services           ││ Doctor             ││ Cleanup                │
+│  Home                  ││ 7                  ││ 2                  ││ 1 error            ││ 2 warnings         ││ 86.7MB                 │
+│                        ││ 5 formulae · 2 ca… ││ lua-language-serv… ││ postgresql@16      ││ see below          ││ c to reclaim           │
+│ PACKAGES               │╰────────────────────╯╰────────────────────╯╰────────────────────╯╰────────────────────╯╰────────────────────────╯
+│  All                7  │╭──────────────────────────────────────────────────────────────────╮╭────────────────────────────────────────────╮
+│  Top-level          5  ││ Doctor                                                           ││ Recent jobs                                │
+│  Formulae           5  ││ ⚠ The following taps are not trusted:                            ││ ✗ upgrade fd                        1m ago │
+│  Casks              2  ││   oven-sh/bun                                                    ││ ✓ update                            2h ago │
+│  Dependencies       2  ││                                                                  ││ 5 History has them all                     │
+│  Outdated          ↑2  ││   Untap them with:   ╭───────────────────────────────────────╮   ││                                            │
+│  Pinned             1  ││     brew untap oven-s│ Theme                                 │   ││                                            │
+│  Deprecated         2  ││                      │                                       │   ││                                            │
+│  Skunky            !2  ││ ⚠ Some installed cask│ › Catppuccin Macchiato ✓              │   ││                                            │
+│                        ││   fontbase           │   Catppuccin Mocha                    │   ││                                            │
+│ MANAGE                 ││                      │   Catppuccin Frappé                   │   ││                                            │
+│  Services          ✗1  ││                      │   Dracula                             │   ││                                            │
+│  Taps               2  ││                      │   Nord                                │   ││                                            │
+│                        ││                      │   Gruvbox Dark                        │   ││                                            │
+│ DISCOVER               ││                      │   Tokyo Night                         │   ││                                            │
+│  Popular tools         ││                      │   One Dark                            │   ││                                            │
+│  Popular apps          ││                      │   Rosé Pine                           │   ││                                            │
+│  Rising                ││                      │   Kanagawa                            │   ││                                            │
+│  New                   ││                      │   Everforest Dark                     │   ││                                            │
+│  Fonts                 ││                      │   Solarized Dark                      │   ││                                            │
+│  Search all            ││                      │                                       │   ││                                            │
+│                        ││                      │ j/k preview · enter keep · esc cancel │   ││                                            │
+│ TOOLS                  ││                      ╰───────────────────────────────────────╯   ││                                            │
+│  History            2  ││                                                                  ││                                            │
+│  Maintenance           ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+│                        ││                                                                  ││                                            │
+╰────────────────────────╯╰──────────────────────────────────────────────────────────────────╯╰────────────────────────────────────────────╯
+ NORMAL  Home                                                                                         j/k preview · enter keep · esc cancel 

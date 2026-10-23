@@ -1,7 +1,12 @@
 package ui
 
 import (
+	"strings"
+
 	"charm.land/bubbles/v2/table"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/dillo/brewery/internal/theme"
 )
@@ -32,4 +37,124 @@ func (a *App) UseTheme(name string) {
 	a.discover.apply()
 	a.sync()
 	a.syncMaint()
+}
+
+// themeBox is the theme picker. The theme under the cursor is in use
+// while it's open: enter keeps it, esc puts back the one from before.
+type themeBox struct {
+	cursor   int    // index into theme.Themes
+	was      string // the theme in use when the picker opened
+	gPending bool   // g was pressed: g next goes to the top
+}
+
+// themesFooter says how to use the picker.
+const themesFooter = "j/k preview · enter keep · esc cancel"
+
+// key handles a key press while the picker is open. done is true when it
+// should close, and keep then says whether the theme under the cursor
+// stays. Keys it doesn't use do nothing.
+func (b *themeBox) key(k string) (done, keep bool) {
+	n := len(theme.Themes)
+	if b.gPending {
+		b.gPending = false
+		if k == "g" {
+			b.cursor = 0
+			return false, false
+		}
+	}
+	switch k {
+	case "esc", "q":
+		return true, false
+	case "enter":
+		return true, true
+	case "j", "down":
+		b.cursor = (b.cursor + 1) % n
+	case "k", "up":
+		b.cursor = (b.cursor + n - 1) % n
+	case "G", "end":
+		b.cursor = n - 1
+	case "home":
+		b.cursor = 0
+	case "g":
+		b.gPending = true
+	}
+	return false, false
+}
+
+// view renders the picker, at most maxW columns wide: each theme by its
+// title, a ✓ on the one in use when it opened, and how to use it.
+func (b *themeBox) view(st theme.Styles, maxW int) string {
+	inner := min(lipgloss.Width(themesFooter), max(maxW-4, 10))
+	lines := []string{st.Title.Render("Theme"), ""}
+	for i, t := range theme.Themes {
+		label := t.Title
+		if t.Name == b.was {
+			label += " ✓"
+		}
+		mark := "  "
+		if i == b.cursor {
+			mark, label = st.Accent.Render("› "), st.Accent.Bold(true).Render(label)
+		}
+		lines = append(lines, ansi.Truncate(mark+label, inner, "…"))
+	}
+	lines = append(lines, "", st.Muted.Render(ansi.Truncate(themesFooter, inner, "…")))
+	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Mauve).
+		Padding(0, 1).Render(strings.Join(lines, "\n"))
+}
+
+// UseThemeDir sets where the chosen theme is saved. Without it, a theme
+// lasts until brewery quits.
+func (a *App) UseThemeDir(dir string) { a.themeDir = dir }
+
+// openThemes opens the picker on the theme in use.
+func (a *App) openThemes() {
+	b := &themeBox{was: a.themeName}
+	for i, t := range theme.Themes {
+		if t.Name == a.themeName {
+			b.cursor = i
+		}
+	}
+	a.themes = b
+}
+
+// themesKey handles a key while the picker is open: a move switches to the
+// theme under the cursor, enter keeps it, esc puts the old one back.
+func (a *App) themesKey(k string) tea.Cmd {
+	b := a.themes
+	before := b.cursor
+	done, keep := b.key(k)
+	switch {
+	case done && keep:
+		a.themes = nil
+		return a.keepTheme(theme.Themes[b.cursor].Name)
+	case done:
+		a.cancelThemes()
+	case b.cursor != before:
+		a.UseTheme(theme.Themes[b.cursor].Name)
+	}
+	return nil
+}
+
+// cancelThemes closes the picker and puts back the theme in use when it
+// opened.
+func (a *App) cancelThemes() {
+	if a.themes != nil {
+		a.UseTheme(a.themes.was)
+		a.themes = nil
+	}
+}
+
+// keepTheme switches to the theme called name and saves it for next time.
+// A theme that can't be saved still applies until brewery quits.
+func (a *App) keepTheme(name string) tea.Cmd {
+	a.UseTheme(name)
+	t := theme.Lookup(name)
+	if a.themeDir != "" {
+		if err := theme.SaveTheme(a.themeDir, t.Name); err != nil {
+			a.flash = a.st.Err.Render("✗ theme: " + t.Title + " for now; couldn't save it: " + err.Error())
+			return nil
+		}
+	}
+	a.flash = a.st.OK.Render("theme: " + t.Title)
+	return nil
 }

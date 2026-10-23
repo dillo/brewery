@@ -108,8 +108,9 @@ type App struct {
 	jumpMiss   bool            // the jump's text matches no entry
 	confirm    *confirmBox     // open confirmation, or nil
 	menu       *menuBox        // open action menu, or nil
+	themes     *themeBox       // open theme picker, or nil
 	themeName  string          // the theme in use
-	themeDir   string          //nolint:unused // read by keepTheme in a later task; where the chosen theme is saved, "" saves nothing
+	themeDir   string          // where the chosen theme is saved; "" saves nothing
 	installing discRow         // the row the open install dialog is for
 	help       bool            // the ? overlay is open
 	flash      string          // one-off status message, cleared by the next key
@@ -579,9 +580,10 @@ func (a *App) handleResult(m resultMsg) tea.Cmd {
 
 // typeIntoJob switches to INSERT with the drawer open, so keys go to the
 // running job. A g pressed just before is forgotten: after INSERT, the next
-// key mustn't complete a gg or gx. Help and the action menu close, so they
+// key mustn't complete a gg or gx. Help, the action menu and the theme picker close, so they
 // can't eat the first key of the answer.
 func (a *App) typeIntoJob() {
+	a.cancelThemes()
 	a.mode, a.drawer.open, a.gPending, a.help, a.menu = modeInsert, true, false, false, nil
 }
 
@@ -651,6 +653,8 @@ func (a *App) modalKey(msg tea.KeyPressMsg) (cmd tea.Cmd, ok bool) {
 			return nil, true
 		}
 		return run(), true
+	case a.themes != nil:
+		return a.themesKey(k), true
 	case a.mode == modeInsert:
 		if k == "esc" {
 			a.mode = modeNormal
@@ -696,6 +700,8 @@ func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
 		return a.openFilter(), true
 	case "?":
 		a.help = true
+	case "t":
+		a.openThemes()
 	case "y":
 		return a.copyName(), true
 	case "ctrl+c":
@@ -906,7 +912,7 @@ func (a *App) render() string {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
 	drawer := a.drawerShown()
-	if bodyH == 0 && (a.confirm != nil || a.menu != nil || a.help) {
+	if bodyH == 0 && (a.confirm != nil || a.menu != nil || a.themes != nil || a.help) {
 		// The drawer fills a tiny window, but a question or help must show.
 		bodyH, drawer = a.bodyHeight(), false
 	}
@@ -916,6 +922,9 @@ func (a *App) render() string {
 	}
 	if a.menu != nil {
 		body = overlay(body, a.menu.view(a.st, a.width), a.width, bodyH)
+	}
+	if a.themes != nil {
+		body = overlay(body, a.themes.view(a.st, a.width), a.width, bodyH)
 	}
 	if a.help {
 		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
@@ -1054,7 +1063,7 @@ func (a *App) statusBar() string {
 	// Keep to one line: drop the key hints first, then shorten the left side.
 	room := a.width - 1 // trailing space
 	hints := a.actionHints()
-	if a.menu == nil { // the menu's footer stands alone
+	if a.menu == nil && a.themes == nil { // the menu's and picker's footers stand alone
 		hints += " · : command · ? help · q quit"
 		if a.drawer.job != nil && !a.drawer.open {
 			hints = "o output · " + hints

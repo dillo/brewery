@@ -535,6 +535,9 @@ func (a *App) runAgain(args []string, fullScreen bool) tea.Cmd {
 
 // actionHints are the status-bar hints for where the focus is.
 func (a *App) actionHints() string {
+	if a.themes != nil {
+		return themesFooter
+	}
 	if a.menu != nil {
 		return menuFooter
 	}

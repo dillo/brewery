@@ -68,6 +68,7 @@ func TestScreens(t *testing.T) {
 		{"history", []string{"History"}, []string{"l"}},
 		{"maintenance", []string{"Maintenance"}, nil},
 		{"help", []string{"Top-level"}, []string{"?"}},
+		{"themes", []string{"Home"}, []string{"t"}},
 		{"installed-menu", []string{"All"}, []string{"g", "g", "j", "j", "j", "j", "j", "enter"}}, // lua-language-server's menu
 	} {
 		for _, e := range s.entries {
@@ -77,6 +78,9 @@ func TestScreens(t *testing.T) {
 		golden(t, s.name, stripANSI(a.render()))
 		if a.help {
 			keys(t, a, "esc") // any key closes help
+		}
+		if a.themes != nil {
+			keys(t, a, "esc") // close it: the screens after are in the default theme
 		}
 		if a.menu != nil {
 			keys(t, a, "esc", "g", "g", "j", "j", "j") // close it, and go back to git for the screens after
