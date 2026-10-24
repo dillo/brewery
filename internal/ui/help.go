@@ -72,7 +72,7 @@ func (a *App) helpGroups() []helpGroup {
 	}
 	return append(groups, helpGroup{"Everywhere", [][2]string{
 		{"h l", "sidebar, list, details"}, {"1-5", "Home, Packages, Manage, Discover, Tools"},
-		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"r", "refresh"}, {"U", "brew update"},
+		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"t", "change the theme"}, {"r", "refresh"}, {"U", "brew update"},
 		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
 		{"ctrl+c", "stop the running job"}, {"q", "quit"},
 	}})
@@ -111,6 +111,5 @@ func (a *App) helpView(maxW, maxH int) string {
 			lipgloss.NewStyle().Width(colW).Render(strings.Join(left, "\n")), "   ",
 			strings.Join(right, "\n")), "\n")
 	}
-	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Mauve).
-		Padding(0, 1).Render(strings.Join(lines, "\n"))
+	return boxStyle(st.P.Mauve).Render(strings.Join(lines, "\n"))
 }

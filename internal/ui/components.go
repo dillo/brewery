@@ -2,10 +2,12 @@ package ui
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/table"
+	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
@@ -85,8 +87,29 @@ func newTable(st theme.Styles, cols []col) table.Model {
 		table.WithColumns(tc),
 		table.WithFocused(true),
 		table.WithKeyMap(tableKeys()),
-		table.WithStyles(table.Styles{Header: st.TableHeader, Cell: st.TableCell, Selected: st.TableSelected}),
+		table.WithStyles(tableStyles(st)),
 	)
+}
+
+// tableStyles are the styles every table is drawn with.
+func tableStyles(st theme.Styles) table.Styles {
+	return table.Styles{Header: st.TableHeader, Cell: st.TableCell, Selected: st.TableSelected}
+}
+
+// boxStyle frames a box drawn over the screen, such as the action menu or
+// a confirmation, in a rounded border of colour c.
+func boxStyle(c color.Color) lipgloss.Style {
+	return lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(c).Padding(0, 1)
+}
+
+// styleInput colours a prompt: its first character in prompt, what's typed
+// in the text colour, and a cursor that doesn't blink.
+func styleInput(in *textinput.Model, st theme.Styles, prompt color.Color) {
+	s := in.Styles()
+	s.Cursor.Blink = false
+	s.Focused.Prompt = lipgloss.NewStyle().Foreground(prompt).Bold(true)
+	s.Focused.Text = lipgloss.NewStyle().Foreground(st.P.Text)
+	in.SetStyles(s)
 }
 
 // minFlex is the narrowest a flexible column may get.

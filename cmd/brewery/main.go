@@ -20,6 +20,7 @@ import (
 	"github.com/dillo/brewery/internal/github"
 	"github.com/dillo/brewery/internal/jobs"
 	"github.com/dillo/brewery/internal/state"
+	"github.com/dillo/brewery/internal/theme"
 	"github.com/dillo/brewery/internal/ui"
 )
 
@@ -142,6 +143,10 @@ func newApp(bin string, v brew.Version, opts options) *ui.App {
 	app.UseHistory(hist, recs)
 	app.UseBrewVersion(v.Text)
 	app.UseIcons(wantIcons(opts.noIcons, os.Getenv("BREWERY_NO_ICONS")))
+	// The theme the user last kept; Macchiato when there's none.
+	stateDir := jobs.DefaultStateDir()
+	app.UseThemeDir(stateDir)
+	app.UseTheme(theme.LoadTheme(stateDir))
 	app.UseCompletions(client.Completions)
 	app.UseCatalog(client)
 	// Discover's analytics are kept beside the snapshot.

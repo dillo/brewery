@@ -17,7 +17,10 @@ import (
 type candidate struct{ text, desc string }
 
 // builtins are brewery's own commands, completed alongside brew's.
-var builtins = []candidate{{"jobs", "Show History: finished jobs and their output"}}
+var builtins = []candidate{
+	{"jobs", "Show History: finished jobs and their output"},
+	{"theme", "Change brewery's colours"},
+}
 
 // everyday are the commands most people use. They complete before brew's
 // many developer commands, so "up" offers upgrade before update-report.
@@ -25,7 +28,7 @@ var everyday = map[string]bool{
 	"autoremove": true, "bundle": true, "cleanup": true, "config": true, "deps": true,
 	"desc": true, "doctor": true, "edit": true, "home": true, "info": true, "install": true,
 	"jobs": true, "leaves": true, "link": true, "list": true, "outdated": true, "pin": true,
-	"reinstall": true, "search": true, "services": true, "tap": true, "uninstall": true,
+	"reinstall": true, "search": true, "services": true, "tap": true, "theme": true, "uninstall": true,
 	"unlink": true, "unpin": true, "untap": true, "update": true, "upgrade": true, "uses": true,
 }
 
@@ -63,6 +66,12 @@ func (a *App) candidates(line string) (word string, cs []candidate) {
 	word, words := splitLine(line)
 	if len(words) == 0 {
 		return word, matching(a.commandCandidates(), word)
+	}
+	if words[0] == "theme" {
+		if len(words) > 1 {
+			return word, nil // it takes one name
+		}
+		return word, matching(themeCandidates(), word)
 	}
 	cmd, ok := a.comp.Command(words[0])
 	if !ok {
@@ -255,8 +264,7 @@ func (c *cmdline) popup(st theme.Styles, w int) string {
 			rows = append(rows, st.Text.Render(row)+st.Muted.Render(desc))
 		}
 	}
-	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(st.P.Blue).Padding(0, 1)
-	return box.Width(inner + 4).Render(strings.Join(rows, "\n"))
+	return boxStyle(st.P.Blue).Width(inner + 4).Render(strings.Join(rows, "\n"))
 }
 
 // popupStart is the first of rows visible candidates out of n, scrolled so

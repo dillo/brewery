@@ -9,16 +9,18 @@ import (
 )
 
 func TestModeColorsAreDistinct(t *testing.T) {
-	st := New(Macchiato)
-	seen := map[string]string{}
-	for _, mode := range []string{"NORMAL", "COMMAND", "FILTER", "RUNNING", "INSERT"} {
-		bg := st.Mode(mode).GetBackground()
-		r, g, b, _ := bg.RGBA()
-		key := fmt.Sprint(r, g, b)
-		if other, dup := seen[key]; dup {
-			t.Errorf("%s and %s share a badge color", mode, other)
+	for _, th := range Themes {
+		st := New(th.Palette)
+		seen := map[string]string{}
+		for _, mode := range []string{"NORMAL", "COMMAND", "FILTER", "RUNNING", "INSERT"} {
+			bg := st.Mode(mode).GetBackground()
+			r, g, b, _ := bg.RGBA()
+			key := fmt.Sprint(r, g, b)
+			if other, dup := seen[key]; dup {
+				t.Errorf("%s: %s and %s share a badge color", th.Name, mode, other)
+			}
+			seen[key] = mode
 		}
-		seen[key] = mode
 	}
 }
 

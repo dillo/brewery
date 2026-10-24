@@ -25,9 +25,10 @@
 │  Fonts                 ││                │ 1-5        Home, Packages, Manage, Discover, Tools │                                          │
 │  Search all            ││                │ [ ]        previous or next entry                  │                                          │
 │                        ││                │ :          run any brew command                    │                                          │
-│ TOOLS                  ││                │ r          refresh                                 │                                          │
-│  History            2  ││                │ U          brew update                             │                                          │
-│  Maintenance           ││                │ c          clean up                                │                                          │
+│ TOOLS                  ││                │ t          change the theme                        │                                          │
+│  History            2  ││                │ r          refresh                                 │                                          │
+│  Maintenance           ││                │ U          brew update                             │                                          │
+│                        ││                │ c          clean up                                │                                          │
 │                        ││                │ o          show or hide output                     │                                          │
 │                        ││                │ i          type into the running job               │                                          │
 │                        ││                │ ctrl+c     stop the running job                    │                                          │
@@ -35,6 +36,5 @@
 │                        ││                │                                                    │                                          │
 │                        ││                │ any key closes this                                │                                          │
 │                        ││                ╰────────────────────────────────────────────────────╯                                          │
-│                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
  NORMAL  Top-level › git                                               enter actions · space mark · l details · : command · ? help · q quit 

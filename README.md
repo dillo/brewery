@@ -114,6 +114,8 @@ A few notes:
 
 - Vim-style keys throughout, `?` for the keys that work where you are, and
   `/` to filter any list or jump to a sidebar entry.
+- Twelve dark themes, from Catppuccin to Gruvbox, Nord and Dracula. `t`
+  previews them live; brewery remembers the one you keep.
 - Opens instantly from a cached snapshot, then refreshes in the background.
 - From 122 columns the sidebar, list and details sit side by side. In a
   narrower window the columns slide with the focus.
@@ -181,6 +183,7 @@ its actions.
 | `1`–`5` | Home, Packages, Manage, Discover, Tools |
 | `[` `]` | previous or next sidebar entry |
 | `:` | run any brew command; `:jobs` opens History |
+| `t` | change the theme; `:theme <name>` switches straight to one |
 | `r` | refresh; on Skunky, also scan for vulnerabilities now |
 | `U` | `brew update` |
 | `c` | clean up |
@@ -245,7 +248,7 @@ its actions.
   of your packages, so brewery opens instantly, Homebrew's install counts,
   and what Check taps last found.
 - `$XDG_STATE_HOME/brewery` (default `~/.local/state/brewery`): the history
-  of jobs brewery ran, and crash logs.
+  of jobs brewery ran, the theme you chose, and crash logs.
 
 ## Building from source
 
