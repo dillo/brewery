@@ -241,3 +241,12 @@ func TestThemeCompletion(t *testing.T) {
 		t.Errorf("a theme's title comes along as its description: %v", cs)
 	}
 }
+
+func TestPickerOpensFromTheSidebar(t *testing.T) {
+	a, _ := pickerApp(t)
+	a.focus = colSidebar
+	keys(t, a, "t")
+	if a.themes == nil {
+		t.Fatal("t should open the picker while the sidebar has the focus")
+	}
+}

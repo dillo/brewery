@@ -242,7 +242,7 @@ func (a *App) sidebarKey(k string) (cmd tea.Cmd, ok bool) {
 			return nil, false
 		}
 		return nil, true
-	case "q", ":", "?", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4", "5":
+	case "q", ":", "?", "t", "ctrl+c", "esc", "o", "i", "r", "U", "c", "[", "]", "1", "2", "3", "4", "5":
 		return nil, false
 	}
 	return nil, true // the rest act on a row, and the sidebar has none
