@@ -903,6 +903,23 @@ func (a *App) tabBody(c columns, bodyH int) string {
 	return ""
 }
 
+// openBox is how to draw the box open over the screen, at most h lines
+// high, or nil when none is. It's the one that gets the keys, as in
+// modalKey: help, then a confirmation, the action menu, the theme picker.
+func (a *App) openBox() func(h int) string {
+	switch {
+	case a.help:
+		return func(h int) string { return a.helpView(a.width, h) }
+	case a.confirm != nil:
+		return func(int) string { return a.confirm.view(a.st, a.width) }
+	case a.menu != nil:
+		return func(int) string { return a.menu.view(a.st, a.width) }
+	case a.themes != nil:
+		return func(int) string { return a.themes.view(a.st, a.width) }
+	}
+	return nil
+}
+
 func (a *App) render() string {
 	if a.width == 0 {
 		return "starting brewery…"
@@ -914,22 +931,14 @@ func (a *App) render() string {
 		body = joinColumns(a.sidebarView(c.side, bodyH), body)
 	}
 	drawer := a.drawerShown()
-	if bodyH == 0 && (a.confirm != nil || a.menu != nil || a.themes != nil || a.help) {
+	box := a.openBox()
+	if bodyH == 0 && box != nil {
 		// The drawer fills a tiny window, but a question or help must show.
 		bodyH, drawer = a.bodyHeight(), false
 	}
 	body = clipLines(body, bodyH) // a tab too tall for a small window mustn't push the rest off it
-	if a.confirm != nil {
-		body = overlay(body, a.confirm.view(a.st, a.width), a.width, bodyH)
-	}
-	if a.menu != nil {
-		body = overlay(body, a.menu.view(a.st, a.width), a.width, bodyH)
-	}
-	if a.themes != nil {
-		body = overlay(body, a.themes.view(a.st, a.width), a.width, bodyH)
-	}
-	if a.help {
-		body = overlay(body, a.helpView(a.width, bodyH), a.width, bodyH)
+	if box != nil {
+		body = overlay(body, box(bodyH), a.width, bodyH)
 	}
 	var parts []string
 	if bodyH > 0 {
