@@ -148,18 +148,7 @@ func (a *App) badgeCount(e entry) (n int, chip string) {
 			n = 0
 		}
 	case tabServices:
-		failing := 0
-		for _, s := range a.snap.Services {
-			if s.Status == "error" {
-				failing++
-			}
-		}
-		if failing > 0 {
-			return -1, st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
-		}
-		if a.loaded[qServices] {
-			n = len(a.snap.Services)
-		}
+		return a.servicesBadge()
 	case tabTaps:
 		if a.loaded[qTaps] {
 			n = len(a.snap.Taps)
@@ -168,6 +157,24 @@ func (a *App) badgeCount(e entry) (n int, chip string) {
 		n = len(a.history)
 	}
 	return n, ""
+}
+
+// servicesBadge is Services' sidebar count: the services, or the failing
+// ones as a red chip when any has failed.
+func (a *App) servicesBadge() (n int, chip string) {
+	failing := 0
+	for _, s := range a.snap.Services {
+		if s.Status == "error" {
+			failing++
+		}
+	}
+	if failing > 0 {
+		return -1, a.st.ChipErr.Render(fmt.Sprintf("✗%d", failing))
+	}
+	if !a.loaded[qServices] {
+		return -1, ""
+	}
+	return len(a.snap.Services), ""
 }
 
 // sidebarW is the sidebar's width, border included: room for
