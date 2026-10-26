@@ -29,6 +29,15 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Sigstore keyless signing of the checksums, which cover every archive: cosign
+# signs with the Release workflow's OIDC identity and writes a bundle beside
+# them. SECURITY.md shows how to verify it. make snapshot skips this.
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args: ["sign-blob", "--bundle=${signature}", "${artifact}", "--yes"]
+
 release:
   github:
     owner: dillo

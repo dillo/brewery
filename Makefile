@@ -27,9 +27,10 @@ lint:
 vuln:
 	go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
-# Builds the release locally into dist/ without publishing: brew install goreleaser
+# Builds the release locally into dist/ without publishing or signing:
+# brew install goreleaser
 snapshot:
-	goreleaser release --snapshot --clean
+	goreleaser release --snapshot --clean --skip=sign
 
 # The README's screenshots, from a made-up machine (internal/ui/testdata/demo).
 # Needs Charm's freeze (go install github.com/charmbracelet/freeze@v0.2.2; brew's
