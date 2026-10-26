@@ -18,10 +18,10 @@ linters:
   settings:
     gocognit:
       # Default: 30
-      min-complexity: 20
+      min-complexity: 15
     gocyclo:
       # Default: 30
-      min-complexity: 20
+      min-complexity: 15
   exclusions:
     # Closing, removing and printing best-effort, as Go code conventionally does.
     presets:

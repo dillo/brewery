@@ -120,21 +120,27 @@ func (a *App) onScreen(id, attempt int) bool {
 	return a.proc != nil && j != nil && j.ID == id && j.Attempts == attempt
 }
 
+// gotJobOutput shows a running job's output, lets the user answer when brew
+// asks something, and reads on.
+func (a *App) gotJobOutput(m jobOutputMsg) tea.Cmd {
+	if !a.onScreen(m.id, m.attempt) {
+		return nil
+	}
+	a.drawer.write(m.data)
+	switch {
+	case a.mode == modeNormal && a.drawer.prompt():
+		a.typeIntoJob() // brew is asking: let the user answer
+	case (a.mode == modeCommand || a.mode == modeFilter) && a.drawer.prompt():
+		a.promptPending = true // answer once the line being typed closes
+	}
+	return readOutput(a.proc, m.id, m.attempt)
+}
+
 // handleJob reacts to a job message and returns what to do next.
 func (a *App) handleJob(msg tea.Msg) tea.Cmd {
 	switch m := msg.(type) {
 	case jobOutputMsg:
-		if !a.onScreen(m.id, m.attempt) {
-			return nil
-		}
-		a.drawer.write(m.data)
-		switch {
-		case a.mode == modeNormal && a.drawer.prompt():
-			a.typeIntoJob() // brew is asking: let the user answer
-		case (a.mode == modeCommand || a.mode == modeFilter) && a.drawer.prompt():
-			a.promptPending = true // answer once the line being typed closes
-		}
-		return readOutput(a.proc, m.id, m.attempt)
+		return a.gotJobOutput(m)
 	case jobEOFMsg:
 		if !a.onScreen(m.id, m.attempt) {
 			return nil

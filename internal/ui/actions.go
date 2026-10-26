@@ -544,6 +544,12 @@ func (a *App) actionHints() string {
 	if a.focus == colSidebar {
 		return "j/k choose · / jump · l open · 1-5 sections"
 	}
+	return a.tabHints()
+}
+
+// tabHints are the status-bar hints for the current tab's list or
+// details.
+func (a *App) tabHints() string {
 	switch a.tab {
 	case tabInstalled:
 		if a.focus == colDetails {
@@ -554,11 +560,7 @@ func (a *App) actionHints() string {
 		return "enter actions · space mark · A upgrade all"
 	case tabServices:
 		if a.focus == colDetails {
-			hint := "enter actions · h back to the list"
-			if _, _, lines, room, ok := a.logWindow(a.services.pvW, a.services.h); ok && len(lines) > room {
-				hint = "j/k scroll the log · " + hint // only a log longer than the pane scrolls
-			}
-			return hint
+			return a.serviceDetailsHints()
 		}
 		return "enter actions · l details"
 	case tabTaps:
@@ -580,6 +582,16 @@ func (a *App) actionHints() string {
 		return "enter run · l details · c clean up · U update"
 	}
 	return "h/l move · j/k down, up · enter open · r refresh · U update · c clean up"
+}
+
+// serviceDetailsHints are the status-bar hints in a service's details,
+// which offer j/k only when its log is longer than the pane.
+func (a *App) serviceDetailsHints() string {
+	hint := "enter actions · h back to the list"
+	if _, _, lines, room, ok := a.logWindow(a.services.pvW, a.services.h); ok && len(lines) > room {
+		hint = "j/k scroll the log · " + hint
+	}
+	return hint
 }
 
 // pinnedBehind lists the pinned, outdated dependencies of the installed

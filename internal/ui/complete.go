@@ -77,6 +77,13 @@ func (a *App) candidates(line string) (word string, cs []candidate) {
 	if !ok {
 		return word, nil
 	}
+	return word, matching(a.commandArgs(cmd, words, word), word)
+}
+
+// commandArgs lists what can follow cmd, given the finished words and the
+// word being typed: its subcommands, its flags, or the values its
+// arguments take that aren't on the line yet.
+func (a *App) commandArgs(cmd brew.Command, words []string, word string) (cs []candidate) {
 	flag := strings.HasPrefix(word, "-")
 	if len(words) > 1 {
 		if sub, ok := cmd.Sub(words[1]); ok {
@@ -86,19 +93,18 @@ func (a *App) candidates(line string) (word string, cs []candidate) {
 		for _, s := range cmd.Subs {
 			cs = append(cs, candidate{s.Name, s.Desc})
 		}
-		return word, matching(cs, word)
+		return cs
 	}
 	if flag {
 		for _, f := range cmd.Flags {
 			cs = append(cs, candidate{f.Name, f.Desc})
 		}
-		return word, matching(cs, word)
+		return cs
 	}
 	for _, kind := range cmd.Args {
 		cs = append(cs, a.argValues(kind)...)
 	}
-	cs = slices.DeleteFunc(cs, func(c candidate) bool { return slices.Contains(words, c.text) })
-	return word, matching(cs, word)
+	return slices.DeleteFunc(cs, func(c candidate) bool { return slices.Contains(words, c.text) })
 }
 
 // splitLine splits line into the word being typed and the finished words

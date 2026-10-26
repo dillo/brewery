@@ -195,30 +195,10 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 		}
 		return "Cleanup", body
 	case maintAutoremove:
-		switch a.autoremoveState() {
-		case tidyFailed:
-			body = st.Err.Render("couldn't check · r retries")
-		case tidyChecking:
-			body = st.Muted.Render("still checking")
-		case tidyNone:
-			body = st.OK.Render("nothing to remove")
-		default:
-			body = strings.Join(autoremoveLines(a.snap.Autoremove), "\n") + "\n\n" + st.Muted.Render("enter removes them")
-		}
-		return "Autoremove", body
+		return "Autoremove", a.tidyBody(a.autoremoveState(), "nothing to remove", autoremoveLines(a.snap.Autoremove), "enter removes them")
 	case maintServices:
 		state, remove, stop := a.servicesState()
-		switch state {
-		case tidyFailed:
-			body = st.Err.Render("couldn't check · r retries")
-		case tidyChecking:
-			body = st.Muted.Render("still checking")
-		case tidyNone:
-			body = st.OK.Render("nothing to clean")
-		default:
-			body = strings.Join(servicesCleanupLines(remove, stop), "\n") + "\n\n" + st.Muted.Render("enter cleans up")
-		}
-		return "Services cleanup", body
+		return "Services cleanup", a.tidyBody(state, "nothing to clean", servicesCleanupLines(remove, stop), "enter cleans up")
 	case maintTaps:
 		return "Check taps", a.tapsPreview()
 	case maintUpdate:
@@ -231,6 +211,22 @@ func (a *App) maintPreview(w, h int) (title, body string) {
 		return "Update Homebrew", body
 	}
 	return "Details", ""
+}
+
+// tidyBody is an Autoremove or Services cleanup row's details: why there's
+// nothing to show yet, none when there's nothing to do, or lines above
+// what enter does.
+func (a *App) tidyBody(state tidyState, none string, lines []string, enter string) string {
+	st := a.st
+	switch state {
+	case tidyFailed:
+		return st.Err.Render("couldn't check · r retries")
+	case tidyChecking:
+		return st.Muted.Render("still checking")
+	case tidyNone:
+		return st.OK.Render(none)
+	}
+	return strings.Join(lines, "\n") + "\n\n" + st.Muted.Render(enter)
 }
 
 // maintRun does what the selected Maintenance row offers: doctor again,

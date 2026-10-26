@@ -205,7 +205,7 @@ var errUnclosedQuote = errors.New("unclosed quote")
 // splitArgs splits a line into arguments the way a shell would, without
 // running one: spaces separate, quotes group, and a backslash escapes the
 // next character (outside single quotes).
-func splitArgs(line string) ([]string, error) {
+func splitArgs(line string) ([]string, error) { //nolint:gocyclo // a tokenizer reads best as one state machine
 	var args []string
 	var cur strings.Builder
 	inArg, quote, escaped := false, rune(0), false

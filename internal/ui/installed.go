@@ -271,6 +271,22 @@ func (t *installedTab) resize(listW, pvW, h int) {
 	sizeTable(&t.table, t.cols(), iw, max(ih-aboutHeight, 0))
 }
 
+// scanFooter is Skunky's coverage note under the list, fitted to width w;
+// "" in other views or when there's no note.
+func (t *installedTab) scanFooter(w int) string {
+	if t.filter != filterSkunky || t.scanNote == nil {
+		return ""
+	}
+	n := t.scanNote()
+	if n == "" {
+		return ""
+	}
+	if ansi.StringWidth(n) > w {
+		n = strings.TrimSuffix(n, casksClause) // keep the counts whole
+	}
+	return "\n" + about(t.st, n, w)
+}
+
 // view sizes the table each time because a failed refresh shares the list
 // pane with a banner above it.
 func (t *installedTab) view(err error, focus column) string {
@@ -284,15 +300,9 @@ func (t *installedTab) view(err error, focus column) string {
 		body += refreshBanner(t.st, err, iw) + "\n"
 		ih -= bannerHeight
 	}
-	footer := ""
-	if t.filter == filterSkunky && t.scanNote != nil {
-		if n := t.scanNote(); n != "" {
-			if ansi.StringWidth(n) > iw {
-				n = strings.TrimSuffix(n, casksClause) // keep the counts whole
-			}
-			footer = "\n" + about(t.st, n, iw)
-			ih--
-		}
+	footer := t.scanFooter(iw)
+	if footer != "" {
+		ih--
 	}
 	t.table.SetHeight(max(ih, 0))
 	title := views[t.filter].name
