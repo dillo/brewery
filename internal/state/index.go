@@ -61,23 +61,26 @@ func (ix *Index) Orphans(fullNames ...string) []string {
 			}
 		}
 	}
-	// Drop any candidate something else still needs, until nothing changes.
-	for changed := true; changed; {
-		changed = false
-		for c := range cand {
-			for _, u := range ix.usedBy[c] {
-				if !gone[u] && !cand[u] {
-					delete(cand, c)
-					changed = true
-					break
-				}
-			}
-		}
-	}
+	ix.dropNeeded(cand, gone)
 	if len(cand) == 0 {
 		return nil
 	}
 	return slices.Sorted(maps.Keys(cand))
+}
+
+// dropNeeded drops from cand any candidate that a package neither gone
+// nor itself a candidate still uses, until nothing changes.
+func (ix *Index) dropNeeded(cand, gone map[string]bool) {
+	usedElsewhere := func(u string) bool { return !gone[u] && !cand[u] }
+	for changed := true; changed; {
+		changed = false
+		for c := range cand {
+			if slices.ContainsFunc(ix.usedBy[c], usedElsewhere) {
+				delete(cand, c)
+				changed = true
+			}
+		}
+	}
 }
 
 // IsLeaf reports whether p is a formula that no other installed package
