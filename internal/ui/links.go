@@ -97,11 +97,7 @@ func (a *App) selection() (name, url string, ok bool) {
 		}
 	case tabTaps:
 		if t, ok := a.selectedTap(); ok {
-			url := ""
-			if strings.HasPrefix(t.Remote, "https://") {
-				url = strings.TrimSuffix(t.Remote, ".git")
-			}
-			return t.Name, url, true
+			return t.Name, tapURL(t.Remote), true
 		}
 	case tabDiscover:
 		if r, ok := a.discover.selected(); ok {
@@ -109,6 +105,15 @@ func (a *App) selection() (name, url string, ok bool) {
 		}
 	}
 	return "", "", false
+}
+
+// tapURL is the web page of a tap cloned from remote, or "" when it
+// wasn't cloned over https.
+func tapURL(remote string) string {
+	if !strings.HasPrefix(remote, "https://") {
+		return ""
+	}
+	return strings.TrimSuffix(remote, ".git")
 }
 
 // webPage reports whether url is a web address. Homepages come from tap
