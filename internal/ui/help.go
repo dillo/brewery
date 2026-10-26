@@ -16,6 +16,20 @@ type helpGroup struct {
 // helpGroups are the keys that work where the user is now: the current
 // tab's first, then lists', then everywhere's.
 func (a *App) helpGroups() []helpGroup {
+	groups := []helpGroup{a.hereHelp()}
+	if lists, ok := a.listsHelp(); ok {
+		groups = append(groups, lists)
+	}
+	return append(groups, helpGroup{"Everywhere", [][2]string{
+		{"h l", "sidebar, list, details"}, {"1-5", "Home, Packages, Manage, Discover, Tools"},
+		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"t", "change the theme"}, {"r", "refresh"}, {"U", "brew update"},
+		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
+		{"ctrl+c", "stop the running job"}, {"q", "quit"},
+	}})
+}
+
+// hereHelp is the keys of the sidebar or the current tab.
+func (a *App) hereHelp() helpGroup {
 	var here helpGroup
 	switch {
 	case a.focus == colSidebar:
@@ -55,27 +69,28 @@ func (a *App) helpGroups() []helpGroup {
 	case a.tab == tabMaintenance:
 		here = helpGroup{"Maintenance", [][2]string{{"enter", "run the selected task"}, {"l tab", "details"}}}
 	}
-	groups := []helpGroup{here}
-	switch {
-	case a.tab == tabHistory && a.focus != colSidebar:
-		groups = append(groups, helpGroup{"Lists", [][2]string{
+	return here
+}
+
+// listsHelp is the keys of the current tab's list; ok is false on Home and
+// in the sidebar, which have none.
+func (a *App) listsHelp() (lists helpGroup, ok bool) {
+	if a.tab == tabHome || a.focus == colSidebar {
+		return helpGroup{}, false
+	}
+	switch a.tab {
+	case tabHistory:
+		return helpGroup{"Lists", [][2]string{
 			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
 			{"/", "filter by command"}, {"/ esc", "clear the filter"}, {"y", "copy the command"},
-		}})
-	case a.tab == tabMaintenance && a.focus != colSidebar:
-		groups = append(groups, helpGroup{"Lists", [][2]string{{"j k", "move"}, {"gg G", "top, bottom"}}})
-	case a.tab != tabHome && a.focus != colSidebar:
-		groups = append(groups, helpGroup{"Lists", [][2]string{
-			{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
-			{"/", "filter by name"}, {"/ esc", "clear the filter"}, {"y", "copy the name"}, {"gx", "open the homepage"},
-		}})
+		}}, true
+	case tabMaintenance:
+		return helpGroup{"Lists", [][2]string{{"j k", "move"}, {"gg G", "top, bottom"}}}, true
 	}
-	return append(groups, helpGroup{"Everywhere", [][2]string{
-		{"h l", "sidebar, list, details"}, {"1-5", "Home, Packages, Manage, Discover, Tools"},
-		{"[ ]", "previous or next entry"}, {":", "run any brew command"}, {"t", "change the theme"}, {"r", "refresh"}, {"U", "brew update"},
-		{"c", "clean up"}, {"o", "show or hide output"}, {"i", "type into the running job"},
-		{"ctrl+c", "stop the running job"}, {"q", "quit"},
-	}})
+	return helpGroup{"Lists", [][2]string{
+		{"j k", "move"}, {"gg G", "top, bottom"}, {"ctrl+d/u", "half a page"},
+		{"/", "filter by name"}, {"/ esc", "clear the filter"}, {"y", "copy the name"}, {"gx", "open the homepage"},
+	}}, true
 }
 
 // helpKeyW is the width of the key column.
