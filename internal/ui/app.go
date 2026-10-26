@@ -348,6 +348,12 @@ func (a *App) apply(m resultMsg) {
 		return // keep showing the last good data
 	}
 	a.loaded[m.q], a.dirty = true, true
+	a.store(m)
+	a.sync()
+}
+
+// store keeps a query's good result in the snapshot.
+func (a *App) store(m resultMsg) {
 	switch m.q {
 	case qInstalled:
 		a.snap.Packages = m.packages
@@ -371,7 +377,6 @@ func (a *App) apply(m resultMsg) {
 	case qVulns:
 		a.snap.Vulns, a.snap.VulnsAt = &m.vulns, a.now()
 	}
-	a.sync()
 }
 
 func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
