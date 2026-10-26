@@ -5,11 +5,13 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write # the GitHub release
+  contents: read
 
 jobs:
   release:
     runs-on: macos-latest
+    permissions:
+      contents: write # the GitHub release
     steps:
       - uses: actions/checkout@v7
         with:
