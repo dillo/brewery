@@ -1,0 +1,31 @@
+name: CodeQL
+
+# CodeQL's static analysis of the Go code; its findings go to the Security
+# tab. The code builds on Linux too, so it runs on the cheaper runner.
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: "41 6 * * 1" # Mondays, for queries added since the last push
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # the findings to code scanning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: go
+          build-mode: autobuild
+      - uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
