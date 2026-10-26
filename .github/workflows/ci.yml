@@ -38,6 +38,10 @@ jobs:
             exit 1
           fi
           echo "coverage ${total}% (floor ${FLOOR}%)"
+      # A short fuzz of the command line's tokenizer; go test above already
+      # ran the seed inputs.
+      - name: Fuzz
+        run: go test -run='^$' -fuzz='^FuzzSplitArgs$' -fuzztime=30s ./internal/ui/
       - name: Vet
         run: go vet ./...
       - name: Format

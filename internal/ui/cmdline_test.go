@@ -77,6 +77,36 @@ func TestSplitArgs(t *testing.T) {
 	}
 }
 
+// FuzzSplitArgs checks that any line splits without panicking, and that
+// the arguments it splits into, each quoted, split back into themselves.
+func FuzzSplitArgs(f *testing.F) {
+	for _, s := range []string{
+		"upgrade fd git", `search "a b" 'c d'`, `desc "say \"hi\""`, `info a\ b`,
+		`info ""`, `info 'it''s'`, `search "open`, `a\`, "\t x \t",
+	} {
+		f.Add(s)
+	}
+	f.Fuzz(func(t *testing.T, line string) {
+		args, err := splitArgs(line)
+		if err != nil {
+			return
+		}
+		quoted := make([]string, len(args))
+		for i, a := range args {
+			quoted[i] = shellQuote(a)
+		}
+		again, err := splitArgs(strings.Join(quoted, " "))
+		if err != nil || !reflect.DeepEqual(again, args) {
+			t.Errorf("splitArgs(%q) = %q, but quoted back it splits into %q, %v", line, args, again, err)
+		}
+	})
+}
+
+// shellQuote single-quotes s, closing the quotes around each ' in it.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
 func TestUnclosedQuoteRunsNothing(t *testing.T) {
 	fs := &fakeStarter{}
 	a := newJobApp(t, fs)

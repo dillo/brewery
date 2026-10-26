@@ -1,4 +1,4 @@
-.PHONY: build test test-live cover lint vuln snapshot screenshots run
+.PHONY: build test test-live fuzz cover lint vuln snapshot screenshots run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -8,6 +8,12 @@ test:
 
 test-live:
 	go test -tags live -count=1 ./internal/brew/
+
+# Fuzzes the command line's tokenizer; a failing input lands in
+# internal/ui/testdata/fuzz, where go test then replays it.
+FUZZTIME ?= 1m
+fuzz:
+	go test -run='^$$' -fuzz='^FuzzSplitArgs$$' -fuzztime=$(FUZZTIME) ./internal/ui/
 
 # Each package's statement coverage, then the total.
 cover:
