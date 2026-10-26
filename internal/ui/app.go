@@ -396,7 +396,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return a, cmd
 }
 
-func (a *App) update(msg tea.Msg) tea.Cmd {
+func (a *App) update(msg tea.Msg) tea.Cmd { //nolint:gocyclo // flat dispatch, one case per message
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		a.width, a.height = msg.Width, msg.Height
@@ -692,7 +692,7 @@ func (a *App) gPrefixKey(k string) (cmd tea.Cmd, ok bool) {
 
 // globalKey handles the keys that do the same on every tab. ok is false
 // for any other key.
-func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) {
+func (a *App) globalKey(k string) (cmd tea.Cmd, ok bool) { //nolint:gocyclo // flat dispatch, one case per key
 	switch k {
 	case "q":
 		return a.askQuit(), true
