@@ -1,4 +1,4 @@
-.PHONY: build test test-live cover lint snapshot screenshots run
+.PHONY: build test test-live fuzz cover lint vuln snapshot screenshots run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -9,6 +9,12 @@ test:
 test-live:
 	go test -tags live -count=1 ./internal/brew/
 
+# Fuzzes the command line's tokenizer; a failing input lands in
+# internal/ui/testdata/fuzz, where go test then replays it.
+FUZZTIME ?= 1m
+fuzz:
+	go test -run='^$$' -fuzz='^FuzzSplitArgs$$' -fuzztime=$(FUZZTIME) ./internal/ui/
+
 # Each package's statement coverage, then the total.
 cover:
 	go test -count=1 -coverprofile=cover.out ./... && go tool cover -func=cover.out | tail -1 && rm -f cover.out
@@ -16,6 +22,10 @@ cover:
 # golangci-lint v2: brew install golangci-lint
 lint:
 	golangci-lint run ./...
+
+# Known vulnerabilities the code reaches, in dependencies and the standard library.
+vuln:
+	go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
 # Builds the release locally into dist/ without publishing: brew install goreleaser
 snapshot:

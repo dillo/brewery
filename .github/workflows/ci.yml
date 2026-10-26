@@ -38,12 +38,21 @@ jobs:
             exit 1
           fi
           echo "coverage ${total}% (floor ${FLOOR}%)"
+      # A short fuzz of the command line's tokenizer; go test above already
+      # ran the seed inputs.
+      - name: Fuzz
+        run: go test -run='^$' -fuzz='^FuzzSplitArgs$' -fuzztime=30s ./internal/ui/
       - name: Vet
         run: go vet ./...
       - name: Format
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: Tidy
         run: go mod tidy -diff
+      # Known vulnerabilities in the dependencies and the standard library
+      # that the code actually reaches; a toolchain fix means bumping
+      # go.mod's toolchain line.
+      - name: Vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.15.0

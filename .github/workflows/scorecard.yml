@@ -1,0 +1,38 @@
+name: Scorecard
+
+# OpenSSF Scorecard rates the repository's security practices. The results
+# go to the Security tab and to scorecard.dev, which serves the README's
+# badge. Publishing them limits this workflow to the steps below.
+on:
+  push:
+    branches: [master]
+  schedule:
+    - cron: "17 6 * * 1" # Mondays, for checks that change without a push
+  branch_protection_rule:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # the results to code scanning
+      id-token: write # to publish them to scorecard.dev
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: actions/upload-artifact@v7
+        with:
+          name: scorecard
+          path: results.sarif
+          retention-days: 5
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
