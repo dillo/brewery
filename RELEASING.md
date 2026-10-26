@@ -54,8 +54,9 @@ publishing anything.
    git push origin vX.Y.Z
    ```
 
-4. Check that the Release workflow passes and that `Casks/brewery.rb` in
-   `dillo/homebrew-tap` names the new version.
+4. Check that the Release workflow passes, that the release has
+   `checksums.txt.sigstore.json` (verify it as `SECURITY.md` shows), and that
+   `Casks/brewery.rb` in `dillo/homebrew-tap` names the new version.
 5. Upgrade as a user would. A cask that is already trusted stays trusted:
 
    ```sh
