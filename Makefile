@@ -1,4 +1,4 @@
-.PHONY: build test test-live cover lint snapshot screenshots run
+.PHONY: build test test-live cover lint vuln snapshot screenshots run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -16,6 +16,10 @@ cover:
 # golangci-lint v2: brew install golangci-lint
 lint:
 	golangci-lint run ./...
+
+# Known vulnerabilities the code reaches, in dependencies and the standard library.
+vuln:
+	go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
 # Builds the release locally into dist/ without publishing: brew install goreleaser
 snapshot:

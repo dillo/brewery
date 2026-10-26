@@ -44,6 +44,11 @@ jobs:
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: Tidy
         run: go mod tidy -diff
+      # Known vulnerabilities in the dependencies and the standard library
+      # that the code actually reaches; a toolchain fix means bumping
+      # go.mod's toolchain line.
+      - name: Vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.15.0
