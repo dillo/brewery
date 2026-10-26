@@ -1,5 +1,8 @@
 # brewery
 
+[![CI](https://github.com/dillo/brewery/actions/workflows/ci.yml/badge.svg)](https://github.com/dillo/brewery/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/dillo/brewery/badge)](https://scorecard.dev/viewer/?uri=github.com/dillo/brewery)
+
 A terminal dashboard for Homebrew. See what's installed, what's outdated and
 what's running. Upgrade, uninstall, pin, reinstall and link packages, start
 and stop services, keep Homebrew tidy, and find new formulae, apps and fonts
