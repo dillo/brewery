@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/dillo/brewery/internal/brew"
@@ -168,6 +169,26 @@ func TestDiscoverBeforeTheCatalogue(t *testing.T) {
 	a.selectEntry(entryIndex("Popular tools")) // the read hasn't come back
 	if out := stripANSI(a.render()); !strings.Contains(out, "loading…") {
 		t.Errorf("want a loading placeholder:\n%s", out)
+	}
+}
+
+func TestDiscoverSpinsWhileLoading(t *testing.T) {
+	a := newTestApp(t, newFakeSource(t))
+	a.UseCatalog(newFakeCatalog(t))
+	a.tickEvery = time.Millisecond
+	read := a.selectEntry(entryIndex("Popular tools"))
+	if out := stripANSI(a.render()); !strings.Contains(out, "⠋ loading…") {
+		t.Errorf("want a spinning loading placeholder:\n%s", out)
+	}
+	if _, cmd := a.Update(tickMsg{}); cmd == nil {
+		t.Error("the spinner stopped while the catalogue is loading")
+	}
+	if out := stripANSI(a.render()); !strings.Contains(out, "⠙ loading…") {
+		t.Errorf("the spinner didn't move on:\n%s", out)
+	}
+	drain(t, a, read)
+	if _, cmd := a.Update(tickMsg{}); cmd != nil {
+		t.Error("the spinner kept going after the catalogue came back")
 	}
 }
 

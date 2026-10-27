@@ -105,7 +105,7 @@ func (a *App) launch(j *jobs.Job) tea.Cmd {
 	return tea.Batch(readOutput(p, j.ID, j.Attempts), a.tick())
 }
 
-// tick animates the spinner while a job is current.
+// tick animates the spinner while a job is current or Discover is loading.
 func (a *App) tick() tea.Cmd {
 	if a.ticking || a.tickEvery == 0 {
 		return nil
@@ -161,7 +161,7 @@ func (a *App) handleJob(msg tea.Msg) tea.Cmd {
 	case tickMsg:
 		a.ticking = false
 		a.frame++
-		if a.queue.Current() != nil {
+		if a.queue.Current() != nil || a.discover.loading || a.discover.fetching {
 			return a.tick()
 		}
 	}

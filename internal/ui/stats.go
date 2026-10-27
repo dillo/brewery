@@ -90,7 +90,7 @@ func (a *App) fetchStats(force bool) tea.Cmd {
 		_ = an.SetTried(today) // without it, the next start may fetch again today
 		return nil
 	}
-	return tea.Batch(a.fetchList(0), remember)
+	return tea.Batch(a.fetchList(0), remember, a.tick())
 }
 
 func (a *App) fetchList(i int) tea.Cmd {
@@ -127,7 +127,7 @@ func (a *App) gotStats(m fetchedStatsMsg) tea.Cmd {
 func (a *App) statsAge() string {
 	d := &a.discover
 	if d.fetching {
-		return "fetching analytics…"
+		return d.spinner() + "fetching analytics…"
 	}
 	var oldest time.Time
 	for _, at := range d.statsAt {

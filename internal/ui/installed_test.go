@@ -82,7 +82,7 @@ func TestInstalledNavigationAndPreview(t *testing.T) {
 	for _, want := range []string{
 		"Top-level", "git 2.51.0", "Distributed revision control system",
 		"on request · ", "pinned", "Dependencies", "└─ pcre2", "json-c",
-		"nothing installed depends on this", "Bash completion has been installed.",
+		"no Homebrew package depends on this", "Bash completion has been installed.",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q", want)

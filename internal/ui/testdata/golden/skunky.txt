@@ -20,7 +20,7 @@
 │ DISCOVER               ││                                                            ││ none                                             │
 │  Popular tools         ││                                                            ││                                                  │
 │  Popular apps          ││                                                            ││ Used by                                          │
-│  Rising                ││                                                            ││ nothing installed depends on this                │
+│  Rising                ││                                                            ││ no Homebrew package depends on this              │
 │  New                   ││                                                            ││                                                  │
 │  Fonts                 ││                                                            ││                                                  │
 │  Search all            ││                                                            ││                                                  │

@@ -18,7 +18,7 @@
 │  Taps               2  ││                                                            ││    └─ json-c                                     │
 │                        ││                                                            ││                                                  │
 │ DISCOVER               ││                                                            ││ Used by                                          │
-│  Popular tools         ││                                                            ││ nothing installed depends on this                │
+│  Popular tools         ││                                                            ││ no Homebrew package depends on this              │
 │  Popular apps          ││                                                            ││                                                  │
 │  Rising                ││                                                            ││ Caveats                                          │
 │  New                   ││                                                            ││ Bash completion has been installed.              │

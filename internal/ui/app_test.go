@@ -97,6 +97,7 @@ func newTestApp(t *testing.T, src Source) *App {
 	t.Helper()
 	a := New(src, nil, state.Snapshot{}, filepath.Join(t.TempDir(), "snapshot.json"))
 	a.now = func() time.Time { return testNow }
+	a.tickEvery = 0 // no spinner: its ticks would make each load wait
 	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
 	return a
 }
