@@ -1,4 +1,4 @@
-.PHONY: build test test-live fuzz cover lint vuln snapshot screenshots run
+.PHONY: build test test-live fuzz cover lint vuln snapshot screenshots demo run
 
 build:
 	go build -o brewery ./cmd/brewery
@@ -47,6 +47,14 @@ screenshots:
 			--font.family 'JetBrainsMonoNL Nerd Font' --font.file "$(FONT)" \
 			--font.size 14 --line-height 1.2 -o "$${f%.ansi}.png" </dev/null || exit 1; \
 	done
+
+# The demo video and the README's GIF of it, from the same made-up machine,
+# driven by a script (internal/ui/demo_test.go). Needs VHS and ffmpeg
+# (brew install vhs ffmpeg) and the font the screenshots use.
+demo:
+	go test -c -tags demo -o bin/brewery-demo ./internal/ui
+	vhs docs/demo.tape
+	ffmpeg -v error -y -i docs/demo.mp4 -vf "fps=12,scale=1200:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" docs/demo.gif
 
 run: build
 	./brewery
