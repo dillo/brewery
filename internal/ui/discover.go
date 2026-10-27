@@ -89,7 +89,7 @@ func (a *App) readCatalogue() tea.Cmd {
 		return nil
 	}
 	a.discover.loading = true
-	return loadCatalogue(a.ctx, a.catalog)
+	return tea.Batch(loadCatalogue(a.ctx, a.catalog), a.tick())
 }
 
 func (a *App) gotCatalogue(m catalogueMsg) tea.Cmd {
@@ -205,6 +205,7 @@ type discoverTab struct {
 	fetchErr  error  // the last fetch failed
 	triedOn   string // the day a fetch last started, as 2006-01-02
 	note      func() string
+	spin      func() string // the spinner's current frame
 }
 
 func newDiscoverTab(st theme.Styles) discoverTab {
@@ -469,7 +470,7 @@ func (t *discoverTab) view(focus column) string {
 	}
 	switch {
 	case !t.loaded:
-		body += t.st.Muted.Render("loading…") + "\n" + skeleton(t.st, iw, ih-1)
+		body += t.st.Muted.Render(t.spinner()+"loading…") + "\n" + skeleton(t.st, iw, ih-1)
 	case len(t.rows) == 0 && t.match != "":
 		body += t.st.Muted.Render("nothing matches /" + t.match + " · / then esc clears it")
 	case len(t.rows) == 0:
@@ -492,6 +493,14 @@ func (t *discoverTab) view(focus column) string {
 	return joinColumns(list, pane(t.st, r.Name, preview, t.pvW, t.h, focus == colDetails))
 }
 
+// spinner is the spinner's frame and a space, or nothing without one.
+func (t *discoverTab) spinner() string {
+	if t.spin == nil {
+		return ""
+	}
+	return t.spin() + " "
+}
+
 // empty says why the current view has no rows.
 func (t *discoverTab) empty() string {
 	switch {
@@ -500,7 +509,7 @@ func (t *discoverTab) empty() string {
 	case t.showing == discAll:
 		return "brew's catalogue is empty"
 	case t.fetching:
-		return "fetching analytics from formulae.brew.sh…"
+		return t.spinner() + "fetching analytics from formulae.brew.sh…"
 	case t.fetchErr != nil:
 		return fetchFailure(t.fetchErr) + " · r retries"
 	case len(t.stats) == 0:

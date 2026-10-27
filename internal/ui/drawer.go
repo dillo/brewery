@@ -23,8 +23,11 @@ var promptRe = regexp.MustCompile(`(?i)(password|passphrase)[^:]*:\s*$|[\[(]y/n[
 // the upgrade? [y/n]"), which ends its line before waiting for one key.
 var askRe = regexp.MustCompile(`(?i)\[y/n\]\s*$`)
 
-// spinnerFrames animate a running job's title.
+// spinnerFrames animate a running job's title, and Discover while it loads.
 var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+
+// spinner is spinnerFrames' frame for tick n.
+func spinner(n int) string { return spinnerFrames[n%len(spinnerFrames)] }
 
 // drawer shows the current job's output live, under the tab. Output goes
 // through a terminal emulator, so progress bars that redraw themselves
@@ -145,7 +148,7 @@ func (d *drawer) view(w, h int, now time.Time, frame int, insert bool) string {
 	var title, hint string
 	switch j.State {
 	case jobs.Running:
-		title = spinnerFrames[frame%len(spinnerFrames)] + " " + cmd + " · " + elapsed(now.Sub(j.Started))
+		title = spinner(frame) + " " + cmd + " · " + elapsed(now.Sub(j.Started))
 		hint = "esc hide · ctrl+c stop · i type into brew"
 		if insert {
 			hint = st.OK.Render("typing goes to brew") + st.Muted.Render(" · esc stop typing")

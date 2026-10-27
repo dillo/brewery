@@ -187,6 +187,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.outdated.note = a.dataAge
 	a.installed.scanNote, a.installed.scanEmpty = a.vulnsNote, a.vulnsEmpty
 	a.discover.note = a.statsAge
+	a.discover.spin = func() string { return spinner(a.frame) }
 	a.home = homeTab{st: st, errs: a.errs, loaded: a.loaded} // shares the maps, so it stays in sync
 	if !snap.FetchedAt.IsZero() || len(snap.Packages) > 0 {
 		for _, q := range []query{qInstalled, qOutdated, qServices, qTaps} {
@@ -1033,7 +1034,7 @@ func (a *App) statusRight() string {
 		right = append(right, a.flash)
 	}
 	if j := a.queue.Current(); j != nil {
-		job := spinnerFrames[a.frame%len(spinnerFrames)] + " " + j.Title
+		job := spinner(a.frame) + " " + j.Title
 		if j.State == jobs.Waiting {
 			job = "⏸ " + j.Title + " · waiting for brew's lock"
 		}
