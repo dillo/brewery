@@ -1,4 +1,4 @@
-//go:build screenshots
+//go:build screenshots || demo
 
 package ui
 
@@ -22,7 +22,8 @@ import (
 
 // The README's screenshots: `make screenshots` runs this, then freeze turns
 // each docs/screenshots/<name>.ansi into a PNG. The machine is made up
-// (testdata/demo), so nothing about the machine running it shows.
+// (testdata/demo), so nothing about the machine running it shows. The demo
+// video (demo_test.go) runs on the same machine.
 
 // demoNow is the demo machine's clock.
 var demoNow = time.Date(2026, 10, 16, 14, 32, 0, 0, time.UTC)

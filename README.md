@@ -9,7 +9,9 @@ and stop services, keep Homebrew tidy, and find new formulae, apps and fonts
 to install. brew's own output streams live in a drawer, and any brew command
 is a `:` away.
 
-![brewery's Home: counts of what's installed, outdated and running, doctor's warnings and recent jobs](docs/screenshots/home.png)
+![brewery in action: Home, the dependency tree, upgrading gh in the drawer, Skunky, installing from Discover, Services and Maintenance](docs/demo.gif)
+
+There's also an [MP4 of the demo](docs/demo.mp4).
 
 ## Install
 
@@ -265,6 +267,12 @@ make test
 [freeze](https://github.com/charmbracelet/freeze)
 (`go install github.com/charmbracelet/freeze@v0.2.2`) and the JetBrains Mono
 Nerd Font (`brew install --cask font-jetbrains-mono-nerd-font`).
+
+`make demo` records the demo video the same way: a script drives brewery on
+the made-up machine, [VHS](https://github.com/charmbracelet/vhs) records it,
+and the captions are drawn with Swift and laid under it with ffmpeg, giving
+`docs/demo.mp4` and `docs/demo.gif`. It needs VHS and ffmpeg
+(`brew install vhs ffmpeg`), Xcode's command line tools and the same font.
 
 ## Licence
 
