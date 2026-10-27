@@ -38,6 +38,9 @@ type crashLog struct {
 // left in dir by earlier runs become crash logs first (or are removed when
 // empty), and earlier lists them.
 func startCrashLog(dir string) (*crashLog, error) {
+	if dir == "" {
+		return nil, errors.New("no state directory for a crash log")
+	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, err
 	}

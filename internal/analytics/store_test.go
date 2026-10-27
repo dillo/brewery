@@ -182,6 +182,45 @@ func TestSetTriedFails(t *testing.T) {
 	}
 }
 
+func TestSetTriedReplacesASymlink(t *testing.T) {
+	s := NewStore(t.TempDir(), "dev")
+	victim := filepath.Join(t.TempDir(), "victim")
+	if err := os.WriteFile(victim, []byte("original"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(victim, filepath.Join(s.Dir, triedFile)); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SetTried("2026-10-16"); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(victim); string(b) != "original" {
+		t.Errorf("SetTried wrote through the symlink: victim holds %q", b)
+	}
+	if got := s.Tried(); got != "2026-10-16" {
+		t.Errorf("got %q", got)
+	}
+}
+
+func TestStoreWithoutADirKeepsNothing(t *testing.T) {
+	srv, _ := server(t, http.StatusOK, fixture(t, "install-on-request-30d"), 0)
+	t.Chdir(t.TempDir()) // a relative path would land here
+	s := NewStore("", "dev")
+	s.Base = srv.URL + "/"
+	if _, err := s.Fetch(context.Background(), Tools30); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SetTried("2026-10-16"); err != nil {
+		t.Fatal(err)
+	}
+	if left, _ := os.ReadDir("."); len(left) != 0 {
+		t.Errorf("a store without a dir wrote %v", left)
+	}
+	if _, _, err := s.Cached(Tools30); err == nil {
+		t.Error("a store without a dir has no copies")
+	}
+}
+
 func TestFilesArePrivate(t *testing.T) {
 	s := NewStore(filepath.Join(t.TempDir(), "analytics"), "dev")
 	if err := s.SetTried("2026-10-16"); err != nil {

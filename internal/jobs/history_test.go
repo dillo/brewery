@@ -258,8 +258,13 @@ func TestDefaultStateDir(t *testing.T) {
 	}
 	t.Setenv("XDG_STATE_HOME", "")
 	t.Setenv("HOME", "")
-	if got := DefaultStateDir(); !filepath.IsAbs(got) || !strings.HasPrefix(got, os.TempDir()) {
-		t.Errorf("without a home directory state goes in the temp directory, got %s", got)
+	// The temp directory is shared with other users, who could plant state
+	// there: without a home directory nothing is kept.
+	if got := DefaultStateDir(); got != "" {
+		t.Errorf("without a home directory there is no state dir, got %s", got)
+	}
+	if got := DefaultHistoryDir(); got != "" {
+		t.Errorf("without a home directory there is no history dir, got %s", got)
 	}
 }
 
