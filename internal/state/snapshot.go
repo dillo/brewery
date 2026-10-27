@@ -40,14 +40,16 @@ type Snapshot struct {
 }
 
 // DefaultCachePath is $XDG_CACHE_HOME/brewery/snapshot.json, falling back
-// to ~/.cache/brewery/snapshot.json when it's unset or not absolute. Without a home directory it uses the
-// temp directory rather than a path relative to wherever brewery started.
+// to ~/.cache/brewery/snapshot.json when it's unset or not absolute. Without
+// a home directory it is "": brewery caches nothing rather than put the cache
+// in the temp directory, where another user could plant one, or in a path
+// relative to wherever brewery started.
 func DefaultCachePath() string {
 	dir := os.Getenv("XDG_CACHE_HOME")
 	if !filepath.IsAbs(dir) { // unset, or relative, which the XDG spec says to ignore
 		home, err := os.UserHomeDir()
 		if err != nil || home == "" {
-			home = os.TempDir()
+			return ""
 		}
 		dir = filepath.Join(home, ".cache")
 	}
@@ -71,8 +73,12 @@ func Load(path string) (Snapshot, error) {
 	return s, nil
 }
 
-// Save writes the snapshot atomically (temp file + rename).
+// Save writes the snapshot atomically (temp file + rename). With no path
+// there is no cache, and it writes nothing.
 func Save(path string, s Snapshot) error {
+	if path == "" {
+		return nil
+	}
 	s.Version = snapshotVersion
 	b, err := json.Marshal(s)
 	if err != nil {

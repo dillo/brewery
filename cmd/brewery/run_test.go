@@ -158,6 +158,28 @@ func TestRunWithoutACrashLog(t *testing.T) {
 	}
 }
 
+func TestRunWithoutAHomeKeepsNothing(t *testing.T) {
+	ran := false
+	fakeMachine(t, func(tea.Model) error { ran = true; return nil })
+	t.Setenv("HOME", "")
+	t.Setenv("XDG_CACHE_HOME", "")
+	t.Setenv("XDG_STATE_HOME", "")
+	// Other users can write the temp directory, and a relative path would
+	// land wherever brewery started: neither gets brewery's state.
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	t.Chdir(t.TempDir())
+	var out, errb bytes.Buffer
+	if code := run(nil, &out, &errb); code != 0 || !ran {
+		t.Fatalf("exit %d, ran %v, stderr %q", code, ran, errb.String())
+	}
+	for _, dir := range []string{tmp, "."} {
+		if left, _ := os.ReadDir(dir); len(left) != 0 {
+			t.Errorf("%s holds %v; without a home directory brewery keeps nothing", dir, left)
+		}
+	}
+}
+
 // fakeBrew writes a brew that runs script for --version and fails for
 // anything else.
 func fakeBrew(t *testing.T, script string) string {

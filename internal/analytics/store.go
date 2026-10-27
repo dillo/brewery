@@ -68,6 +68,9 @@ func (s Store) path(list string) string {
 
 // Cached is the last copy of list, and when it was fetched.
 func (s Store) Cached(list string) (List, time.Time, error) {
+	if s.Dir == "" {
+		return List{}, time.Time{}, os.ErrNotExist // a store without a dir keeps no copies
+	}
 	path := s.path(list)
 	b, err := os.ReadFile(path) // #nosec G304 -- our own cache dir; path() strips "/" from list
 	if err != nil {
@@ -115,6 +118,9 @@ const triedFile = "tried"
 // Tried is the day a fetch last started, as 2006-01-02, or "" if none
 // is known.
 func (s Store) Tried() string {
+	if s.Dir == "" {
+		return ""
+	}
 	b, err := os.ReadFile(filepath.Join(s.Dir, triedFile))
 	if err != nil {
 		return ""
@@ -125,15 +131,21 @@ func (s Store) Tried() string {
 // SetTried records day (2006-01-02) as the day a fetch last started, so a
 // fetch that failed isn't tried again by every start that day.
 func (s Store) SetTried(day string) error {
-	if err := os.MkdirAll(s.Dir, 0o700); err != nil {
-		return err
-	}
-	return os.WriteFile(filepath.Join(s.Dir, triedFile), []byte(day+"\n"), 0o600)
+	return s.write(filepath.Join(s.Dir, triedFile), []byte(day+"\n"))
 }
 
-// save writes the copy of list atomically, so a crash midway never leaves
-// half a file.
+// save writes the copy of list.
 func (s Store) save(list string, b []byte) error {
+	return s.write(s.path(list), b)
+}
+
+// write puts b at path atomically, so a crash midway never leaves half a
+// file, and a symlink planted at path is replaced rather than written
+// through. A store without a dir keeps nothing.
+func (s Store) write(path string, b []byte) error {
+	if s.Dir == "" {
+		return nil
+	}
 	if err := os.MkdirAll(s.Dir, 0o700); err != nil {
 		return err
 	}
@@ -149,5 +161,5 @@ func (s Store) save(list string, b []byte) error {
 	if err := f.Close(); err != nil {
 		return err
 	}
-	return os.Rename(f.Name(), s.path(list))
+	return os.Rename(f.Name(), path)
 }

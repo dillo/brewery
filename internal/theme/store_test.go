@@ -42,3 +42,23 @@ func TestSaveThemeReportsAFailedWrite(t *testing.T) {
 		t.Error("a directory under a file can't be made, so saving should fail")
 	}
 }
+
+func TestSaveThemeReplacesASymlink(t *testing.T) {
+	dir := t.TempDir()
+	victim := filepath.Join(t.TempDir(), "victim")
+	if err := os.WriteFile(victim, []byte("original"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(victim, filepath.Join(dir, "theme")); err != nil {
+		t.Fatal(err)
+	}
+	if err := SaveTheme(dir, "nord"); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(victim); string(b) != "original" {
+		t.Errorf("saving wrote through the symlink: victim holds %q", b)
+	}
+	if got := LoadTheme(dir); got != "nord" {
+		t.Errorf("LoadTheme = %q, want nord", got)
+	}
+}

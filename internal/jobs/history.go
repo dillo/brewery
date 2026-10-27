@@ -84,20 +84,26 @@ type History struct {
 }
 
 // DefaultHistoryDir is $XDG_STATE_HOME/brewery/jobs, falling back to
-// ~/.local/state/brewery/jobs.
+// ~/.local/state/brewery/jobs, or "" when there's no state dir.
 func DefaultHistoryDir() string {
-	return filepath.Join(DefaultStateDir(), "jobs")
+	dir := DefaultStateDir()
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join(dir, "jobs")
 }
 
 // DefaultStateDir is $XDG_STATE_HOME/brewery, falling back to
-// ~/.local/state/brewery when it's unset or not absolute. Without a home directory it uses the temp
-// directory rather than a path relative to wherever brewery started.
+// ~/.local/state/brewery when it's unset or not absolute. Without a home
+// directory it is "": brewery keeps no state rather than put it in the temp
+// directory, where another user could plant files, or in a path relative to
+// wherever brewery started.
 func DefaultStateDir() string {
 	dir := os.Getenv("XDG_STATE_HOME")
 	if !filepath.IsAbs(dir) { // unset, or relative, which the XDG spec says to ignore
 		home, err := os.UserHomeDir()
 		if err != nil || home == "" {
-			home = os.TempDir()
+			return ""
 		}
 		dir = filepath.Join(home, ".local", "state")
 	}

@@ -138,9 +138,11 @@ func newApp(bin string, v brew.Version, opts options) *ui.App {
 	}
 
 	app := ui.New(client, start, snap, cachePath)
-	hist := jobs.History{Dir: jobs.DefaultHistoryDir()}
-	recs, _ := hist.Load() // no history yet is fine
-	app.UseHistory(hist, recs)
+	if dir := jobs.DefaultHistoryDir(); dir != "" { // none without a home directory
+		hist := jobs.History{Dir: dir}
+		recs, _ := hist.Load() // no history yet is fine
+		app.UseHistory(hist, recs)
+	}
 	app.UseBrewVersion(v.Text)
 	app.UseIcons(wantIcons(opts.noIcons, os.Getenv("BREWERY_NO_ICONS")))
 	// The theme the user last kept; Macchiato when there's none.
@@ -149,8 +151,13 @@ func newApp(bin string, v brew.Version, opts options) *ui.App {
 	app.UseTheme(theme.LoadTheme(stateDir))
 	app.UseCompletions(client.Completions)
 	app.UseCatalog(client)
-	// Discover's analytics are kept beside the snapshot.
-	app.UseAnalytics(analytics.NewStore(filepath.Join(filepath.Dir(cachePath), "analytics"), version))
+	// Discover's analytics are kept beside the snapshot, or not at all
+	// without a cache.
+	analyticsDir := ""
+	if cachePath != "" {
+		analyticsDir = filepath.Join(filepath.Dir(cachePath), "analytics")
+	}
+	app.UseAnalytics(analytics.NewStore(analyticsDir, version))
 	app.UseTapChecker(github.NewClient()) // only used when the user runs Check taps
 	return app
 }
@@ -186,7 +193,7 @@ func useCommands(app *ui.App, bin string, screen *fullScreen) {
 // runApp runs the TUI with stderr going to a crash log, then reports any
 // crash, this run's or an earlier one's, and any error the program gave.
 func runApp(app *ui.App, screen *fullScreen, stderr io.Writer) int {
-	crash, crashErr := startCrashLog(jobs.DefaultStateDir())
+	crash, crashErr := startCrashLog(jobs.DefaultStateDir()) // fails without a state dir: no crash log
 	if crashErr == nil {
 		screen.terminal = crash.terminal
 	}

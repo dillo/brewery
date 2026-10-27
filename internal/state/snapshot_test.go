@@ -67,9 +67,10 @@ func TestDefaultCachePathHonorsXDG(t *testing.T) {
 func TestDefaultCachePathWithoutHome(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", "")
 	t.Setenv("HOME", "")
-	got := DefaultCachePath()
-	if !filepath.IsAbs(got) || !strings.HasPrefix(got, os.TempDir()) {
-		t.Errorf("without a home directory the cache goes in the temp directory, got %s", got)
+	// The temp directory is shared with other users, who could plant a
+	// cache there: without a home directory nothing is cached.
+	if got := DefaultCachePath(); got != "" {
+		t.Errorf("without a home directory there is no cache, got %s", got)
 	}
 }
 
