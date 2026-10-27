@@ -18,7 +18,7 @@
 │    └─ json-c                                                                           │
 │                                                                                        │
 │ Used by                                                                                │
-│ nothing installed depends on this                                                      │
+│ no Homebrew package depends on this                                                    │
 │                                                                                        │
 │ Caveats                                                                                │
 │ Bash completion has been installed.                                                    │

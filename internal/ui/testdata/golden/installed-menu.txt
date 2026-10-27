@@ -20,7 +20,7 @@
 │ DISCOVER               ││                         │   Pin                          p ││ none                                             │
 │  Popular tools         ││                         │   Uninstall…                   x ││                                                  │
 │  Popular apps          ││                         │   Copy the name                y ││ Used by                                          │
-│  Rising                ││                         │   Open the homepage           gx ││ nothing installed depends on this                │
+│  Rising                ││                         │   Open the homepage           gx ││ no Homebrew package depends on this              │
 │  New                   ││                         │                                  ││                                                  │
 │  Fonts                 ││                         │ j/k move · enter run · esc close ││                                                  │
 │  Search all            ││                         ╰──────────────────────────────────╯│                                                  │

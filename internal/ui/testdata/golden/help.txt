@@ -18,7 +18,7 @@
 │  Taps               2  ││                │ /          filter by name                          │son-c                                     │
 │                        ││                │ / esc      clear the filter                        │                                          │
 │ DISCOVER               ││                │ y          copy the name                           │                                          │
-│  Popular tools         ││                │ gx         open the homepage                       │ installed depends on this                │
+│  Popular tools         ││                │ gx         open the homepage                       │brew package depends on this              │
 │  Popular apps          ││                │                                                    │                                          │
 │  Rising                ││                │ Everywhere                                         │                                          │
 │  New                   ││                │ h l        sidebar, list, details                  │mpletion has been installed.              │

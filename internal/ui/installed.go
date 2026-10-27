@@ -414,7 +414,7 @@ func (t *installedTab) writeDeps(b *strings.Builder, p brew.Package) {
 	}
 	b.WriteString("\n" + st.Accent.Render("Used by") + "\n")
 	if used := t.ix.UsedBy(p.FullName); len(used) == 0 {
-		b.WriteString(st.Muted.Render("nothing installed depends on this") + "\n")
+		b.WriteString(st.Muted.Render("no Homebrew package depends on this") + "\n")
 	} else {
 		b.WriteString(strings.Join(used, ", ") + "\n")
 	}
