@@ -4,6 +4,8 @@ package ui
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -21,7 +23,10 @@ import (
 // brewery on the screenshots' made-up machine, driven by a script of keys
 // and captions instead of a person, so every take is the same. Run it by
 // hand with `go test -tags demo -run TestDemo ./internal/ui` in a terminal
-// of about 140×40.
+// of about 140×40, and the captions show in a band under the app. When
+// DEMO_CAPTIONS names a file, the band is left out and each caption's start
+// is written there instead, for docs/captions.swift to draw larger than a
+// terminal can.
 
 // captionH is the number of lines the caption band takes under the app.
 const captionH = 3
@@ -29,9 +34,10 @@ const captionH = 3
 // captionMsg sets the caption under the app; "" clears it.
 type captionMsg string
 
-// captioned is the app with a caption band below it.
+// captioned is the app with a caption band below it, unless band is off.
 type captioned struct {
 	app     *App
+	band    bool
 	caption string
 	w       int
 }
@@ -45,7 +51,9 @@ func (c *captioned) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return c, nil
 	case tea.WindowSizeMsg:
 		c.w = m.Width
-		m.Height -= captionH
+		if c.band {
+			m.Height -= captionH
+		}
 		msg = m
 	}
 	_, cmd := c.app.Update(msg)
@@ -54,6 +62,9 @@ func (c *captioned) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (c *captioned) View() tea.View {
 	v := c.app.View()
+	if !c.band {
+		return v
+	}
 	st := c.app.st
 	band := lipgloss.NewStyle().Width(c.w).Height(captionH).
 		AlignHorizontal(lipgloss.Center).AlignVertical(lipgloss.Center).
@@ -165,7 +176,7 @@ var demoScript = []step{
 	{caption: "Services: start, stop and read their logs", keys: slices.Concat([]string{"o"}, jump("serv"), []string{"l"}), hold: 3500 * time.Millisecond},
 	{caption: "Maintenance: doctor, cleanup and tap health in one place", keys: jump("main"), hold: 3 * time.Second},
 	{caption: "Vim-style keys throughout · ? shows them all", keys: []string{"?"}, hold: 3500 * time.Millisecond},
-	{caption: "brewery · github.com/dillo/brewery", keys: []string{"esc", "1"}, hold: 8 * time.Second}, // outlasts the recording
+	{caption: "brewery · github.com/dillo/brewery", keys: []string{"esc", "1"}, hold: 4 * time.Second},
 }
 
 func TestDemo(t *testing.T) {
@@ -177,12 +188,26 @@ func TestDemo(t *testing.T) {
 	began := time.Now()
 	a.now = func() time.Time { return demoNow.Add(time.Since(began)) } // jobs' clocks run
 
-	p := tea.NewProgram(&captioned{app: a})
+	// Each caption's start, in seconds, then a tab and the caption; the
+	// last line is when the demo ends, with no caption.
+	logCaption := func(string) {}
+	path := os.Getenv("DEMO_CAPTIONS")
+	if path != "" {
+		f, err := os.Create(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		logCaption = func(c string) { fmt.Fprintf(f, "%.2f\t%s\n", time.Since(began).Seconds(), c) }
+	}
+
+	p := tea.NewProgram(&captioned{app: a, band: path == ""})
 	go func() {
 		time.Sleep(1500 * time.Millisecond) // the first frame
 		for _, s := range demoScript {
 			if s.caption != "" {
 				p.Send(captionMsg(s.caption))
+				logCaption(s.caption)
 			}
 			for _, k := range s.keys {
 				time.Sleep(140 * time.Millisecond)
@@ -190,6 +215,7 @@ func TestDemo(t *testing.T) {
 			}
 			time.Sleep(s.hold)
 		}
+		logCaption("")
 		p.Send(captionMsg(""))
 		p.Send(press("q"))
 	}()

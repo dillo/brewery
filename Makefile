@@ -49,11 +49,21 @@ screenshots:
 	done
 
 # The demo video and the README's GIF of it, from the same made-up machine,
-# driven by a script (internal/ui/demo_test.go). Needs VHS and ffmpeg
-# (brew install vhs ffmpeg) and the font the screenshots use.
+# driven by a script (internal/ui/demo_test.go). VHS records it, Swift draws
+# the captions (docs/captions.swift) and ffmpeg lays them under the video.
+# Needs VHS and ffmpeg (brew install vhs ffmpeg), Xcode's command line tools
+# for swift, and the font the screenshots use.
+CAPTION_FONT ?= $(HOME)/Library/Fonts/JetBrainsMonoNLNerdFont-Bold.ttf
 demo:
 	go test -c -tags demo -o bin/brewery-demo ./internal/ui
 	vhs docs/demo.tape
+	rm -rf bin/captions
+	swift docs/captions.swift bin/captions.tsv bin/captions \
+		"$$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 bin/demo-raw.mp4)" \
+		"$$(ffprobe -v error -show_entries format=duration -of csv=p=0 bin/demo-raw.mp4)" "$(CAPTION_FONT)"
+	ffmpeg -v error -y -i bin/demo-raw.mp4 $$(for f in bin/captions/*.png; do printf -- '-i %s ' "$$f"; done) \
+		-/filter_complex bin/captions/filter.txt -map '[out]' \
+		-c:v libx264 -pix_fmt yuv420p -crf 20 -movflags +faststart docs/demo.mp4
 	ffmpeg -v error -y -i docs/demo.mp4 -vf "fps=12,scale=1200:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" docs/demo.gif
 
 run: build

@@ -269,9 +269,10 @@ make test
 Nerd Font (`brew install --cask font-jetbrains-mono-nerd-font`).
 
 `make demo` records the demo video the same way: a script drives brewery on
-the made-up machine, with captions, and [VHS](https://github.com/charmbracelet/vhs)
-records it to `docs/demo.mp4` and `docs/demo.gif`. It needs VHS and ffmpeg
-(`brew install vhs ffmpeg`) and the same font.
+the made-up machine, [VHS](https://github.com/charmbracelet/vhs) records it,
+and the captions are drawn with Swift and laid under it with ffmpeg, giving
+`docs/demo.mp4` and `docs/demo.gif`. It needs VHS and ffmpeg
+(`brew install vhs ffmpeg`), Xcode's command line tools and the same font.
 
 ## Licence
 
