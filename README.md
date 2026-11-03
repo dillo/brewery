@@ -66,12 +66,12 @@ A few notes:
   dependency is pinned behind it.
 - Uninstall, with an offer to remove the dependencies nothing else needs.
 - What's new: press `w` on an outdated package to read the release notes
-  from GitHub for every version you'd be skipping over, newest first. Words
-  like *breaking* and *removed* are highlighted, and Upgrade all warns when
-  notes you've read mention them. Brewery asks GitHub only when you press
-  `w` or pick What's new, sends it only the repository's name, and keeps
-  what it fetched.
-  Packages that aren't on GitHub link to their homepage instead.
+  from GitHub for every version you'd be skipping over, newest first, beside
+  the Outdated list. Words like *breaking* and *removed* are highlighted, and
+  Upgrade all warns when notes you've read mention them. brewery asks GitHub
+  only when you press `w` or pick What's new, sends it only the repository's
+  name, and keeps what it fetched until there's a newer version. Packages
+  that aren't on GitHub point to their homepage instead.
 - Pin and unpin, reinstall, link and unlink (including keg-only formulae),
   and fetch a newer version ahead of upgrading.
 - Deprecated and disabled packages are marked in the list, and their details
@@ -142,6 +142,10 @@ Press `enter` on a row for everything you can do with it.
 
 ![The action menu for gh: upgrade, fetch, reinstall, unlink, pin, uninstall, copy the name and open the homepage, each with its key](docs/screenshots/menu.png)
 
+What's new in an upgrade, from the project's release notes on GitHub.
+
+![What's new in gh 2.102.0, beside the Outdated list: its features, fixes and a breaking change, with "breaking" and "removed" highlighted](docs/screenshots/whats-new.png)
+
 Packages on their way out, with brew's reason and what to install instead.
 
 ![The Deprecated view: python@3.13, a versioned formula that will be disabled on 2027-04-01, with python@3.15 as its replacement](docs/screenshots/deprecated.png)
@@ -165,7 +169,7 @@ Find popular and rising packages, and install them.
 
 brew's own output, live. Answer its questions right in the drawer.
 
-![An upgrade of gh running, with brew's output in the drawer below the Outdated list](docs/screenshots/upgrade.png)
+![An upgrade of gh running, with brew's output in the drawer below the Outdated list and gh's details](docs/screenshots/upgrade.png)
 
 Type `/` in the sidebar to jump to an entry.
 
@@ -222,7 +226,7 @@ its actions.
 | `l` `tab` | the details, then `j` `k` scroll them |
 | `/` | filter the list; `esc` clears it |
 | `y` | copy the name (on History, the command) |
-| `gx` | open the homepage |
+| `gx` | open the homepage; on Outdated, the GitHub page for an upgrade with no release notes |
 | `space` | mark several (Installed and Outdated) |
 
 **Shortcuts for actions**, all also in the action menu:
@@ -237,6 +241,7 @@ its actions.
 | | `f` | fetch the newer version |
 | Outdated | `u` | upgrade |
 | | `f` | fetch the newer version |
+| | `w` | what's new, from GitHub |
 | | `A` | upgrade all |
 | Services | `s` `S` `R` | start, stop, restart |
 | | `L` | follow the log full screen |
@@ -258,7 +263,7 @@ its actions.
 
 - `$XDG_CACHE_HOME/brewery` (default `~/.cache/brewery`): the last snapshot
   of your packages, so brewery opens instantly, Homebrew's install counts,
-  and what Check taps last found.
+  what Check taps last found, and the release notes What's new fetched.
 - `$XDG_STATE_HOME/brewery` (default `~/.local/state/brewery`): the history
   of jobs brewery ran, the theme you chose, and crash logs.
 
@@ -272,8 +277,11 @@ make test
 `make screenshots` regenerates the images above from a made-up machine
 (`internal/ui/testdata/demo`). It needs Charm's
 [freeze](https://github.com/charmbracelet/freeze)
-(`go install github.com/charmbracelet/freeze@v0.2.2`) and the JetBrains Mono
-Nerd Font (`brew install --cask font-jetbrains-mono-nerd-font`).
+(`go install github.com/charmbracelet/freeze@v0.2.2`), librsvg
+(`brew install librsvg`; without its `rsvg-convert`, freeze draws the
+screenshots with no text in this font) and the JetBrains Mono Nerd Font
+(`brew install --cask font-jetbrains-mono-nerd-font`). Run it with
+`FREEZE=<path>` when freeze isn't on your `PATH`.
 
 `make demo` records the demo video the same way: a script drives brewery on
 the made-up machine, [VHS](https://github.com/charmbracelet/vhs) records it,
