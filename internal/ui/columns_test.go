@@ -38,7 +38,7 @@ func TestColumnsFor(t *testing.T) {
 		{85, colSidebar, true, columns{85, 0, 0}},
 		{85, colList, true, columns{0, 85, 0}},
 		{85, colDetails, true, columns{0, 0, 85}},
-		// no details (Home, Outdated, Taps): sidebar and list, or one
+		// no details (Home, Taps): sidebar and list, or one
 		{140, colList, false, columns{26, 114, 0}},
 		{140, colDetails, false, columns{26, 114, 0}}, // a details focus is the list's
 		{86, colSidebar, false, columns{26, 60, 0}},

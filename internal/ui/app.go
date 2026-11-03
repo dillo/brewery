@@ -50,17 +50,21 @@ const (
 
 // App is the root Bubble Tea model.
 type App struct {
-	src          Source
-	catalog      Catalog    // Discover's catalogue, or nil
-	analytics    Analytics  // Discover's install counts, or nil
-	tapChecker   TapChecker // asks GitHub about taps, or nil
-	checkingTaps bool       // a tap check is running
-	start        Starter
-	cachePath    string
-	st           theme.Styles
-	now          func() time.Time
-	ctx          context.Context // cancelled on quit, stopping running queries
-	cancel       context.CancelFunc
+	src           Source
+	catalog       Catalog           // Discover's catalogue, or nil
+	analytics     Analytics         // Discover's install counts, or nil
+	tapChecker    TapChecker        // asks GitHub about taps, or nil
+	checkingTaps  bool              // a tap check is running
+	releases      ReleaseFetcher    // asks GitHub for release notes, or nil
+	fetchingNotes string            // the key of the package whose notes are being fetched, or ""
+	fetchingName  string            // that package's name, for notes
+	notesErr      map[string]string // why each package's last fetch failed, until it's tried again
+	start         Starter
+	cachePath     string
+	st            theme.Styles
+	now           func() time.Time
+	ctx           context.Context // cancelled on quit, stopping running queries
+	cancel        context.CancelFunc
 
 	snap   state.Snapshot
 	ix     *state.Index
@@ -161,7 +165,8 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		snap: snap, errs: map[query]error{}, loaded: map[query]bool{}, tab: tabHome, themeName: theme.Themes[0].Name,
 		focus: colSidebar, lastIn: map[section]int{},
 		inflight: map[query]bool{}, again: map[query]bool{},
-		acts: map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
+		notesErr: map[string]string{},
+		acts:     map[int]action{}, backoff: jobs.Backoff, tickEvery: 100 * time.Millisecond, quitGrace: quitGrace,
 		detailsDelay: detailsDelay,
 		readLog:      readLogTail,
 		drawer:       newDrawer(st),
@@ -185,6 +190,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 	a.maint.preview = a.maintPreview
 	a.installed.now = func() time.Time { return a.now() } // follows a.now, which tests replace
 	a.outdated.note = a.dataAge
+	a.outdated.preview = a.notesPreview
 	a.installed.scanNote, a.installed.scanEmpty = a.vulnsNote, a.vulnsEmpty
 	a.discover.note = a.statsAge
 	a.discover.spin = func() string { return spinner(a.frame) }
@@ -322,6 +328,7 @@ func (a *App) sync() {
 	a.installed.sizes = a.snap.Sizes
 	a.installed.setVulns(a.snap.Vulns)
 	a.installed.setData(a.snap.Packages, a.ix)
+	a.pruneNotes()
 	a.outdated.setRows(outdatedRows(a.st.Icons, a.snap.Outdated))
 	a.services.setRows(serviceRows(a.st, a.snap.Services))
 	a.taps.setRows(a.tapRows())
@@ -412,6 +419,8 @@ func (a *App) update(msg tea.Msg) tea.Cmd { //nolint:gocyclo // flat dispatch, o
 		return a.gotCatalogue(msg)
 	case tapsCheckedMsg:
 		return a.gotTapChecks(msg)
+	case notesMsg:
+		return a.gotNotes(msg)
 	case cachedStatsMsg:
 		return a.gotCachedStats(msg)
 	case fetchedStatsMsg:
@@ -815,6 +824,8 @@ func (a *App) scrollDetails(k string) {
 	switch a.tab {
 	case tabInstalled:
 		a.installed.scroll(k)
+	case tabOutdated:
+		a.outdated.scroll(k)
 	case tabDiscover:
 		a.discover.scroll(k)
 	case tabServices:
@@ -874,6 +885,8 @@ func (a *App) rowCount(tab int) int {
 			return 0
 		}
 		return len(a.discover.rows)
+	case tabOutdated:
+		return a.outdated.n
 	case tabServices:
 		return a.services.n
 	case tabHistory:

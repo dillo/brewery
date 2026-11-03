@@ -115,6 +115,8 @@ func (a *App) outdatedKey(k string) (cmd tea.Cmd, ok bool) {
 	switch k {
 	case "A":
 		return a.askUpgradeAll(), true
+	case "w":
+		return a.whatsNew(), true
 	case "f":
 		return a.fetchKey(), true
 	}
@@ -557,6 +559,9 @@ func (a *App) tabHints() string {
 		}
 		return "enter actions · space mark · l details"
 	case tabOutdated:
+		if a.focus == colDetails {
+			return "enter actions · j/k scroll · h back to the list"
+		}
 		return "enter actions · space mark · A upgrade all"
 	case tabServices:
 		if a.focus == colDetails {
