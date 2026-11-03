@@ -110,31 +110,47 @@ func (a *App) whatsNew() tea.Cmd {
 }
 
 // gotNotes keeps a fetch's notes and saves them, or remembers why it
-// failed until the next try. The details start again at the top.
+// failed until the next try. The details start again at the top when the
+// notes are for the selected row. The kept notes are copied before they
+// change, as a save may be reading the ones it was given.
 func (a *App) gotNotes(m notesMsg) tea.Cmd {
 	a.fetchingNotes, a.fetchingName = "", ""
-	a.outdated.pv.off = 0
+	if o, _, ok := a.outdatedSelected(); ok && a.notesKey(o) == m.key {
+		a.outdated.pv.off = 0
+	}
 	if m.err != nil {
 		a.notesErr[m.key] = m.err.Error()
 		return nil
 	}
-	if a.snap.ReleaseNotes == nil {
-		a.snap.ReleaseNotes = map[string]notes.Notes{}
+	kept := maps.Clone(a.snap.ReleaseNotes)
+	if kept == nil {
+		kept = map[string]notes.Notes{}
 	}
-	a.snap.ReleaseNotes[m.key] = m.notes
+	kept[m.key] = m.notes
+	a.snap.ReleaseNotes = kept
+	a.pruneNotes()
 	return save(a.cachePath, a.snap)
 }
 
-// pruneNotes forgets the notes of packages no longer outdated.
+// pruneNotes forgets the notes of packages no longer outdated, in a new
+// map, as a save may be reading the one it was given.
 func (a *App) pruneNotes() {
 	if len(a.snap.ReleaseNotes) == 0 {
 		return
 	}
-	keep := map[string]bool{}
+	outdated := map[string]bool{}
 	for _, o := range a.snap.Outdated {
-		keep[a.notesKey(o)] = true
+		outdated[a.notesKey(o)] = true
 	}
-	maps.DeleteFunc(a.snap.ReleaseNotes, func(k string, _ notes.Notes) bool { return !keep[k] })
+	kept := map[string]notes.Notes{}
+	for k, n := range a.snap.ReleaseNotes {
+		if outdated[k] {
+			kept[k] = n
+		}
+	}
+	if len(kept) < len(a.snap.ReleaseNotes) {
+		a.snap.ReleaseNotes = kept
+	}
 }
 
 // notesPreview is Outdated's details: what's new in the selected upgrade,

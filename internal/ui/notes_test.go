@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -10,7 +11,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/github"
+	"github.com/dillo/brewery/internal/notes"
 	"github.com/dillo/brewery/internal/state"
 )
 
@@ -210,5 +213,53 @@ func TestWhatsNewScrolls(t *testing.T) {
 	}
 	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "j/k scroll") {
 		t.Errorf("the hints say so: %q", bar)
+	}
+}
+
+func TestWhatsNewCopiesKeptNotes(t *testing.T) {
+	a := notesApp(t, &fakeReleases{})
+	old := map[string]notes.Notes{"formula/sentinel": {}}
+	a.snap.ReleaseNotes = old
+	a.snap.Outdated = append(a.snap.Outdated, brew.Outdated{Name: "sentinel", Kind: brew.KindFormula})
+	a.gotNotes(notesMsg{key: "formula/lua-language-server", notes: notes.Notes{From: "3.19.1", To: "3.19.2"}})
+	if len(old) != 1 || old["formula/lua-language-server"].To != "" {
+		t.Errorf("a map a save may be reading isn't written to: %v", old)
+	}
+	if _, ok := a.snap.ReleaseNotes["formula/lua-language-server"]; !ok {
+		t.Errorf("the new notes are kept: %v", a.snap.ReleaseNotes)
+	}
+
+	old = map[string]notes.Notes{"formula/lua-language-server": {}, "formula/gone": {}}
+	a.snap.ReleaseNotes = old
+	a.pruneNotes()
+	if len(old) != 2 {
+		t.Errorf("pruning leaves the map a save may be reading alone: %v", old)
+	}
+	if _, ok := a.snap.ReleaseNotes["formula/gone"]; ok || len(a.snap.ReleaseNotes) != 1 {
+		t.Errorf("notes for a package no longer outdated are dropped: %v", a.snap.ReleaseNotes)
+	}
+}
+
+func TestWhatsNewDropsNotesOfPackageNoLongerOutdated(t *testing.T) {
+	a := notesApp(t, &fakeReleases{})
+	a.snap.Outdated = slices.DeleteFunc(slices.Clone(a.snap.Outdated), func(o brew.Outdated) bool { return o.Name == "lua-language-server" })
+	a.gotNotes(notesMsg{key: "formula/lua-language-server", notes: notes.Notes{From: "3.19.1", To: "3.19.2"}})
+	if _, ok := a.snap.ReleaseNotes["formula/lua-language-server"]; ok {
+		t.Errorf("notes for a package no longer outdated aren't kept: %v", a.snap.ReleaseNotes)
+	}
+}
+
+func TestWhatsNewKeepsScrollForOtherRows(t *testing.T) {
+	a := notesApp(t, &fakeReleases{})
+	keys(t, a, "j") // docker-desktop
+	o, _, _ := a.outdatedSelected()
+	a.outdated.pv.off = 3
+	a.gotNotes(notesMsg{key: "formula/lua-language-server", notes: notes.Notes{From: "3.19.1", To: "3.19.2"}})
+	if a.outdated.pv.off != 3 {
+		t.Errorf("notes for another row don't scroll the details: %d", a.outdated.pv.off)
+	}
+	a.gotNotes(notesMsg{key: a.notesKey(o), notes: notes.Notes{}})
+	if a.outdated.pv.off != 0 {
+		t.Errorf("notes for the selected row start at the top: %d", a.outdated.pv.off)
 	}
 }
