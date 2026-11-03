@@ -17,6 +17,7 @@ var (
 	mdComment = regexp.MustCompile(`(?s)<!--.*?-->`)
 	mdImage   = regexp.MustCompile(`!\[[^\]]*\]\([^)]*\)`)
 	mdLink    = regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
+	mdAutolnk = regexp.MustCompile(`<(https?://[^>\s]+)>`)
 	mdTag     = regexp.MustCompile(`</?[a-zA-Z][^>]*>`)
 	mdHeading = regexp.MustCompile(`^#{1,6}\s+(.*?)[\s#]*$`)
 	mdItem    = regexp.MustCompile(`^(\s*)[-*+]\s+(.*)$`)
@@ -58,7 +59,6 @@ func renderNotes(st theme.Styles, body string, w int) []string {
 // item after a bullet, indented one level at most, and anything else as
 // it is.
 func mdLine(st theme.Styles, l string) string {
-	l = mdTag.ReplaceAllString(mdLink.ReplaceAllString(mdImage.ReplaceAllString(l, ""), "$1"), "")
 	if m := mdHeading.FindStringSubmatch(l); m != nil {
 		return mdInline(st, m[1], true)
 	}
@@ -67,6 +67,13 @@ func mdLine(st theme.Styles, l string) string {
 		return indent + "• " + mdInline(st, m[2], false)
 	}
 	return mdInline(st, strings.TrimRight(l, " \t"), false)
+}
+
+// mdClean drops the images, link addresses and HTML tags from text that is
+// not code, and keeps the address of an <https://…> autolink.
+func mdClean(s string) string {
+	s = mdAutolnk.ReplaceAllString(mdImage.ReplaceAllString(s, ""), "$1")
+	return mdTag.ReplaceAllString(mdLink.ReplaceAllString(s, "$1"), "")
 }
 
 // mdInline styles a line's text: `code` in the accent colour, **bold** in
@@ -85,7 +92,7 @@ func mdInline(st theme.Styles, s string, bold bool) string {
 			b.WriteString(st.Accent.Render(p))
 			continue
 		}
-		b.WriteString(mdBoldRuns(st, p, bold))
+		b.WriteString(mdBoldRuns(st, mdClean(p), bold))
 	}
 	return b.String()
 }

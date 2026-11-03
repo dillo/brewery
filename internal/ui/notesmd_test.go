@@ -75,6 +75,12 @@ func TestRenderNotesDetails(t *testing.T) {
 		{"an `unclosed tick", []string{"an `unclosed tick"}},
 		{"__bold__ and *em* and _em_", []string{"bold and *em* and _em_"}},
 		{"---", []string{"---"}},
+		{"use `Option<String>` and `Vec<T>`", []string{"use Option<String> and Vec<T>"}},
+		{"see <https://example.com/x> now", []string{"see https://example.com/x now"}},
+		{"`[not](a link)` stays", []string{"[not](a link) stays"}},
+		{`<img src="x.png">`, nil},
+		{"* Add `Vec<T>`", []string{"• Add Vec<T>"}},
+		{"## Support `Vec<T>`", []string{"Support Vec<T>"}},
 	} {
 		if got := plainLines(renderNotes(st, tt.body, 80)); !slices.Equal(got, tt.want) {
 			t.Errorf("%q: %q, want %q", tt.body, got, tt.want)
