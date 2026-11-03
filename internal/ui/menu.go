@@ -215,7 +215,7 @@ func (a *App) outdatedMenu() *menuBox {
 		items = append(items, a.keyItem("u", "Upgrade to "+o.Current))
 	}
 	items = append(items, a.keyItem("f", "Fetch "+o.Current))
-	if _, _, onGitHub := notesRepo(a.packageNamed(o.Name, o.Kind)); onGitHub {
+	if _, _, onGitHub := notesRepo(a.outdatedPackage(o)); onGitHub {
 		label := "What's new"
 		if _, kept := a.keptNotes(o); kept {
 			label = "What's new (fetched)"

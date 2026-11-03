@@ -326,3 +326,34 @@ func TestUpgradeMarkedWarnsOfBreakingChanges(t *testing.T) {
 		t.Errorf("the note warns: %q", bar)
 	}
 }
+
+// tapApp is notesApp with a formula from a tap added, outdated, and
+// selected: brew names it by its full name.
+func tapApp(t *testing.T, f *fakeReleases) *App {
+	t.Helper()
+	a := notesApp(t, f)
+	a.snap.Packages = append(a.snap.Packages, brew.Package{Name: "foo", FullName: "user/tap/foo", Kind: brew.KindFormula,
+		Homepage: "https://github.com/user/foo", Version: "1.1"})
+	a.snap.Outdated = append(a.snap.Outdated, brew.Outdated{Name: "user/tap/foo", Kind: brew.KindFormula, Installed: "1.1", Current: "1.2"})
+	a.sync()
+	selectOutdated(t, a, "user/tap/foo")
+	return a
+}
+
+func TestWhatsNewTapFormula(t *testing.T) {
+	f := &fakeReleases{rels: map[string][]github.Release{"user/foo": {{Tag: "foo-1.2", Body: "* tap notes"}}}}
+	a := tapApp(t, f)
+	mustShow(t, a, "user/foo", "w shows what's new")
+	mustNotShow(t, a, "doesn't say where")
+	keys(t, a, "enter")
+	mustShow(t, a, "What's new")
+	keys(t, a, "esc", "w")
+	if len(f.asked) != 1 || f.asked[0] != "releases user/foo" {
+		t.Errorf("asked %v", f.asked)
+	}
+	mustShow(t, a, "1 release since 1.1", "tap notes")
+	if _, ok := a.snap.ReleaseNotes["formula/user/tap/foo"]; !ok {
+		t.Errorf("kept under the package's key: %v", a.snap.ReleaseNotes)
+	}
+}
+

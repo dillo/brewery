@@ -72,6 +72,18 @@ func (a *App) packageNamed(name string, kind brew.Kind) brew.Package {
 	return brew.Package{}
 }
 
+// outdatedPackage finds the installed package an Outdated row is for.
+// brew names a formula from a tap by its full name (user/tap/foo), and a
+// cask by its token.
+func (a *App) outdatedPackage(o brew.Outdated) brew.Package {
+	for _, p := range a.snap.Packages {
+		if p.Kind == o.Kind && (p.FullName == o.Name || p.Name == o.Name) {
+			return p
+		}
+	}
+	return brew.Package{}
+}
+
 // outdatedSelection is selection on Outdated: the name, and the GitHub page
 // that stands in for missing release notes, else the homepage.
 func (a *App) outdatedSelection() (name, url string, ok bool) {

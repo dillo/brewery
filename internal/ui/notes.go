@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"net/url"
@@ -40,13 +41,13 @@ func (a *App) outdatedSelected() (brew.Outdated, brew.Package, bool) {
 		return brew.Outdated{}, brew.Package{}, false
 	}
 	o := a.snap.Outdated[i]
-	return o, a.packageNamed(o.Name, o.Kind), true
+	return o, a.outdatedPackage(o), true
 }
 
 // notesKey is the key o's notes are kept under: its package's key, or
 // its kind and name when the package isn't known.
 func (a *App) notesKey(o brew.Outdated) string {
-	if p := a.packageNamed(o.Name, o.Kind); p.FullName != "" {
+	if p := a.outdatedPackage(o); p.FullName != "" {
 		return p.Key()
 	}
 	return o.Kind.String() + "/" + o.Name
@@ -102,7 +103,7 @@ func (a *App) whatsNew() tea.Cmd {
 	a.fetchingNotes, a.fetchingName = key, o.Name
 	delete(a.notesErr, key)
 	ctx, f, now := a.ctx, a.releases, a.now
-	name, from, to := o.Name, o.Installed, o.Current
+	name, from, to := cmp.Or(p.Name, o.Name), o.Installed, o.Current
 	return func() tea.Msg {
 		n, err := notes.Fetch(ctx, f, owner, repo, name, from, to, now())
 		return notesMsg{key: key, notes: n, err: err}
