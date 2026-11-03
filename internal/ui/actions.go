@@ -567,7 +567,7 @@ func (a *App) tabHints() string {
 		if a.focus == colDetails {
 			return "enter actions · j/k scroll · h back to the list"
 		}
-		return "enter actions · space mark · A upgrade all"
+		return "enter actions · space mark · w what's new · l details"
 	case tabServices:
 		if a.focus == colDetails {
 			return a.serviceDetailsHints()

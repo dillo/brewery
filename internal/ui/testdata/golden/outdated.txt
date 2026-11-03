@@ -37,4 +37,4 @@
 │                        ││                                                            ││                                                  │
 │                        ││                                                            ││                                                  │
 ╰────────────────────────╯╰────────────────────────────────────────────────────────────╯╰──────────────────────────────────────────────────╯
- NORMAL  Outdated                                                  enter actions · space mark · A upgrade all · : command · ? help · q quit 
+ NORMAL  Outdated                                       enter actions · space mark · w what's new · l details · : command · ? help · q quit 

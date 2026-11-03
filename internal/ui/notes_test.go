@@ -357,3 +357,37 @@ func TestWhatsNewTapFormula(t *testing.T) {
 	}
 }
 
+func TestWhatsNewRefetchesReleasesPage(t *testing.T) {
+	f := &fakeReleases{}
+	a := notesApp(t, f)
+	keys(t, a, "w") // no tags: the releases page stands in
+	keys(t, a, "w")
+	if len(f.asked) != 4 {
+		t.Errorf("the releases page doesn't stop a second w: %v", f.asked)
+	}
+	f = &fakeReleases{tags: map[string][]string{luaRepo: {"3.19.2", "3.19.1"}}}
+	a = notesApp(t, f)
+	keys(t, a, "w")
+	keys(t, a, "w")
+	if len(f.asked) != 2 {
+		t.Errorf("a compare link is kept: %v", f.asked)
+	}
+}
+
+func TestWhatsNewSaysWhereItWent(t *testing.T) {
+	f := &fakeReleases{}
+	a := notesApp(t, f)
+	a.Update(tea.WindowSizeMsg{Width: 90, Height: 50})
+	if a.outdated.pvW != 0 {
+		t.Skip("details shown at 90 columns")
+	}
+	keys(t, a, "w")
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "asking GitHub… · l shows it") {
+		t.Errorf("narrow: %q", bar)
+	}
+	a = notesApp(t, &fakeReleases{})
+	keys(t, a, "w")
+	if bar := stripANSI(a.statusBar()); strings.Contains(bar, "l shows it") {
+		t.Errorf("wide: %q", bar)
+	}
+}

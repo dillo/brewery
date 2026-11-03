@@ -77,6 +77,12 @@ func hasBreaking(n notes.Notes) bool {
 	return slices.ContainsFunc(n.Releases, func(r github.Release) bool { return notes.Breaking(r.Body) })
 }
 
+// isReleasesPage reports whether n has nothing to show but GitHub's
+// releases page, which is worth asking about again.
+func isReleasesPage(n notes.Notes) bool {
+	return len(n.Releases) == 0 && strings.HasSuffix(n.Link, "/releases")
+}
+
 // whatsNew fetches the selected upgrade's release notes from GitHub,
 // unless they're kept already.
 func (a *App) whatsNew() tea.Cmd {
@@ -96,12 +102,15 @@ func (a *App) whatsNew() tea.Cmd {
 	case !onGitHub:
 		return a.note(o.Name + "'s release notes aren't on GitHub")
 	}
-	if _, kept := a.keptNotes(o); kept {
+	if n, kept := a.keptNotes(o); kept && !isReleasesPage(n) {
 		return nil // already showing
 	}
 	key := a.notesKey(o)
 	a.fetchingNotes, a.fetchingName = key, o.Name
 	delete(a.notesErr, key)
+	if a.outdated.pvW == 0 {
+		a.flash = "asking GitHub… · l shows it" // the details aren't on screen
+	}
 	ctx, f, now := a.ctx, a.releases, a.now
 	name, from, to := cmp.Or(p.Name, o.Name), o.Installed, o.Current
 	return func() tea.Msg {
