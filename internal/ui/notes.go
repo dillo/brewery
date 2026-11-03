@@ -261,7 +261,7 @@ func breakingText(names []string) string {
 func (a *App) openLabel(addr string) string {
 	if a.tab == tabOutdated {
 		if o, _, ok := a.outdatedSelected(); ok {
-			if n, kept := a.keptNotes(o); kept && n.Link != "" && n.Link == addr {
+			if n, kept := a.keptNotes(o); kept && len(n.Releases) == 0 && n.Link != "" && n.Link == addr {
 				return "Open on GitHub"
 			}
 		}

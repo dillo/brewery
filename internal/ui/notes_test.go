@@ -282,7 +282,11 @@ func TestWhatsNewMenu(t *testing.T) {
 func TestWhatsNewHelp(t *testing.T) {
 	a := notesApp(t, nil)
 	keys(t, a, "?")
-	mustShow(t, a, "what's new, from GitHub")
+	// The details pane behind the overlay says "w shows what's new, from
+	// GitHub", so match the help row itself: the key, spaces, the text.
+	if row := regexp.MustCompile(`(?m)\bw\s{2,}what's new, from GitHub`); !row.MatchString(stripANSI(a.render())) {
+		t.Errorf("help lacks the w row:\n%s", stripANSI(a.render()))
+	}
 }
 
 func TestWhatsNewOpensTheLink(t *testing.T) {
