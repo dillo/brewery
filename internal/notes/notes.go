@@ -89,12 +89,9 @@ func isNumber(s string) bool {
 	return err == nil && !strings.ContainsAny(s, "+-")
 }
 
-// Less reports whether version a comes before b. Parts split on . and -;
+// compare orders versions a and b as -1, 0 or 1. Parts split on . and -;
 // numeric parts compare as numbers, others as text, and a version that
 // runs out of parts first is the lower.
-func Less(a, b string) bool { return compare(a, b) < 0 }
-
-// compare is Less as -1, 0 or 1.
 func compare(a, b string) int {
 	pa, pb := parts(a), parts(b)
 	for i := range min(len(pa), len(pb)) {

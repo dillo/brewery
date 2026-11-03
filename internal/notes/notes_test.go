@@ -27,7 +27,7 @@ func TestClean(t *testing.T) {
 	}
 }
 
-func TestLess(t *testing.T) {
+func TestCompare(t *testing.T) {
 	for _, tt := range []struct {
 		a, b string
 		less bool
@@ -41,8 +41,11 @@ func TestLess(t *testing.T) {
 		{"3.19.1", "3.19.2", true},
 		{"20260817.0", "20261001.0", true},
 	} {
-		if got := Less(tt.a, tt.b); got != tt.less {
-			t.Errorf("Less(%q, %q) = %v, want %v", tt.a, tt.b, got, tt.less)
+		if got := compare(tt.a, tt.b) < 0; got != tt.less {
+			t.Errorf("compare(%q, %q) < 0 = %v, want %v", tt.a, tt.b, got, tt.less)
+		}
+		if tt.a == tt.b && compare(tt.a, tt.b) != 0 {
+			t.Errorf("compare(%q, %q) should be 0", tt.a, tt.b)
 		}
 	}
 }

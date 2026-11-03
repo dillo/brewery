@@ -3,7 +3,6 @@ package ui
 import (
 	"cmp"
 	"fmt"
-	"maps"
 	"net/url"
 	"slices"
 	"strings"
@@ -44,13 +43,16 @@ func (a *App) outdatedSelected() (brew.Outdated, brew.Package, bool) {
 	return o, a.outdatedPackage(o), true
 }
 
-// notesKey is the key o's notes are kept under: its package's key, or
-// its kind and name when the package isn't known.
-func (a *App) notesKey(o brew.Outdated) string {
-	if p := a.outdatedPackage(o); p.FullName != "" {
-		return p.Key()
+// outdatedPackage finds the installed package an Outdated row is for.
+// brew names a formula from a tap by its full name (user/tap/foo), and a
+// cask by its token.
+func (a *App) outdatedPackage(o brew.Outdated) brew.Package {
+	for _, p := range a.snap.Packages {
+		if p.Kind == o.Kind && (p.FullName == o.Name || p.Name == o.Name) {
+			return p
+		}
 	}
-	return o.Kind.String() + "/" + o.Name
+	return brew.Package{}
 }
 
 // notesRepo is the GitHub repository p's release notes come from: the
@@ -62,25 +64,6 @@ func notesRepo(p brew.Package) (owner, repo string, ok bool) {
 		}
 	}
 	return "", "", false
-}
-
-// keptNotes are the notes fetched for o's upgrade, when they're for the
-// versions it goes between now.
-func (a *App) keptNotes(o brew.Outdated) (notes.Notes, bool) {
-	n, ok := a.snap.ReleaseNotes[a.notesKey(o)]
-	return n, ok && n.From == o.Installed && n.To == o.Current
-}
-
-// hasBreaking reports whether any of n's releases mentions a breaking
-// change.
-func hasBreaking(n notes.Notes) bool {
-	return slices.ContainsFunc(n.Releases, func(r github.Release) bool { return notes.Breaking(r.Body) })
-}
-
-// isReleasesPage reports whether n has nothing to show but GitHub's
-// releases page, which is worth asking about again.
-func isReleasesPage(n notes.Notes) bool {
-	return len(n.Releases) == 0 && strings.HasSuffix(n.Link, "/releases")
 }
 
 // whatsNew fetches the selected upgrade's release notes from GitHub,
@@ -121,8 +104,7 @@ func (a *App) whatsNew() tea.Cmd {
 
 // gotNotes keeps a fetch's notes and saves them, or remembers why it
 // failed until the next try. The details start again at the top when the
-// notes are for the selected row. The kept notes are copied before they
-// change, as a save may be reading the ones it was given.
+// notes are for the selected row.
 func (a *App) gotNotes(m notesMsg) tea.Cmd {
 	a.fetchingNotes, a.fetchingName = "", ""
 	if o, _, ok := a.outdatedSelected(); ok && a.notesKey(o) == m.key {
@@ -132,35 +114,8 @@ func (a *App) gotNotes(m notesMsg) tea.Cmd {
 		a.notesErr[m.key] = m.err.Error()
 		return nil
 	}
-	kept := maps.Clone(a.snap.ReleaseNotes)
-	if kept == nil {
-		kept = map[string]notes.Notes{}
-	}
-	kept[m.key] = m.notes
-	a.snap.ReleaseNotes = kept
-	a.pruneNotes()
+	a.keepNotes(m.key, m.notes)
 	return save(a.cachePath, a.snap)
-}
-
-// pruneNotes forgets the notes of packages no longer outdated, in a new
-// map, as a save may be reading the one it was given.
-func (a *App) pruneNotes() {
-	if len(a.snap.ReleaseNotes) == 0 {
-		return
-	}
-	outdated := map[string]bool{}
-	for _, o := range a.snap.Outdated {
-		outdated[a.notesKey(o)] = true
-	}
-	kept := map[string]notes.Notes{}
-	for k, n := range a.snap.ReleaseNotes {
-		if outdated[k] {
-			kept[k] = n
-		}
-	}
-	if len(kept) < len(a.snap.ReleaseNotes) {
-		a.snap.ReleaseNotes = kept
-	}
 }
 
 // notesPreview is Outdated's details: what's new in the selected upgrade,
@@ -244,37 +199,4 @@ func (a *App) releaseLines(r github.Release, w int) []string {
 	}
 	more := st.Muted.Render(fmt.Sprintf("… %d more lines", len(body)-noteLines))
 	return append(body[:noteLines:noteLines], more, st.Muted.Render(r.URL))
-}
-
-// breakingIn names the targets whose kept release notes, for the upgrade
-// brew would make now, mention a breaking change. It never fetches.
-func (a *App) breakingIn(ts []target) []string {
-	var names []string
-	for _, o := range a.snap.Outdated {
-		aimed := slices.ContainsFunc(ts, func(t target) bool {
-			return t.kind == o.Kind && (t.name == o.Name || strings.HasSuffix(t.name, "/"+o.Name))
-		})
-		if n, kept := a.keptNotes(o); aimed && kept && hasBreaking(n) {
-			names = append(names, o.Name)
-		}
-	}
-	return names
-}
-
-// breakingText warns that names' release notes mention breaking changes.
-func breakingText(names []string) string {
-	return "release notes mention breaking changes: " + strings.Join(names, ", ")
-}
-
-// openLabel names what gx opens on the current row: the GitHub page that
-// stands in for missing release notes, or the homepage.
-func (a *App) openLabel(addr string) string {
-	if a.tab == tabOutdated {
-		if o, _, ok := a.outdatedSelected(); ok {
-			if n, kept := a.keptNotes(o); kept && len(n.Releases) == 0 && n.Link != "" && n.Link == addr {
-				return "Open on GitHub"
-			}
-		}
-	}
-	return "Open the homepage"
 }

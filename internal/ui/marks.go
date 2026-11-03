@@ -132,6 +132,26 @@ func (a *App) upgradeMarked() tea.Cmd {
 	return cmd
 }
 
+// breakingIn names the targets whose kept release notes, for the upgrade
+// brew would make now, mention a breaking change. It never fetches.
+func (a *App) breakingIn(ts []target) []string {
+	var names []string
+	for _, o := range a.snap.Outdated {
+		aimed := slices.ContainsFunc(ts, func(t target) bool {
+			return t.kind == o.Kind && (t.name == o.Name || strings.HasSuffix(t.name, "/"+o.Name))
+		})
+		if n, kept := a.keptNotes(o); aimed && kept && hasBreaking(n) {
+			names = append(names, o.Name)
+		}
+	}
+	return names
+}
+
+// breakingText warns that names' release notes mention breaking changes.
+func breakingText(names []string) string {
+	return "release notes mention breaking changes: " + strings.Join(names, ", ")
+}
+
 // upgradable is the marked packages on this tab that are outdated and not
 // pinned.
 func (a *App) upgradable() []target {

@@ -72,18 +72,6 @@ func (a *App) packageNamed(name string, kind brew.Kind) brew.Package {
 	return brew.Package{}
 }
 
-// outdatedPackage finds the installed package an Outdated row is for.
-// brew names a formula from a tap by its full name (user/tap/foo), and a
-// cask by its token.
-func (a *App) outdatedPackage(o brew.Outdated) brew.Package {
-	for _, p := range a.snap.Packages {
-		if p.Kind == o.Kind && (p.FullName == o.Name || p.Name == o.Name) {
-			return p
-		}
-	}
-	return brew.Package{}
-}
-
 // outdatedSelection is selection on Outdated: the name, and the GitHub page
 // that stands in for missing release notes, else the homepage.
 func (a *App) outdatedSelection() (name, url string, ok bool) {
@@ -95,6 +83,19 @@ func (a *App) outdatedSelection() (name, url string, ok bool) {
 		return o.Name, n.Link, true // the page that stands in for the notes
 	}
 	return o.Name, p.Homepage, true
+}
+
+// openLabel names what gx opens on the current row: the GitHub page that
+// stands in for missing release notes, or the homepage.
+func (a *App) openLabel(addr string) string {
+	if a.tab == tabOutdated {
+		if o, _, ok := a.outdatedSelected(); ok {
+			if n, kept := a.keptNotes(o); kept && len(n.Releases) == 0 && n.Link != "" && n.Link == addr {
+				return "Open on GitHub"
+			}
+		}
+	}
+	return "Open the homepage"
 }
 
 // selection is what the cursor is on in the current list: a name to copy
