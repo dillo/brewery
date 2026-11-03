@@ -69,7 +69,8 @@ A few notes:
   from GitHub for every version you'd be skipping over, newest first. Words
   like *breaking* and *removed* are highlighted, and Upgrade all warns when
   notes you've read mention them. Brewery asks GitHub only when you press
-  `w`, sends it only the repository's name, and keeps what it fetched.
+  `w` or pick What's new, sends it only the repository's name, and keeps
+  what it fetched.
   Packages that aren't on GitHub link to their homepage instead.
 - Pin and unpin, reinstall, link and unlink (including keg-only formulae),
   and fetch a newer version ahead of upgrading.
