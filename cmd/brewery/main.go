@@ -158,7 +158,9 @@ func newApp(bin string, v brew.Version, opts options) *ui.App {
 		analyticsDir = filepath.Join(filepath.Dir(cachePath), "analytics")
 	}
 	app.UseAnalytics(analytics.NewStore(analyticsDir, version))
-	app.UseTapChecker(github.NewClient()) // only used when the user runs Check taps
+	gh := github.NewClient() // only used when the user asks: Check taps, and What's new
+	app.UseTapChecker(gh)
+	app.UseReleases(gh)
 	return app
 }
 

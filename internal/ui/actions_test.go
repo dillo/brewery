@@ -262,7 +262,7 @@ func TestStatusHintsFollowTheTab(t *testing.T) {
 	a.Update(tea.WindowSizeMsg{Width: 160, Height: 40})
 	for _, tt := range []struct{ entry, want string }{
 		{"Top-level", "enter actions · space mark · l details"},
-		{"Outdated", "enter actions · space mark · A upgrade all"},
+		{"Outdated", "enter actions · space mark · w what's new · l details"},
 		{"Services", "enter actions · l details"},
 		{"Taps", "enter actions"},
 		{"Home", "U update · c clean up"},

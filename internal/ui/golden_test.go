@@ -9,6 +9,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/dillo/brewery/internal/github"
 	"github.com/dillo/brewery/internal/jobs"
 )
 
@@ -55,6 +56,7 @@ func TestScreens(t *testing.T) {
 	a.detailsDelay = 0
 	a.UseHistory(jobs.History{Dir: t.TempDir()}, recentJobs(a.now())) // the clock is fixed, so the times are too
 	a.UseBrewVersion("4.6.3")
+	a.UseReleases(&fakeReleases{rels: map[string][]github.Release{luaRepo: luaReleases}})
 	for _, s := range []struct {
 		name    string
 		entries []string // shown in turn: the last one is the screen
@@ -63,6 +65,7 @@ func TestScreens(t *testing.T) {
 		{"home", []string{"Home"}, nil},
 		{"installed", []string{"Top-level"}, []string{"j", "j", "j"}}, // git, with its preview
 		{"outdated", []string{"Outdated"}, nil},
+		{"outdated-notes", []string{"Outdated"}, []string{"w"}}, // lua-language-server's release notes
 		{"services", []string{"Services"}, nil},
 		{"discover-all", []string{"Popular tools", "Search all"}, nil}, // the selection (gh) carries over from Tools
 		{"history", []string{"History"}, []string{"l"}},

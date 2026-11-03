@@ -34,7 +34,8 @@ snapshot:
 
 # The README's screenshots, from a made-up machine (internal/ui/testdata/demo).
 # Needs Charm's freeze (go install github.com/charmbracelet/freeze@v0.2.2; brew's
-# "freeze" is a different app) and the JetBrains Mono Nerd Font, whose NL
+# "freeze" is a different app), librsvg (brew install librsvg: freeze's own
+# renderer draws no text in this font) and the JetBrains Mono Nerd Font, whose NL
 # (no ligatures) cut shows brew's ==> as typed:
 # brew install --cask font-jetbrains-mono-nerd-font
 FREEZE ?= freeze

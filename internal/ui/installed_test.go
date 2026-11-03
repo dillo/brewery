@@ -239,11 +239,11 @@ func TestPreviewFocusIsLeftBehind(t *testing.T) {
 	if a.focus != colDetails {
 		t.Fatal("tab should focus the preview")
 	}
-	for i := 0; label(a) != "Outdated" && i < 10; i++ {
-		keys(t, a, "]") // Outdated has no details: the focus drops to its list
+	for i := 0; label(a) != "Taps" && i < 15; i++ {
+		keys(t, a, "]") // Taps has no details: the focus drops to its list
 	}
 	if a.focus != colList {
-		t.Errorf("on Outdated the focus is the list's, got %d", a.focus)
+		t.Errorf("on Taps the focus is the list's, got %d", a.focus)
 	}
 	for i := 0; label(a) != "Top-level" && i < 10; i++ {
 		keys(t, a, "[")

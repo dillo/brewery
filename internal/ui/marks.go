@@ -107,21 +107,49 @@ func (a *App) upgradeMarked() tea.Cmd {
 		}
 		return a.note("nothing marked needs upgrading (pinned or up to date)")
 	}
+	breaking := a.breakingIn(ts)
 	a.clearMarks()
-	if why != "" {
+	if why != "" || len(breaking) > 0 {
 		a.flash = "" // so only what run() sets below is kept
 	}
 	cmd := a.byKind(ts, func(kind brew.Kind, names []string) action {
 		return action{title: "upgrade " + strings.Join(names, " "), args: kindArgs("upgrade", kind, names...), refresh: diskQueries}
 	})
+	var warns []string
 	if why != "" {
-		note := a.st.Warn.Render(why)
+		warns = append(warns, why)
+	}
+	if len(breaking) > 0 {
+		warns = append(warns, breakingText(breaking))
+	}
+	if len(warns) > 0 {
+		note := a.st.Warn.Render(strings.Join(warns, " · "))
 		if a.flash != "" { // run() queued the job or couldn't start it
 			note = a.flash + " · " + note
 		}
 		a.flash = note
 	}
 	return cmd
+}
+
+// breakingIn names the targets whose kept release notes, for the upgrade
+// brew would make now, mention a breaking change. It never fetches.
+func (a *App) breakingIn(ts []target) []string {
+	var names []string
+	for _, o := range a.snap.Outdated {
+		aimed := slices.ContainsFunc(ts, func(t target) bool {
+			return t.kind == o.Kind && (t.name == o.Name || strings.HasSuffix(t.name, "/"+o.Name))
+		})
+		if n, kept := a.keptNotes(o); aimed && kept && hasBreaking(n) {
+			names = append(names, o.Name)
+		}
+	}
+	return names
+}
+
+// breakingText warns that names' release notes mention breaking changes.
+func breakingText(names []string) string {
+	return "release notes mention breaking changes: " + strings.Join(names, ", ")
 }
 
 // upgradable is the marked packages on this tab that are outdated and not

@@ -297,3 +297,34 @@ func TestReplacementTagsDecode(t *testing.T) {
 		}
 	}
 }
+
+func TestParseInfoSources(t *testing.T) {
+	in := `{"formulae": [
+	  {"name": "gh", "full_name": "gh", "homepage": "https://cli.github.com/",
+	   "urls": {"stable": {"url": "https://github.com/cli/cli/archive/refs/tags/v2.102.0.tar.gz", "tag": null},
+	            "head": {"url": "https://github.com/cli/cli.git", "branch": "trunk"}}},
+	  {"name": "make", "full_name": "make", "urls": {"stable": {"url": "https://ftpmirror.gnu.org/make/make-4.4.tar.lz"}, "head": null}},
+	  {"name": "bare", "full_name": "bare"}
+	], "casks": [
+	  {"token": "firefox", "full_token": "firefox", "url": "https://download-installer.cdn.mozilla.net/firefox.dmg"},
+	  {"token": "nourl", "full_token": "nourl"}
+	]}`
+	pkgs, err := ParseInfo([]byte(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		name string
+		want []string
+	}{
+		{"gh", []string{"https://github.com/cli/cli/archive/refs/tags/v2.102.0.tar.gz", "https://github.com/cli/cli.git"}},
+		{"make", []string{"https://ftpmirror.gnu.org/make/make-4.4.tar.lz"}},
+		{"bare", nil},
+		{"firefox", []string{"https://download-installer.cdn.mozilla.net/firefox.dmg"}},
+		{"nourl", nil},
+	} {
+		if got := byName(pkgs, tt.name).Sources; !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("%s: sources %q, want %q", tt.name, got, tt.want)
+		}
+	}
+}

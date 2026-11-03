@@ -41,6 +41,14 @@ type formulaJSON struct {
 	Versions struct {
 		Stable string `json:"stable"`
 	} `json:"versions"`
+	URLs struct {
+		Stable struct {
+			URL string `json:"url"`
+		} `json:"stable"`
+		Head struct {
+			URL string `json:"url"`
+		} `json:"head"`
+	} `json:"urls"`
 	Installed []struct {
 		Version            string `json:"version"`
 		Time               int64  `json:"time"`
@@ -65,6 +73,7 @@ type caskJSON struct {
 	Names         []string `json:"name"`
 	Desc          *string  `json:"desc"`
 	Homepage      string   `json:"homepage"`
+	URL           string   `json:"url"`
 	Version       string   `json:"version"`
 	Installed     *string  `json:"installed"`
 	InstalledTime *int64   `json:"installed_time"`
@@ -104,6 +113,7 @@ func (f formulaJSON) toPackage() Package {
 		Linked: deref(f.LinkedKeg) != "", KegOnly: f.KegOnly,
 		Caveats: strings.TrimSpace(deref(f.Caveats)),
 	}
+	p.Sources = nonEmpty(f.URLs.Stable.URL, f.URLs.Head.URL)
 	f.apply(&p)
 	if n := len(f.Installed); n > 0 {
 		inst := f.Installed[n-1] // newest keg
@@ -127,6 +137,7 @@ func (c caskJSON) toPackage() Package {
 		Latest: c.Version, OnRequest: true, Pinned: c.Pinned, Outdated: c.Outdated,
 		Caveats: strings.TrimSpace(deref(c.Caveats)),
 	}
+	p.Sources = nonEmpty(c.URL)
 	c.apply(&p)
 	if p.Desc == "" && len(c.Names) > 0 {
 		p.Desc = c.Names[0]
@@ -137,6 +148,17 @@ func (c caskJSON) toPackage() Package {
 	p.DirectDeps = append(slices.Clone(c.DependsOn.Formula), c.DependsOn.Cask...)
 	p.Targets = c.targets()
 	return p
+}
+
+// nonEmpty is the strings that aren't "", in order, or nil when none are.
+func nonEmpty(ss ...string) []string {
+	var out []string
+	for _, s := range ss {
+		if s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
 }
 
 // retireJSON is the deprecation and disable fields that formulae and
