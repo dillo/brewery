@@ -193,6 +193,13 @@ func RepoOf(remote string) (owner, repo string, ok bool) {
 	return owner, repo, true
 }
 
+// notRepoOwners are the first path segments of GitHub's own pages, which
+// look like owner/repo but aren't repositories.
+var notRepoOwners = map[string]bool{
+	"orgs": true, "sponsors": true, "topics": true, "marketplace": true,
+	"features": true, "collections": true, "apps": true, "settings": true,
+}
+
 // SourceRepo reads the owner and repository from an address on GitHub:
 // https://github.com/<owner>/<repo> or https://codeload.github.com/<owner>/<repo>,
 // followed by anything (an archive, a release download, a wiki). A
@@ -213,7 +220,7 @@ func SourceRepo(addr string) (owner, repo string, ok bool) {
 		return "", "", false
 	}
 	owner, repo = parts[0], strings.TrimSuffix(parts[1], ".git")
-	if owner == "" || repo == "" {
+	if owner == "" || repo == "" || notRepoOwners[owner] {
 		return "", "", false
 	}
 	return owner, repo, true

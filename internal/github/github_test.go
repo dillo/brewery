@@ -240,6 +240,14 @@ func TestSourceRepo(t *testing.T) {
 		{"http://github.com/o/r", "", "", false},
 		{"https://github.com/o", "", "", false},
 		{"https://github.com/o/", "", "", false},
+		{"https://github.com/orgs/o/people", "", "", false},
+		{"https://github.com/sponsors/o", "", "", false},
+		{"https://github.com/topics/cli", "", "", false},
+		{"https://github.com/marketplace/actions", "", "", false},
+		{"https://github.com/features/actions", "", "", false},
+		{"https://github.com/collections/o", "", "", false},
+		{"https://github.com/apps/dependabot", "", "", false},
+		{"https://github.com/settings/profile", "", "", false},
 		{"", "", "", false},
 	} {
 		owner, repo, ok := SourceRepo(tt.addr)
