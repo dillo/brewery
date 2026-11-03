@@ -28,6 +28,22 @@ import (
 // demoNow is the demo machine's clock.
 var demoNow = time.Date(2026, 10, 16, 14, 32, 0, 0, time.UTC)
 
+// ghReleases are gh's releases on the demo machine: the one it would
+// upgrade to, and the one installed.
+var ghReleases = []github.Release{
+	{Tag: "v2.102.0", URL: "https://github.com/cli/cli/releases/tag/v2.102.0", Published: demoNow.Add(-50 * time.Hour),
+		Body: "## What's Changed\n" +
+			"### ✨ Features\n" +
+			"* `gh pr revert` reverts a merged pull request\n" +
+			"* `gh run watch` shows each job's steps as they finish\n" +
+			"### 🐛 Fixes\n" +
+			"* `gh auth status` no longer hangs without a network\n" +
+			"* `gh extension install` checks the archive it downloads\n" +
+			"### Breaking changes\n" +
+			"* `gh repo sync --force` is removed: use `gh repo sync --hard`\n"},
+	{Tag: "v2.101.0", Body: "installed"},
+}
+
 // demoFile reads one of the demo machine's files.
 func demoFile(t *testing.T, name string) []byte {
 	t.Helper()
@@ -207,6 +223,7 @@ func demoApp(t *testing.T, fs *fakeStarter) *App {
 	}
 	a.UseAnalytics(demoStats{lists})
 	a.detailsDelay = 0
+	a.UseReleases(&fakeReleases{rels: map[string][]github.Release{"cli/cli": ghReleases}})
 
 	recs := []jobs.Record{
 		{Title: "upgrade starship", Args: []string{"upgrade", "starship"}, State: jobs.Done,
@@ -278,6 +295,9 @@ func TestScreenshots(t *testing.T) {
 	a.maint.table.SetCursor(maintTaps)
 	keys(t, a, "l")
 	shoot(t, a, "maintenance")
+	selectOutdated(t, a, "gh") // what's new in gh 2.102.0
+	keys(t, a, "w")
+	shoot(t, a, "whats-new")
 
 	show(t, a, "Home") // the sidebar's jump from Home, part-way through /maint
 	keys(t, a, "h", "/")

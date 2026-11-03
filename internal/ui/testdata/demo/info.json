@@ -294,6 +294,11 @@
    "tap": "homebrew/core",
    "desc": "GitHub command-line tool",
    "homepage": "https://cli.github.com/",
+   "urls": {
+    "stable": {
+     "url": "https://github.com/cli/cli/archive/refs/tags/v2.102.0.tar.gz"
+    }
+   },
    "license": "MIT",
    "versions": {
     "stable": "2.102.0"
