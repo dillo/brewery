@@ -10,6 +10,7 @@ import (
 
 	"github.com/dillo/brewery/internal/brew"
 	"github.com/dillo/brewery/internal/github"
+	"github.com/dillo/brewery/internal/notes"
 )
 
 func TestSaveLoadRoundTrip(t *testing.T) {
@@ -24,7 +25,12 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 		Vulns: &brew.VulnScan{Checked: 2, Skipped: []string{"fd"}, Findings: []brew.VulnFinding{
 			{Formula: "json-c", Version: "0.19", Vulns: []brew.Vuln{{ID: "OSV-1", Severity: "HIGH", Summary: "s", Fixed: []string{"0.20"}}}},
 		}},
-		VulnsAt:   time.Date(2026, 10, 20, 8, 0, 0, 0, time.UTC),
+		VulnsAt: time.Date(2026, 10, 20, 8, 0, 0, 0, time.UTC),
+		ReleaseNotes: map[string]notes.Notes{"cask/docker-desktop": {
+			Repo: "docker/desktop", From: "4.39.0", To: "4.95.0",
+			Releases: []github.Release{{Tag: "v4.95.0", Body: "b", Published: time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)}},
+			At:       time.Date(2026, 10, 21, 8, 0, 0, 0, time.UTC),
+		}},
 		FetchedAt: time.Date(2026, 10, 13, 9, 0, 0, 0, time.UTC),
 	}
 	if err := Save(path, in); err != nil {
