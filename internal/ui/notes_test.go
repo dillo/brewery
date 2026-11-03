@@ -263,3 +263,62 @@ func TestWhatsNewKeepsScrollForOtherRows(t *testing.T) {
 		t.Errorf("notes for the selected row start at the top: %d", a.outdated.pv.off)
 	}
 }
+
+func TestWhatsNewMenu(t *testing.T) {
+	a := notesApp(t, &fakeReleases{rels: map[string][]github.Release{luaRepo: luaReleases}})
+	keys(t, a, "enter")
+	if !regexp.MustCompile(`Fetch 3\.19\.2\s+f`).MatchString(stripANSI(a.render())) ||
+		!regexp.MustCompile(`What's new\s+w`).MatchString(stripANSI(a.render())) {
+		t.Errorf("the menu offers What's new after Fetch:\n%s", stripANSI(a.render()))
+	}
+	keys(t, a, "w") // picks it from the menu
+	mustShow(t, a, "1 release since 3.19.1")
+	keys(t, a, "enter")
+	mustShow(t, a, "What's new (fetched)")
+	keys(t, a, "esc", "j", "enter") // docker-desktop, not on GitHub
+	mustNotShow(t, a, "What's new")
+}
+
+func TestWhatsNewHelp(t *testing.T) {
+	a := notesApp(t, nil)
+	keys(t, a, "?")
+	mustShow(t, a, "what's new, from GitHub")
+}
+
+func TestWhatsNewOpensTheLink(t *testing.T) {
+	a := notesApp(t, &fakeReleases{tags: map[string][]string{luaRepo: {"3.19.2", "3.19.1"}}})
+	var opened string
+	a.opener = func(u string) error { opened = u; return nil }
+	keys(t, a, "w", "enter")
+	mustShow(t, a, "Open on GitHub")
+	keys(t, a, "esc", "g", "x")
+	if want := "https://github.com/LuaLS/lua-language-server/compare/3.19.1...3.19.2"; opened != want {
+		t.Errorf("gx opened %q, want %q", opened, want)
+	}
+	opened = ""
+	keys(t, a, "j", "g", "x") // docker-desktop: its homepage
+	if opened != "https://www.docker.com/products/docker-desktop" {
+		t.Errorf("gx opened %q, want the homepage", opened)
+	}
+}
+
+func TestUpgradeAllWarnsOfBreakingChanges(t *testing.T) {
+	f := &fakeReleases{rels: map[string][]github.Release{luaRepo: luaReleases}}
+	a := notesApp(t, f)
+	keys(t, a, "A")
+	mustNotShow(t, a, "breaking changes")
+	keys(t, a, "esc", "w", "A")
+	mustShow(t, a, "release notes mention breaking changes") // the names are cut to the box's width
+	if len(f.asked) != 1 {
+		t.Errorf("Upgrade all never fetches: %v", f.asked)
+	}
+}
+
+func TestUpgradeMarkedWarnsOfBreakingChanges(t *testing.T) {
+	a := notesApp(t, &fakeReleases{rels: map[string][]github.Release{luaRepo: luaReleases}})
+	keys(t, a, "w", "space")
+	a.handleKey(press("u")) // not settled: the job's own "✓ upgrade" would replace the note
+	if bar := stripANSI(a.statusBar()); !strings.Contains(bar, "release notes mention breaking changes: lua-language-server") {
+		t.Errorf("the note warns: %q", bar)
+	}
+}

@@ -235,3 +235,36 @@ func (a *App) releaseLines(r github.Release, w int) []string {
 	more := st.Muted.Render(fmt.Sprintf("… %d more lines", len(body)-noteLines))
 	return append(body[:noteLines:noteLines], more, st.Muted.Render(r.URL))
 }
+
+// breakingIn names the targets whose kept release notes, for the upgrade
+// brew would make now, mention a breaking change. It never fetches.
+func (a *App) breakingIn(ts []target) []string {
+	var names []string
+	for _, o := range a.snap.Outdated {
+		aimed := slices.ContainsFunc(ts, func(t target) bool {
+			return t.kind == o.Kind && (t.name == o.Name || strings.HasSuffix(t.name, "/"+o.Name))
+		})
+		if n, kept := a.keptNotes(o); aimed && kept && hasBreaking(n) {
+			names = append(names, o.Name)
+		}
+	}
+	return names
+}
+
+// breakingText warns that names' release notes mention breaking changes.
+func breakingText(names []string) string {
+	return "release notes mention breaking changes: " + strings.Join(names, ", ")
+}
+
+// openLabel names what gx opens on the current row: the GitHub page that
+// stands in for missing release notes, or the homepage.
+func (a *App) openLabel(addr string) string {
+	if a.tab == tabOutdated {
+		if o, _, ok := a.outdatedSelected(); ok {
+			if n, kept := a.keptNotes(o); kept && n.Link != "" && n.Link == addr {
+				return "Open on GitHub"
+			}
+		}
+	}
+	return "Open the homepage"
+}

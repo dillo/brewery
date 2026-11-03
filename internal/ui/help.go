@@ -53,7 +53,8 @@ func (a *App) hereHelp() helpGroup {
 		here = helpGroup{"Installed", ks}
 	case a.tab == tabOutdated:
 		here = helpGroup{"Outdated", [][2]string{
-			{"enter", "actions"}, {"u", "upgrade"}, {"f", "fetch the newer version"}, {"A", "upgrade all"}, {"space", "mark for several"},
+			{"enter", "actions"}, {"u", "upgrade"}, {"f", "fetch the newer version"}, {"w", "what's new, from GitHub"},
+			{"A", "upgrade all"}, {"space", "mark for several"}, {"l tab", "details"},
 		}}
 	case a.tab == tabServices:
 		here = helpGroup{"Services", [][2]string{{"enter", "actions"}, {"s", "start"}, {"S", "stop"}, {"R", "restart"}, {"l tab", "details"}, {"j k", "in the details, scroll the log"}, {"L", "follow the log full screen"}}}

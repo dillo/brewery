@@ -107,15 +107,23 @@ func (a *App) upgradeMarked() tea.Cmd {
 		}
 		return a.note("nothing marked needs upgrading (pinned or up to date)")
 	}
+	breaking := a.breakingIn(ts)
 	a.clearMarks()
-	if why != "" {
+	if why != "" || len(breaking) > 0 {
 		a.flash = "" // so only what run() sets below is kept
 	}
 	cmd := a.byKind(ts, func(kind brew.Kind, names []string) action {
 		return action{title: "upgrade " + strings.Join(names, " "), args: kindArgs("upgrade", kind, names...), refresh: diskQueries}
 	})
+	var warns []string
 	if why != "" {
-		note := a.st.Warn.Render(why)
+		warns = append(warns, why)
+	}
+	if len(breaking) > 0 {
+		warns = append(warns, breakingText(breaking))
+	}
+	if len(warns) > 0 {
+		note := a.st.Warn.Render(strings.Join(warns, " · "))
 		if a.flash != "" { // run() queued the job or couldn't start it
 			note = a.flash + " · " + note
 		}

@@ -142,7 +142,7 @@ func TestMenuItemsOnOtherTabs(t *testing.T) {
 	a := newJobApp(t, &fakeStarter{})
 	selectOutdated(t, a, "lua-language-server")
 	if title, got := menuLabels(t, a); title != "lua-language-server 3.19.1" ||
-		!reflect.DeepEqual(got, []string{"Upgrade to 3.19.2", "Fetch 3.19.2", "Upgrade all…", "Copy the name", "Open the homepage"}) {
+		!reflect.DeepEqual(got, []string{"Upgrade to 3.19.2", "Fetch 3.19.2", "What's new", "Upgrade all…", "Copy the name", "Open the homepage"}) {
 		t.Errorf("Outdated: %q %q", title, got)
 	}
 	keys(t, a, "space")

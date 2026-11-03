@@ -150,7 +150,7 @@ func (a *App) keyItem(k, label string) menuItem {
 func (a *App) copyItems(copyLabel string) []menuItem {
 	items := []menuItem{a.keyItem("y", copyLabel)}
 	if _, url, ok := a.selection(); ok && webPage(url) {
-		items = append(items, a.keyItem("gx", "Open the homepage"))
+		items = append(items, a.keyItem("gx", a.openLabel(url)))
 	}
 	return items
 }
@@ -214,7 +214,15 @@ func (a *App) outdatedMenu() *menuBox {
 	if !o.Pinned {
 		items = append(items, a.keyItem("u", "Upgrade to "+o.Current))
 	}
-	items = append(items, a.keyItem("f", "Fetch "+o.Current), a.keyItem("A", "Upgrade all…"))
+	items = append(items, a.keyItem("f", "Fetch "+o.Current))
+	if _, _, onGitHub := notesRepo(a.packageNamed(o.Name, o.Kind)); onGitHub {
+		label := "What's new"
+		if _, kept := a.keptNotes(o); kept {
+			label = "What's new (fetched)"
+		}
+		items = append(items, a.keyItem("w", label))
+	}
+	items = append(items, a.keyItem("A", "Upgrade all…"))
 	return &menuBox{title: o.Name + " " + o.Installed, items: append(items, a.copyItems("Copy the name")...)}
 }
 

@@ -235,6 +235,7 @@ func (a *App) askUpgradeAll() tea.Cmd {
 		return a.note("everything is up to date")
 	}
 	var names []string
+	var ts []target
 	pinned := 0
 	for _, o := range a.snap.Outdated {
 		if o.Pinned {
@@ -242,6 +243,7 @@ func (a *App) askUpgradeAll() tea.Cmd {
 			continue
 		}
 		names = append(names, o.Name)
+		ts = append(ts, target{o.Name, o.Kind})
 	}
 	n := len(names)
 	if n == 0 {
@@ -264,6 +266,9 @@ func (a *App) askUpgradeAll() tea.Cmd {
 		}
 		behind = a.ix.PinnedBehind(behind...) // sorted, once each
 		body = append(body, fmt.Sprintf("brew will refuse %s: %s %s unpinned", strings.Join(refused, ", "), they, strings.Join(behind, ", ")))
+	}
+	if breaking := a.breakingIn(ts); len(breaking) > 0 {
+		body = append(body, a.st.Warn.Render(breakingText(breaking)))
 	}
 	// This dialog is the confirmation, so brew 7 needn't ask again. The
 	// variable, unlike --no-ask, is ignored by older brews.

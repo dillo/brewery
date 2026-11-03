@@ -72,6 +72,19 @@ func (a *App) packageNamed(name string, kind brew.Kind) brew.Package {
 	return brew.Package{}
 }
 
+// outdatedSelection is selection on Outdated: the name, and the GitHub page
+// that stands in for missing release notes, else the homepage.
+func (a *App) outdatedSelection() (name, url string, ok bool) {
+	o, p, ok := a.outdatedSelected()
+	if !ok {
+		return "", "", false
+	}
+	if n, kept := a.keptNotes(o); kept && len(n.Releases) == 0 && n.Link != "" {
+		return o.Name, n.Link, true // the page that stands in for the notes
+	}
+	return o.Name, p.Homepage, true
+}
+
 // selection is what the cursor is on in the current list: a name to copy
 // and, where there is one, a web page.
 func (a *App) selection() (name, url string, ok bool) {
@@ -85,11 +98,7 @@ func (a *App) selection() (name, url string, ok bool) {
 			return p.Name, p.Homepage, true
 		}
 	case tabOutdated:
-		if i := a.outdated.cursor(); i >= 0 {
-			o := a.snap.Outdated[i]
-			p := a.packageNamed(o.Name, o.Kind)
-			return o.Name, p.Homepage, true
-		}
+		return a.outdatedSelection()
 	case tabServices:
 		if s, ok := a.selectedService(); ok {
 			p := a.packageNamed(s.Name, brew.KindFormula)
