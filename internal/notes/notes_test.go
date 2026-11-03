@@ -186,3 +186,13 @@ func TestFetch(t *testing.T) {
 		t.Errorf("releases failing is the error: %v", err)
 	}
 }
+
+func TestFetchCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	f := &fakeFetcher{tagErr: ctx.Err()}
+	n, err := Fetch(ctx, f, "o", "r", "r", "1", "2", time.Now())
+	if !errors.Is(err, context.Canceled) || n.Link != "" || n.Repo != "" {
+		t.Errorf("a cancelled fetch keeps nothing: %+v, %v", n, err)
+	}
+}

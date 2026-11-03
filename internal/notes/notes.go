@@ -54,6 +54,9 @@ func Fetch(ctx context.Context, f Fetcher, owner, repo, name, from, to string, n
 		return n, nil
 	}
 	tags, err := f.Tags(ctx, owner, repo)
+	if ctx.Err() != nil {
+		return Notes{}, ctx.Err() // cancelled: nothing to keep
+	}
 	if err != nil {
 		tags = nil // the releases page needs no tags
 	}
