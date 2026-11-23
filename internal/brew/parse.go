@@ -301,7 +301,12 @@ func ParseOutdated(b []byte) ([]Outdated, error) {
 
 // ParseServices parses `brew services info --all --json`, which says
 // everything `services list` does plus each service's command and logs.
+// When no installed formula provides a service, brew exits 0 and prints
+// nothing, which means "no services" rather than a parse failure.
 func ParseServices(b []byte) ([]Service, error) {
+	if len(bytes.TrimSpace(b)) == 0 {
+		return nil, nil
+	}
 	var out []Service
 	if err := json.Unmarshal(jsonPayload(b), &out); err != nil {
 		return nil, fmt.Errorf("parse brew services: %w", err)

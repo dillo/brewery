@@ -457,3 +457,18 @@ func TestServicesDetailsFocusAtFullWidth(t *testing.T) {
 		}
 	}
 }
+
+func TestServicesEmptyState(t *testing.T) {
+	snap := fixtureSnapshot(t)
+	snap.Services = nil // a fresh Mac: nothing installed provides a service
+	a := New(newFakeSource(t), (&fakeStarter{}).start, snap, filepath.Join(t.TempDir(), "s.json"))
+	a.Update(tea.WindowSizeMsg{Width: 140, Height: 40})
+	show(t, a, "Services")
+	out := stripANSI(a.render())
+	if !strings.Contains(out, "no services yet · formulae like postgresql or redis add one when installed") {
+		t.Errorf("want the empty-state hint:\n%s", out)
+	}
+	if strings.Contains(out, "couldn't load") {
+		t.Errorf("no services isn't an error:\n%s", out)
+	}
+}

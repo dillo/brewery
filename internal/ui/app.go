@@ -174,7 +174,7 @@ func New(src Source, start Starter, snap state.Snapshot, cachePath string) *App 
 		filterIn:     newFilterInput(st),
 		installed:    newInstalledTab(st),
 		outdated:     newListTab(st, "Outdated", outdatedCols, outdatedKey, "✓ everything is up to date"),
-		services:     newListTab(st, "Services", serviceCols, firstCell, "no services registered"),
+		services:     newListTab(st, "Services", serviceCols, firstCell, "no services yet · formulae like postgresql or redis add one when installed"),
 		taps:         newListTab(st, "Taps", tapCols, firstCell, "no taps installed"),
 		jobs:         newListTab(st, "History", jobCols, jobKey, "no jobs yet"),
 		maint:        newListTab(st, "Maintenance", maintCols, firstCell, ""),
