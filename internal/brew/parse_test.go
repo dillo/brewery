@@ -123,6 +123,20 @@ func TestParseOutdatedSkipsLeadingNoise(t *testing.T) {
 	}
 }
 
+func TestParseServicesEmptyOutput(t *testing.T) {
+	// With no service-providing formulae installed, `brew services info
+	// --all --json` exits 0 and prints nothing.
+	for _, in := range []string{"", "\n", "  \n\t"} {
+		got, err := ParseServices([]byte(in))
+		if err != nil {
+			t.Errorf("ParseServices(%q) error: %v", in, err)
+		}
+		if len(got) != 0 {
+			t.Errorf("ParseServices(%q) = %+v, want none", in, got)
+		}
+	}
+}
+
 func TestParseServices(t *testing.T) {
 	got, err := ParseServices(fixture(t, "services.json"))
 	if err != nil {
